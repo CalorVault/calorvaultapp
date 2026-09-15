@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "CalorVault",
+    "slug": "Fitness-calorie-App",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.benjaminpascaniuc.calorvault",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "CalorVault uses your camera to scan and identify food you're logging.",
+        "NSMicrophoneUsageDescription": "CalorVault uses your microphone to let you log food by voice.",
+        "NSSpeechRecognitionUsageDescription": "CalorVault converts your speech to text so it can identify the food you describe.",
+        "NSPhotoLibraryUsageDescription": "CalorVault lets you pick an existing photo of food to scan."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#D8652C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA", "RECORD_AUDIO"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "CalorVault uses your camera to scan and identify food you're logging."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "CalorVault uses your microphone to let you log food by voice.",
+          "speechRecognitionPermission": "CalorVault converts your speech to text so it can identify the food you describe."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CalorVault lets you pick an existing photo of food to scan."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#D8652C"
+        }
+      ]
+    ]
+  }
+}
