@@ -19,7 +19,8 @@
         "NSCameraUsageDescription": "CalorVault uses your camera to scan and identify food you're logging.",
         "NSMicrophoneUsageDescription": "CalorVault uses your microphone to let you log food by voice.",
         "NSSpeechRecognitionUsageDescription": "CalorVault converts your speech to text so it can identify the food you describe.",
-        "NSPhotoLibraryUsageDescription": "CalorVault lets you pick an existing photo of food to scan."
+        "NSPhotoLibraryUsageDescription": "CalorVault lets you pick an existing photo of food to scan.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -30,7 +31,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["CAMERA", "RECORD_AUDIO"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -61,6 +65,11 @@
           "color": "#D8652C"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d654ceeb-46ff-4c27-a655-d78832d2bae0"
+      }
+    }
   }
 }
