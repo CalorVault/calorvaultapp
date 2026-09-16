@@ -8,6 +8,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.benjaminpascaniuc.calorvault",
+      "buildNumber": "3",
       "icon": {
         "light": "./assets/icon.png",
         "dark": "./assets/icon.png",
