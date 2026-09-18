@@ -154,8 +154,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } finally {
         setLoading(false);
       }
-      const info = await getCustomerInfoSilently();
-      if (info) setCustomerInfo(info);
+      setTimeout(async () => {
+        const info = await getCustomerInfoSilently();
+        if (info) setCustomerInfo(info);
+      }, 1000);
     })();
   }, [refreshToday]);
 
