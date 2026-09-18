@@ -30,9 +30,24 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
           </Pressable>
 
           <View style={styles.quickRow}>
-            <QuickButton icon="🔍" label={t.quickLog.search} onPress={() => onSelect('manual')} />
-            <QuickButton icon="🍽️" label={t.quickLog.previousMeal} onPress={() => onSelect('recent')} />
-            <QuickButton icon="⛶" label={t.quickLog.scan} onPress={() => onSelect('camera')} />
+            <QuickButton
+              icon="🔍"
+              label={t.quickLog.search}
+              tint={colors.blueMuted}
+              onPress={() => onSelect('manual')}
+            />
+            <QuickButton
+              icon="🍽️"
+              label={t.quickLog.previousMeal}
+              tint={colors.primaryMuted}
+              onPress={() => onSelect('recent')}
+            />
+            <QuickButton
+              icon="⛶"
+              label={t.quickLog.scan}
+              tint={colors.accentMuted}
+              onPress={() => onSelect('camera')}
+            />
           </View>
         </View>
       </Pressable>
@@ -43,14 +58,16 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
 function QuickButton({
   icon,
   label,
+  tint,
   onPress,
 }: {
   icon: string;
   label: string;
+  tint: string;
   onPress: () => void;
 }) {
   return (
-    <Pressable style={styles.quickButton} onPress={onPress}>
+    <Pressable style={[styles.quickButton, { backgroundColor: tint }]} onPress={onPress}>
       <Text style={styles.quickIcon}>{icon}</Text>
       <Text style={styles.quickLabel}>{label}</Text>
     </Pressable>

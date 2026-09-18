@@ -178,6 +178,7 @@ const en = {
     needApiKeyAsk: 'Add your Claude API key in Settings to ask for meal suggestions.',
     apiKeyNeededTitle: 'API key needed',
     apiKeyNeededMsg: 'Add your Claude API key in Settings to enable food scanning.',
+    analyzingFood: 'Analyzing your food...',
     photoAccessTitle: 'Photo access needed',
     photoAccessMsg: 'Enable photo library access in settings.',
     scanFailedTitle: 'Scan failed',

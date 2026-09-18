@@ -176,6 +176,7 @@ const fr: Translations = {
     needApiKeyAsk: 'Ajoute ta clé API Claude dans les Réglages pour demander des suggestions de repas.',
     apiKeyNeededTitle: 'Clé API requise',
     apiKeyNeededMsg: 'Ajoute ta clé API Claude dans les Réglages pour activer le scan de nourriture.',
+    analyzingFood: 'Analyse de ton repas...',
     photoAccessTitle: 'Accès aux photos requis',
     photoAccessMsg: 'Active l’accès à la photothèque dans les réglages.',
     scanFailedTitle: 'Échec du scan',

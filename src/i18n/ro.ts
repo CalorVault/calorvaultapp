@@ -176,6 +176,7 @@ const ro: Translations = {
     needApiKeyAsk: 'Adaugă cheia ta API Claude în Setări pentru a cere sugestii de mese.',
     apiKeyNeededTitle: 'Este necesară o cheie API',
     apiKeyNeededMsg: 'Adaugă cheia ta API Claude în Setări pentru a activa scanarea alimentelor.',
+    analyzingFood: 'Se analizează mâncarea...',
     photoAccessTitle: 'Este necesar accesul la fotografii',
     photoAccessMsg: 'Activează accesul la galeria foto din setări.',
     scanFailedTitle: 'Scanarea a eșuat',

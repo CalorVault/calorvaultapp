@@ -176,6 +176,7 @@ const it: Translations = {
     needApiKeyAsk: 'Aggiungi la tua chiave API Claude nelle Impostazioni per chiedere suggerimenti sui pasti.',
     apiKeyNeededTitle: 'Chiave API necessaria',
     apiKeyNeededMsg: 'Aggiungi la tua chiave API Claude nelle Impostazioni per attivare la scansione del cibo.',
+    analyzingFood: 'Analisi del cibo in corso...',
     photoAccessTitle: 'Accesso alle foto necessario',
     photoAccessMsg: 'Attiva l’accesso alla libreria foto nelle impostazioni.',
     scanFailedTitle: 'Scansione non riuscita',

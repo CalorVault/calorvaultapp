@@ -9,6 +9,7 @@ export const colors = {
   accent: '#D8652C',
   accentDark: '#B94F1D',
   accentMuted: '#FBE3D3',
+  blueMuted: '#DBEAFE',
   ink: '#111827',
   protein: '#F43F5E',
   carbs: '#F97316',

@@ -176,6 +176,7 @@ const de: Translations = {
     needApiKeyAsk: 'Füge deinen Claude-API-Schlüssel in den Einstellungen hinzu, um nach Mahlzeitenvorschlägen zu fragen.',
     apiKeyNeededTitle: 'API-Schlüssel benötigt',
     apiKeyNeededMsg: 'Füge deinen Claude-API-Schlüssel in den Einstellungen hinzu, um den Lebensmittelscan zu aktivieren.',
+    analyzingFood: 'Dein Essen wird analysiert...',
     photoAccessTitle: 'Fotozugriff benötigt',
     photoAccessMsg: 'Aktiviere den Fotomediathekzugriff in den Einstellungen.',
     scanFailedTitle: 'Scan fehlgeschlagen',

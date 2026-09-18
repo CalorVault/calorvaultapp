@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Image,
   LayoutChangeEvent,
   Pressable,
   ScrollView,
@@ -59,9 +60,14 @@ function scanModeMeta(
 }
 const BARCODE_TYPES: BarcodeType[] = ['ean13', 'ean8', 'upc_a', 'upc_e'];
 const BARCODE_RESCAN_MS = 4000;
+const MIN_ANALYZING_MS = 1400;
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type Tab = LogFoodTab;
-const TABS: Tab[] = ['manual', 'camera', 'voice', 'ask', 'recent'];
+const TABS: Tab[] = ['manual', 'camera', 'voice', 'recent'];
 function tabMeta(t: Translations): Record<Tab, { icon: string; label: string }> {
   return {
     camera: { icon: '📷', label: t.logFood.tabs.scan },
@@ -342,6 +348,49 @@ function PremiumGate({ feature }: { feature: string }) {
   );
 }
 
+function AnalyzingOverlay({ photoUri }: { photoUri?: string }) {
+  const { t } = useApp();
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 850, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 850, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  const ringScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] });
+  const ringOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0] });
+  const glyphScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });
+
+  return (
+    <View style={styles.analyzingContainer}>
+      {photoUri && (
+        <Image source={{ uri: photoUri }} style={StyleSheet.absoluteFill} blurRadius={18} />
+      )}
+      <View style={styles.analyzingScrim} />
+      <View style={styles.analyzingContent}>
+        <View style={styles.analyzingPulseWrap}>
+          <Animated.View
+            style={[
+              styles.analyzingRing,
+              { opacity: ringOpacity, transform: [{ scale: ringScale }] },
+            ]}
+          />
+          <Animated.View style={[styles.analyzingGlyph, { transform: [{ scale: glyphScale }] }]}>
+            <SparkleIcon size={30} color={colors.white} />
+          </Animated.View>
+        </View>
+        <Text style={styles.analyzingText}>{t.logFood.analyzingFood}</Text>
+      </View>
+    </View>
+  );
+}
+
 function CameraTab() {
   const { t } = useApp();
   const SCAN_MODE_META = scanModeMeta(t);
@@ -398,8 +447,9 @@ function CameraTab() {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.5, base64: true });
       if (!photo?.base64) throw new Error('Failed to capture photo');
       setPhotoUri(photo.uri);
-      await runPhotoEstimate(photo.base64);
+      await Promise.all([runPhotoEstimate(photo.base64), wait(MIN_ANALYZING_MS)]);
     } catch (err) {
+      setPhotoUri(undefined);
       Alert.alert(t.logFood.scanFailedTitle, err instanceof Error ? err.message : String(err));
     } finally {
       setCapturing(false);
@@ -425,8 +475,9 @@ function CameraTab() {
     setCapturing(true);
     try {
       setPhotoUri(result.assets[0].uri);
-      await runPhotoEstimate(result.assets[0].base64);
+      await Promise.all([runPhotoEstimate(result.assets[0].base64), wait(MIN_ANALYZING_MS)]);
     } catch (err) {
+      setPhotoUri(undefined);
       Alert.alert(t.logFood.scanFailedTitle, err instanceof Error ? err.message : String(err));
     } finally {
       setCapturing(false);
@@ -448,6 +499,10 @@ function CameraTab() {
       setBarcodeStatus('error');
       setBarcodeError(err instanceof BarcodeLookupError ? err.message : t.logFood.barcodeLookupFailed);
     }
+  }
+
+  if (capturing && photoUri && scanMode !== 'barcode') {
+    return <AnalyzingOverlay photoUri={photoUri} />;
   }
 
   if (estimate) {
@@ -1112,6 +1167,51 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: { color: colors.background, fontWeight: '700' },
   scannerContainer: { flex: 1, backgroundColor: colors.ink },
+  analyzingContainer: {
+    flex: 1,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  analyzingScrim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  analyzingContent: {
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  analyzingPulseWrap: {
+    width: 88,
+    height: 88,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  analyzingRing: {
+    position: 'absolute',
+    width: 88,
+    height: 88,
+    borderRadius: radius.full,
+    borderWidth: 2,
+    borderColor: colors.white,
+  },
+  analyzingGlyph: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  analyzingText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
   scannerOverlay: {
     flex: 1,
     justifyContent: 'space-between',

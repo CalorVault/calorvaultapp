@@ -176,6 +176,7 @@ const es: Translations = {
     needApiKeyAsk: 'Añade tu clave API de Claude en Ajustes para pedir sugerencias de comidas.',
     apiKeyNeededTitle: 'Se necesita clave API',
     apiKeyNeededMsg: 'Añade tu clave API de Claude en Ajustes para activar el escaneo de comida.',
+    analyzingFood: 'Analizando tu comida...',
     photoAccessTitle: 'Se necesita acceso a fotos',
     photoAccessMsg: 'Activa el acceso a la galería de fotos en ajustes.',
     scanFailedTitle: 'El escaneo falló',
