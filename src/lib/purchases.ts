@@ -12,7 +12,7 @@ import Purchases, {
  * RevenueCat project; add an Android key here too once that platform
  * is set up.
  */
-const REVENUECAT_API_KEY_IOS = 'test_mUBqCpAcvhTmJipOuFTUKhJcieE';
+const REVENUECAT_API_KEY_IOS = 'appl_qaQakiJCtxVEbJEDEvhtUgZZpwH';
 
 /** Must match the Entitlement identifier configured in the RevenueCat dashboard. */
 export const PREMIUM_ENTITLEMENT_ID = 'premium';
