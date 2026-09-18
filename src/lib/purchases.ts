@@ -15,7 +15,7 @@ import Purchases, {
 const REVENUECAT_API_KEY_IOS = 'appl_qaQakiJCtxVEbJEDEvhtUgZZpwH';
 
 /** Must match the Entitlement identifier configured in the RevenueCat dashboard. */
-export const PREMIUM_ENTITLEMENT_ID = 'premium';
+export const PREMIUM_ENTITLEMENT_ID = 'calorvault_pro';
 
 export class PurchasesError extends Error {}
 export class PurchasesCancelledError extends PurchasesError {}
