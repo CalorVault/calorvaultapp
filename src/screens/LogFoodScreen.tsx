@@ -161,6 +161,7 @@ function ReviewCard({
   onDiscard,
   saving,
   apiKey,
+  photoUri,
 }: {
   estimate: NutrientEstimate;
   onChange: (e: NutrientEstimate) => void;
@@ -168,6 +169,7 @@ function ReviewCard({
   onDiscard: () => void;
   saving: boolean;
   apiKey: string | null;
+  photoUri?: string;
 }) {
   const { t } = useApp();
   const [swapping, setSwapping] = useState(false);
@@ -207,14 +209,31 @@ function ReviewCard({
 
   return (
     <View style={styles.reviewCard}>
-      <Text style={styles.reviewTitle}>{t.logFood.confirmTitle}</Text>
-      <TextInput
-        style={styles.reviewInput}
-        value={estimate.foodName}
-        onChangeText={(v) => onChange({ ...estimate, foodName: v })}
-        placeholder={t.logFood.foodNamePlaceholder}
-        placeholderTextColor={colors.textMuted}
-      />
+      {photoUri && (
+        <View style={styles.reviewPhotoWrap}>
+          <Image source={{ uri: photoUri }} style={styles.reviewPhoto} />
+          <Pressable
+            style={styles.reviewDeleteButton}
+            onPress={onDiscard}
+            disabled={saving}
+            hitSlop={8}
+          >
+            <Text style={styles.reviewDeleteIcon}>🗑️</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View style={styles.reviewNameRow}>
+        <TextInput
+          style={styles.reviewNameInput}
+          value={estimate.foodName}
+          onChangeText={(v) => onChange({ ...estimate, foodName: v })}
+          placeholder={t.logFood.foodNamePlaceholder}
+          placeholderTextColor={colors.textMuted}
+          multiline
+        />
+        <Text style={styles.reviewNameEditIcon}>✏️</Text>
+      </View>
       <TextInput
         style={styles.reviewInput}
         value={estimate.quantity}
@@ -222,26 +241,30 @@ function ReviewCard({
         placeholder={t.logFood.quantityPlaceholder}
         placeholderTextColor={colors.textMuted}
       />
-      <View style={styles.reviewNumbersRow}>
-        <NumberField
-          label="kcal"
-          value={estimate.calories}
-          onChange={(v) => onChange({ ...estimate, calories: v })}
-        />
-        <NumberField
-          label={t.onboarding.protein}
-          value={estimate.proteinG}
-          onChange={(v) => onChange({ ...estimate, proteinG: v })}
-        />
-        <NumberField
+      <View style={styles.macroTileRow}>
+        <MacroTile
           label={t.onboarding.carbs}
           value={estimate.carbsG}
+          tint={colors.carbs}
           onChange={(v) => onChange({ ...estimate, carbsG: v })}
         />
-        <NumberField
+        <MacroTile
+          label={t.onboarding.protein}
+          value={estimate.proteinG}
+          tint={colors.protein}
+          onChange={(v) => onChange({ ...estimate, proteinG: v })}
+        />
+        <MacroTile
           label={t.onboarding.fat}
           value={estimate.fatG}
+          tint={colors.fat}
           onChange={(v) => onChange({ ...estimate, fatG: v })}
+        />
+        <MacroTile
+          label="kcal"
+          value={estimate.calories}
+          tint={colors.ink}
+          onChange={(v) => onChange({ ...estimate, calories: v })}
         />
       </View>
 
@@ -272,9 +295,11 @@ function ReviewCard({
       )}
 
       <View style={styles.reviewActions}>
-        <Pressable style={styles.discardButton} onPress={onDiscard} disabled={saving}>
-          <Text style={styles.discardText}>{t.logFood.discard}</Text>
-        </Pressable>
+        {!photoUri && (
+          <Pressable style={styles.discardButton} onPress={onDiscard} disabled={saving}>
+            <Text style={styles.discardText}>{t.logFood.discard}</Text>
+          </Pressable>
+        )}
         <Pressable
           style={[styles.saveButton, styles.saveButtonInRow]}
           onPress={onSave}
@@ -287,6 +312,30 @@ function ReviewCard({
           )}
         </Pressable>
       </View>
+    </View>
+  );
+}
+
+function MacroTile({
+  label,
+  value,
+  tint,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  tint: string;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <View style={styles.macroTile}>
+      <Text style={[styles.macroTileLabel, { color: tint }]}>{label}</Text>
+      <TextInput
+        style={styles.macroTileValue}
+        value={String(value)}
+        onChangeText={(v) => onChange(parseInt(v, 10) || 0)}
+        keyboardType="number-pad"
+      />
     </View>
   );
 }
@@ -513,6 +562,7 @@ function CameraTab() {
           onChange={setEstimate}
           saving={saving}
           apiKey={apiKey}
+          photoUri={photoUri}
           onDiscard={() => {
             setEstimate(null);
             setPhotoUri(undefined);
@@ -1399,6 +1449,63 @@ const styles = StyleSheet.create({
   },
   reviewCard: { gap: spacing.md },
   reviewTitle: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  reviewPhotoWrap: {
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceAlt,
+  },
+  reviewPhoto: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  reviewDeleteButton: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 36,
+    height: 36,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewDeleteIcon: { fontSize: 17 },
+  reviewNameRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  reviewNameInput: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+    padding: 0,
+  },
+  reviewNameEditIcon: { fontSize: 16, marginTop: 4 },
+  macroTileRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  macroTile: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  macroTileLabel: { fontSize: 11, fontWeight: '700' },
+  macroTileValue: {
+    color: colors.text,
+    fontSize: 19,
+    fontWeight: '800',
+    textAlign: 'center',
+    padding: 0,
+    minWidth: 32,
+  },
   reviewInput: {
     backgroundColor: colors.surface,
     borderWidth: 1,
