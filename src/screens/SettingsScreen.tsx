@@ -43,10 +43,16 @@ export function SettingsScreen() {
     restorePremium,
     waterTargetMl,
     setWaterTarget,
+    supabaseUrl,
+    supabaseAnonKey,
+    setSupabaseUrl,
+    setSupabaseAnonKey,
   } = useApp();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [keyInput, setKeyInput] = useState(apiKey ?? '');
   const [recipeKeyInput, setRecipeKeyInput] = useState(recipeApiKey ?? '');
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrl ?? '');
+  const [supabaseAnonKeyInput, setSupabaseAnonKeyInput] = useState(supabaseAnonKey ?? '');
   const [waterTargetInput, setWaterTargetInput] = useState(String(waterTargetMl));
   const [exporting, setExporting] = useState(false);
   const [restoringPurchases, setRestoringPurchases] = useState(false);
@@ -87,6 +93,14 @@ export function SettingsScreen() {
   async function handleSaveRecipeKey() {
     await setRecipeApiKey(recipeKeyInput.trim());
     Alert.alert(t.settings.savedTitle, t.settings.savedRecipeKeyMsg);
+  }
+
+  async function handleSaveCommunityConfig() {
+    await Promise.all([
+      setSupabaseUrl(supabaseUrlInput.trim()),
+      setSupabaseAnonKey(supabaseAnonKeyInput.trim()),
+    ]);
+    Alert.alert(t.settings.savedTitle, t.settings.savedCommunityConfigMsg);
   }
 
   async function handleSaveWaterTarget() {
@@ -380,6 +394,37 @@ export function SettingsScreen() {
             onPress={handleSaveRecipeKey}
           >
             <Text style={styles.saveButtonText}>{t.settings.saveRecipeApiKey}</Text>
+          </Pressable>
+        </View>
+
+        <Text style={styles.sectionLabel}>{t.settings.communitySection}</Text>
+        <View style={styles.card}>
+          <Text style={styles.hint}>{t.settings.communityHint}</Text>
+          <TextInput
+            style={styles.keyInput}
+            placeholder={t.settings.supabaseUrlPlaceholder}
+            placeholderTextColor={colors.textMuted}
+            value={supabaseUrlInput}
+            onChangeText={setSupabaseUrlInput}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+          <TextInput
+            style={styles.keyInput}
+            placeholder={t.settings.supabaseAnonKeyPlaceholder}
+            placeholderTextColor={colors.textMuted}
+            value={supabaseAnonKeyInput}
+            onChangeText={setSupabaseAnonKeyInput}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Pressable
+            style={({ pressed }) => [styles.saveButton, pressed && styles.pressedDim]}
+            onPress={handleSaveCommunityConfig}
+          >
+            <Text style={styles.saveButtonText}>{t.settings.saveCommunityConfig}</Text>
           </Pressable>
         </View>
 

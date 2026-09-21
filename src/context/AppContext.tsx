@@ -27,6 +27,8 @@ import {
   getRecipeApiKey,
   getSavedRecipes,
   getSubscription,
+  getSupabaseAnonKey,
+  getSupabaseUrl,
   getWaterIntake,
   getWaterTarget,
   getWeightLog,
@@ -38,6 +40,8 @@ import {
   saveRecipeApiKey as persistRecipeApiKey,
   saveSavedRecipes,
   saveSubscription,
+  saveSupabaseAnonKey as persistSupabaseAnonKey,
+  saveSupabaseUrl as persistSupabaseUrl,
   saveWaterIntake,
   saveWaterTarget as persistWaterTarget,
   todayIso,
@@ -73,6 +77,10 @@ interface AppContextValue {
   setApiKey: (key: string) => Promise<void>;
   setRecipeApiKey: (key: string) => Promise<void>;
   setLanguage: (language: LanguageCode) => Promise<void>;
+  supabaseUrl: string | null;
+  supabaseAnonKey: string | null;
+  setSupabaseUrl: (url: string) => Promise<void>;
+  setSupabaseAnonKey: (key: string) => Promise<void>;
   logFood: (entry: FoodEntry) => Promise<void>;
   deleteFood: (entryId: string) => Promise<void>;
   refreshToday: () => Promise<void>;
@@ -99,6 +107,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [apiKey, setApiKeyState] = useState<string | null>(null);
   const [recipeApiKey, setRecipeApiKeyState] = useState<string | null>(null);
   const [language, setLanguageState] = useState<LanguageCode>(DEFAULT_LANGUAGE);
+  const [supabaseUrl, setSupabaseUrlState] = useState<string | null>(null);
+  const [supabaseAnonKey, setSupabaseAnonKeyState] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [today, setToday] = useState<DayLog>({ date: todayIso(), entries: [] });
@@ -121,6 +131,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           storedKey,
           storedRecipeKey,
           storedLanguage,
+          storedSupabaseUrl,
+          storedSupabaseAnonKey,
           storedSubscription,
           storedSavedRecipes,
           storedWeightLog,
@@ -132,6 +144,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           getApiKey(),
           getRecipeApiKey(),
           getLanguage(),
+          getSupabaseUrl(),
+          getSupabaseAnonKey(),
           getSubscription(),
           getSavedRecipes(),
           getWeightLog(),
@@ -143,6 +157,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setApiKeyState(storedKey);
         setRecipeApiKeyState(storedRecipeKey);
         setLanguageState(storedLanguage);
+        setSupabaseUrlState(storedSupabaseUrl);
+        setSupabaseAnonKeyState(storedSupabaseAnonKey);
         setSubscription(storedSubscription);
         setSavedRecipes(storedSavedRecipes);
         setWeightLog(storedWeightLog);
@@ -205,6 +221,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = useCallback(async (lang: LanguageCode) => {
     await persistLanguage(lang);
     setLanguageState(lang);
+  }, []);
+
+  const setSupabaseUrl = useCallback(async (url: string) => {
+    await persistSupabaseUrl(url);
+    setSupabaseUrlState(url);
+  }, []);
+
+  const setSupabaseAnonKey = useCallback(async (key: string) => {
+    await persistSupabaseAnonKey(key);
+    setSupabaseAnonKeyState(key);
   }, []);
 
   const t = useMemo(() => getTranslations(language), [language]);
@@ -292,6 +318,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       t,
       today,
       subscription,
+      supabaseUrl,
+      supabaseAnonKey,
+      setSupabaseUrl,
+      setSupabaseAnonKey,
       // On web, real purchases can never happen (no RevenueCat build for web),
       // so this preview unlocks premium automatically for testing -- the real
       // iOS/Android app still gates on the actual purchased entitlement below.
@@ -326,6 +356,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       t,
       today,
       subscription,
+      supabaseUrl,
+      supabaseAnonKey,
+      setSupabaseUrl,
+      setSupabaseAnonKey,
       customerInfo,
       completeOnboarding,
       updateProfile,

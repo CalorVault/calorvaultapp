@@ -98,3 +98,30 @@ export interface Recipe {
   /** Thumbnail background tint when there's no photo. */
   tint?: string;
 }
+
+export interface CommunityProfile {
+  id: string;
+  username: string;
+  createdAt: string;
+}
+
+export interface CommunityPost {
+  id: string;
+  authorId: string;
+  authorUsername: string;
+  caption: string;
+  photoUrl?: string;
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
+  commentCount: number;
+}
+
+export interface CommunityComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorUsername: string;
+  body: string;
+  createdAt: string;
+}

@@ -24,6 +24,8 @@ const KEYS = {
   waterPrefix: 'kailo:water:',
   waterTargetMl: 'kailo:waterTargetMl',
   reminderSettings: 'kailo:reminderSettings',
+  supabaseUrl: 'kailo:supabaseUrl',
+  supabaseAnonKey: 'kailo:supabaseAnonKey',
 };
 
 export const DEFAULT_WATER_TARGET_ML = 2000;
@@ -254,6 +256,22 @@ export async function getReminderSettings(): Promise<ReminderSettings> {
 
 export async function saveReminderSettings(settings: ReminderSettings): Promise<void> {
   await safeSetItem(KEYS.reminderSettings, JSON.stringify(settings));
+}
+
+export async function getSupabaseUrl(): Promise<string | null> {
+  return safeGetItem(KEYS.supabaseUrl);
+}
+
+export async function saveSupabaseUrl(url: string): Promise<void> {
+  await safeSetItem(KEYS.supabaseUrl, url);
+}
+
+export async function getSupabaseAnonKey(): Promise<string | null> {
+  return safeGetItem(KEYS.supabaseAnonKey);
+}
+
+export async function saveSupabaseAnonKey(key: string): Promise<void> {
+  await safeSetItem(KEYS.supabaseAnonKey, key);
 }
 
 export async function clearAllData(): Promise<void> {
