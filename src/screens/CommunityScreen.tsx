@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   RefreshControl,
@@ -350,6 +351,14 @@ function Feed({
     }
   }
 
+  function handleInviteFriend() {
+    const username = profile?.username;
+    if (!username) return;
+    const message = `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}`;
+    const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
+    Linking.openURL(smsUrl).catch(() => {});
+  }
+
   async function handlePickPhoto() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
@@ -461,6 +470,12 @@ function Feed({
                 )}
               </Pressable>
             </View>
+            <Pressable
+              style={({ pressed }) => [styles.inviteButton, pressed && styles.pressedDim]}
+              onPress={handleInviteFriend}
+            >
+              <Text style={styles.inviteButtonText}>{t.community.inviteFriendButton}</Text>
+            </Pressable>
             {friends.length > 0 && (
               <View style={styles.friendChipRow}>
                 {friends.map((f) => (
@@ -799,6 +814,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   friendChipText: { color: colors.primaryDark, fontWeight: '600', fontSize: 13 },
+  inviteButton: {
+    alignSelf: 'flex-start',
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+  },
+  inviteButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
   composerInput: {
     backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
