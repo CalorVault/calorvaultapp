@@ -1,4 +1,4 @@
-import { Recipe, RecipeCategory } from '../types';
+import { Recipe, RecipeCategory, RecipeIngredient } from '../types';
 
 const BASE = 'https://api.spoonacular.com';
 
@@ -87,6 +87,82 @@ export async function searchRecipesByMacros(
   const data = await res.json();
   const results: any[] = data.results ?? [];
   return results.map(toRecipe);
+}
+
+export interface RecipeMethod {
+  /** Per single serving, to match the per-serving nutrition shown everywhere else. */
+  ingredients: RecipeIngredient[];
+  steps: string[];
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+export async function getRecipeMethod(apiKey: string, recipeId: string): Promise<RecipeMethod> {
+  const params = new URLSearchParams({ apiKey, includeNutrition: 'false' });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/recipes/${encodeURIComponent(recipeId)}/information?${params}`);
+  } catch {
+    throw new Error("Couldn't reach the recipe service. Check your connection.");
+  }
+  if (!res.ok) throw new Error(await readErrorMessage(res));
+  const data = await res.json();
+  const recipeServings: number = data.servings > 0 ? data.servings : 1;
+
+  const ingredients: RecipeIngredient[] = (data.extendedIngredients ?? []).map((ing: any) => {
+    const metric = ing.measures?.metric;
+    const amount: number = metric?.amount ?? ing.amount ?? 0;
+    return {
+      amount: amount / recipeServings,
+      unit: metric?.unitShort ?? ing.unit ?? '',
+      name: ing.nameClean ?? ing.name ?? ing.original ?? '',
+    };
+  });
+
+  let steps: string[] = (data.analyzedInstructions?.[0]?.steps ?? []).map((s: any) =>
+    String(s.step).trim()
+  );
+  if (steps.length === 0 && typeof data.instructions === 'string' && data.instructions.trim()) {
+    steps = stripHtml(data.instructions)
+      .split(/\.\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => (s.endsWith('.') ? s : `${s}.`));
+  }
+  return { ingredients, steps };
+}
+
+// Only calories and a protein floor are filtered on: pinning all four macros
+// at once almost always returns nothing, and portion scaling in the meal
+// planner closes the remaining gap anyway.
+export async function searchRecipesForMeal(
+  apiKey: string,
+  category: RecipeCategory,
+  targets: { calories: number; proteinG: number }
+): Promise<Recipe[]> {
+  const params = new URLSearchParams({
+    apiKey,
+    number: '10',
+    addRecipeNutrition: 'true',
+    type: CATEGORY_TYPE[category],
+    minCalories: String(Math.round(targets.calories * 0.6)),
+    maxCalories: String(Math.round(targets.calories * 1.4)),
+    minProtein: String(Math.round(targets.proteinG * 0.5)),
+    sort: 'random',
+  });
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/recipes/complexSearch?${params.toString()}`);
+  } catch {
+    throw new Error("Couldn't reach the recipe service. Check your connection.");
+  }
+  if (!res.ok) throw new Error(await readErrorMessage(res));
+  const data = await res.json();
+  const results: any[] = data.results ?? [];
+  return results.map((raw) => ({ ...toRecipe(raw), category }));
 }
 
 export async function searchRecipes(

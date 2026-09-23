@@ -97,6 +97,38 @@ export interface Recipe {
   emoji?: string;
   /** Thumbnail background tint when there's no photo. */
   tint?: string;
+  /** Ingredients for one serving. Built-in recipes carry these; API recipes are fetched on demand. */
+  ingredients?: RecipeIngredient[];
+  /** Method, one step per entry. */
+  steps?: string[];
+}
+
+export interface RecipeIngredient {
+  amount: number;
+  /** e.g. "g", "ml", "tbsp"; empty for counted items like "2 eggs". */
+  unit: string;
+  name: string;
+}
+
+export interface PlannedMeal {
+  slot: RecipeCategory;
+  recipe: Recipe;
+  /** Portion multiplier applied to the recipe so the meal hits its share of the day. */
+  servings: number;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export interface DayMealPlan {
+  /** ISO date the plan was built for. */
+  date: string;
+  /** Calorie target the plan was built against, so a changed goal triggers a rebuild. */
+  calorieTarget: number;
+  meals: PlannedMeal[];
+  /** Meals from this plan already added to today's food log. */
+  loggedSlots?: RecipeCategory[];
 }
 
 export interface CommunityProfile {

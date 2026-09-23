@@ -20,6 +20,7 @@ import { HistoryScreen } from '../screens/HistoryScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { IntroScreen } from '../screens/IntroScreen';
 import { LogFoodScreen } from '../screens/LogFoodScreen';
+import { MealPlanScreen } from '../screens/MealPlanScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { RecipeDetailScreen } from '../screens/RecipeDetailScreen';
@@ -225,6 +226,20 @@ export function RootNavigator() {
         <Stack.Screen
           name="RecipeDetail"
           component={RecipeDetailScreen}
+          options={({ navigation }) => ({
+            headerShown: true,
+            title: '',
+            presentation: 'modal',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerLeft: () => (
+              <ModalCloseButton onPress={() => navigation.goBack()} />
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="MealPlan"
+          component={MealPlanScreen}
           options={({ navigation }) => ({
             headerShown: true,
             title: '',

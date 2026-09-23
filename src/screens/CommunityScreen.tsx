@@ -2,6 +2,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   Alert,
   FlatList,
@@ -37,6 +38,7 @@ import {
   toggleLike,
 } from '../lib/community';
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
+import { getHiddenPostIds, saveHiddenPostIds } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
 import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
 
@@ -315,14 +317,16 @@ function Feed({
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [myProfile, myFriends, feed] = await Promise.all([
+    const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
       getMyProfile(url, anonKey),
       listFriends(url, anonKey),
       listFeed(url, anonKey),
+      getHiddenPostIds(),
     ]);
+    const hidden = new Set(hiddenIds);
     setProfile(myProfile);
     setFriends(myFriends);
-    setPosts(feed);
+    setPosts(feed.filter((p) => !hidden.has(p.id)));
   }, [url, anonKey]);
 
   useEffect(() => {
@@ -452,17 +456,44 @@ function Feed({
     }
   }
 
+  // Your own posts are deleted for everyone. Other people's posts can't be
+  // (the database only lets authors delete), so "Delete" hides them from
+  // your feed on this device instead.
   function handleDeletePost(post: CommunityPost) {
-    Alert.alert(t.community.deletePostConfirmTitle, t.community.deletePostConfirmMsg, [
-      { text: t.common.cancel, style: 'cancel' },
-      {
-        text: t.community.delete,
-        style: 'destructive',
-        onPress: async () => {
+    const isMine = post.authorId === profile?.id;
+    const message = isMine
+      ? t.community.deletePostConfirmMsg
+      : `${t.community.hidePostMsgPrefix} @${post.authorUsername}.`;
+    async function remove() {
+      try {
+        if (isMine) {
           await deletePost(url, anonKey, post.id);
-          await load();
+        } else {
+          const hidden = await getHiddenPostIds();
+          await saveHiddenPostIds([...hidden, post.id]);
+        }
+        await load();
+      } catch (err) {
+        Alert.alert('', err instanceof Error ? err.message : String(err));
+      }
+    }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [t.common.cancel, t.community.delete],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+          message,
         },
-      },
+        (index) => {
+          if (index === 1) remove();
+        }
+      );
+      return;
+    }
+    Alert.alert(t.community.deletePostConfirmTitle, message, [
+      { text: t.common.cancel, style: 'cancel' },
+      { text: t.community.delete, style: 'destructive', onPress: remove },
     ]);
   }
 
@@ -591,7 +622,6 @@ function Feed({
           <PostCard
             post={item}
             t={t}
-            isMine={item.authorId === profile?.id}
             expanded={expandedPostId === item.id}
             onToggleExpand={() =>
               setExpandedPostId(expandedPostId === item.id ? null : item.id)
@@ -610,7 +640,6 @@ function Feed({
 function PostCard({
   post,
   t,
-  isMine,
   expanded,
   onToggleExpand,
   onToggleLike,
@@ -620,7 +649,6 @@ function PostCard({
 }: {
   post: CommunityPost;
   t: any;
-  isMine: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   onToggleLike: () => void;
@@ -660,7 +688,18 @@ function PostCard({
     <View style={styles.postCard}>
       <View style={styles.postHeader}>
         <Text style={styles.postAuthor}>@{post.authorUsername}</Text>
-        <Text style={styles.postTimestamp}>{formatTimestamp(post.createdAt)}</Text>
+        <View style={styles.postHeaderRight}>
+          <Text style={styles.postTimestamp}>{formatTimestamp(post.createdAt)}</Text>
+          <Pressable
+            style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
+            onPress={onDelete}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={t.community.delete}
+          >
+            <Text style={styles.postMenuDots}>•••</Text>
+          </Pressable>
+        </View>
       </View>
       {post.photoUrl && <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />}
       {!!post.caption && <Text style={styles.postCaption}>{post.caption}</Text>}
@@ -679,14 +718,6 @@ function PostCard({
         >
           <Text style={styles.postActionText}>💬 {post.commentCount}</Text>
         </Pressable>
-        {isMine && (
-          <Pressable
-            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
-            onPress={onDelete}
-          >
-            <Text style={styles.postActionTextDanger}>🗑️</Text>
-          </Pressable>
-        )}
       </View>
       {expanded && (
         <View style={styles.commentsWrap}>
@@ -900,7 +931,10 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
   },
-  postHeader: { flexDirection: 'row', justifyContent: 'space-between' },
+  postHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  postHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  postMenuButton: { paddingHorizontal: spacing.xs, paddingVertical: 2 },
+  postMenuDots: { color: colors.textMuted, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   postAuthor: { color: colors.text, fontWeight: '700', fontSize: 14 },
   postTimestamp: { color: colors.textMuted, fontSize: 12 },
   postPhoto: { width: '100%', height: 220, borderRadius: radius.md },
@@ -908,7 +942,6 @@ const styles = StyleSheet.create({
   postActions: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
   postActionButton: { paddingVertical: spacing.xs },
   postActionText: { color: colors.textMuted, fontWeight: '600', fontSize: 13 },
-  postActionTextDanger: { color: colors.danger, fontWeight: '600', fontSize: 13 },
   commentsWrap: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
   commentRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
   commentAuthor: { color: colors.text, fontWeight: '700', fontSize: 13 },

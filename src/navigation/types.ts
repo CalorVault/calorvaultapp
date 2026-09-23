@@ -10,7 +10,8 @@ export type RootStackParamList = {
   DayDetail: { date: string };
   LogFood: { initialTab?: LogFoodTab; autoStartVoice?: boolean } | undefined;
   Paywall: undefined;
-  RecipeDetail: { recipe: Recipe };
+  RecipeDetail: { recipe: Recipe; servings?: number };
+  MealPlan: undefined;
   ShareDay: {
     calories: number;
     target: number;

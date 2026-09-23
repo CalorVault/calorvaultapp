@@ -145,6 +145,22 @@ export function RecipesScreen() {
               </Pressable>
             </View>
 
+            {plan && (
+              <Pressable
+                style={({ pressed }) => [styles.planBanner, pressed && styles.pressedDim]}
+                onPress={() => navigation.navigate('MealPlan')}
+              >
+                <Text style={styles.planBannerEmoji}>🍽️</Text>
+                <View style={styles.planBannerText}>
+                  <Text style={styles.planBannerTitle}>{t.mealPlan.bannerTitle}</Text>
+                  <Text style={styles.planBannerCopy}>
+                    {plan.calorieTarget.toLocaleString()} kcal · {t.mealPlan.bannerCopy}
+                  </Text>
+                </View>
+                <Text style={styles.planBannerChevron}>›</Text>
+              </Pressable>
+            )}
+
             <View style={styles.subTabRow}>
               <Pressable style={styles.subTabButton} onPress={() => setSubTab('discover')}>
                 <Text style={[styles.subTabText, subTab === 'discover' && styles.subTabTextActive]}>
@@ -370,6 +386,20 @@ function RecipeCard({
 }
 
 const styles = StyleSheet.create({
+  planBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.primaryMuted,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+  planBannerEmoji: { fontSize: 28 },
+  planBannerText: { flex: 1, gap: 2 },
+  planBannerTitle: { color: colors.primaryDark, fontSize: 16, fontWeight: '700' },
+  planBannerCopy: { color: colors.primaryDark, fontSize: 13 },
+  planBannerChevron: { color: colors.primaryDark, fontSize: 26, fontWeight: '600' },
   pressedDim: { opacity: 0.6 },
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: spacing.lg, paddingBottom: spacing.xl * 3 },

@@ -3,6 +3,7 @@ import { DEFAULT_LANGUAGE, isLanguageCode, LanguageCode } from '../i18n/language
 import {
   DailyPlan,
   DayLog,
+  DayMealPlan,
   FoodEntry,
   ReminderSettings,
   Recipe,
@@ -26,6 +27,8 @@ const KEYS = {
   reminderSettings: 'kailo:reminderSettings',
   supabaseUrl: 'kailo:supabaseUrl',
   supabaseAnonKey: 'kailo:supabaseAnonKey',
+  mealPlan: 'kailo:mealPlan',
+  hiddenPosts: 'kailo:hiddenPosts',
 };
 
 export const DEFAULT_WATER_TARGET_ML = 2000;
@@ -196,6 +199,24 @@ export async function getRecentUniqueFoodEntries(
 // Saved recipes are stored as full snapshots (not just ids) so a bookmarked
 // recipe from the live API still shows correctly later even if the search
 // results that produced it are long gone, or the API key is removed.
+export async function getHiddenPostIds(): Promise<string[]> {
+  const raw = await safeGetItem(KEYS.hiddenPosts);
+  return raw ? (JSON.parse(raw) as string[]) : [];
+}
+
+export async function saveHiddenPostIds(ids: string[]): Promise<void> {
+  await safeSetItem(KEYS.hiddenPosts, JSON.stringify(ids));
+}
+
+export async function getMealPlan(): Promise<DayMealPlan | null> {
+  const raw = await safeGetItem(KEYS.mealPlan);
+  return raw ? (JSON.parse(raw) as DayMealPlan) : null;
+}
+
+export async function saveMealPlan(plan: DayMealPlan): Promise<void> {
+  await safeSetItem(KEYS.mealPlan, JSON.stringify(plan));
+}
+
 export async function getSavedRecipes(): Promise<Recipe[]> {
   const raw = await safeGetItem(KEYS.savedRecipes);
   return raw ? (JSON.parse(raw) as Recipe[]) : [];
