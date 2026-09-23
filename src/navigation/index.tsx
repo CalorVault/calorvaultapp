@@ -1,5 +1,5 @@
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -169,6 +169,22 @@ const navTheme = {
   },
 };
 
+// Lets an "add me" invite link (calorvault://add-friend/<username>) jump
+// straight to the Community tab with that username ready to add, instead of
+// the recipient having to type it in by hand.
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['calorvault://'],
+  config: {
+    screens: {
+      Main: {
+        screens: {
+          Community: 'add-friend/:pendingFriendUsername',
+        },
+      },
+    },
+  },
+};
+
 export function RootNavigator() {
   const { loading, profile, t } = useApp();
   const [showIntro, setShowIntro] = useState(true);
@@ -184,7 +200,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen

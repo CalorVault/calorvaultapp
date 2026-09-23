@@ -110,7 +110,10 @@ const en = {
     addFriendFailedTitle: "Couldn't add friend",
     inviteFriendButton: 'Invite a friend by message',
     inviteMessagePrefix: "Add me on CalorVault! My username is",
-    inviteMessageSuffix: ' — download the app and add me to see each other\'s meals.',
+    inviteMessageSuffix:
+      " — get the app, then open this link to add me automatically (works once it's installed):",
+    autoAddedTitle: 'Friend added',
+    autoAddedMsgPrefix: "You're now following",
     noFriendsYet: 'Add friends by username to see their posts here.',
     composerPlaceholder: 'What did you eat today?',
     addPhoto: 'Add photo',

@@ -2,6 +2,7 @@
   "expo": {
     "name": "CalorVault",
     "slug": "Fitness-calorie-App",
+    "scheme": "calorvault",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

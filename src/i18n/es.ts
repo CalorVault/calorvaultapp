@@ -108,7 +108,10 @@ const es: Translations = {
     addFriendFailedTitle: 'No se pudo añadir al amigo',
     inviteFriendButton: 'Invitar a un amigo por mensaje',
     inviteMessagePrefix: '¡Agrégame en CalorVault! Mi nombre de usuario es',
-    inviteMessageSuffix: ' — descarga la app y agrégame para ver las comidas del otro.',
+    inviteMessageSuffix:
+      ' — descarga la app y luego abre este enlace para agregarme automáticamente (funciona una vez instalada):',
+    autoAddedTitle: 'Amigo añadido',
+    autoAddedMsgPrefix: 'Ahora sigues a',
     noFriendsYet: 'Añade amigos por su nombre de usuario para ver sus publicaciones aquí.',
     composerPlaceholder: '¿Qué comiste hoy?',
     addPhoto: 'Añadir foto',

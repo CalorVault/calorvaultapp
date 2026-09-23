@@ -108,7 +108,10 @@ const de: Translations = {
     addFriendFailedTitle: 'Freund konnte nicht hinzugefügt werden',
     inviteFriendButton: 'Freund per Nachricht einladen',
     inviteMessagePrefix: 'Füg mich bei CalorVault hinzu! Mein Benutzername ist',
-    inviteMessageSuffix: ' — lade die App herunter und füg mich hinzu, um unsere Mahlzeiten zu sehen.',
+    inviteMessageSuffix:
+      ' — lade die App herunter und öffne dann diesen Link, um mich automatisch hinzuzufügen (funktioniert nach der Installation):',
+    autoAddedTitle: 'Freund hinzugefügt',
+    autoAddedMsgPrefix: 'Du folgst jetzt',
     noFriendsYet: 'Füge Freunde per Benutzername hinzu, um ihre Beiträge hier zu sehen.',
     composerPlaceholder: 'Was hast du heute gegessen?',
     addPhoto: 'Foto hinzufügen',

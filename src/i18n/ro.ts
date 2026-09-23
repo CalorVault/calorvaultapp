@@ -108,7 +108,10 @@ const ro: Translations = {
     addFriendFailedTitle: 'Nu am putut adăuga prietenul',
     inviteFriendButton: 'Invită un prieten prin mesaj',
     inviteMessagePrefix: 'Adaugă-mă pe CalorVault! Numele meu de utilizator este',
-    inviteMessageSuffix: ' — descarcă aplicația și adaugă-mă ca să vedem mesele unul altuia.',
+    inviteMessageSuffix:
+      ' — descarcă aplicația, apoi deschide acest link ca să mă adaugi automat (funcționează după instalare):',
+    autoAddedTitle: 'Prieten adăugat',
+    autoAddedMsgPrefix: 'Acum îl urmărești pe',
     noFriendsYet: 'Adaugă prieteni după numele de utilizator ca să le vezi postările aici.',
     composerPlaceholder: 'Ce ai mâncat azi?',
     addPhoto: 'Adaugă poză',

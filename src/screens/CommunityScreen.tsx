@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,7 +36,7 @@ import {
   signUp,
   toggleLike,
 } from '../lib/community';
-import { RecipesScreenNavigationProp } from '../navigation/types';
+import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
 
@@ -51,8 +51,10 @@ function formatTimestamp(iso: string): string {
 }
 
 export function CommunityScreen() {
-  const navigation = useNavigation<RecipesScreenNavigationProp>();
+  const navigation = useNavigation<CommunityScreenNavigationProp>();
+  const route = useRoute<RouteProp<MainTabParamList, 'Community'>>();
   const { t, supabaseUrl, supabaseAnonKey } = useApp();
+  const pendingFriendUsername = route.params?.pendingFriendUsername;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return (
@@ -81,11 +83,13 @@ export function CommunityScreen() {
       anonKey={supabaseAnonKey}
       t={t}
       navigation={navigation}
+      pendingFriendUsername={pendingFriendUsername}
+      onConsumedPendingFriend={() => navigation.setParams({ pendingFriendUsername: undefined })}
     />
   );
 }
 
-function CommunityTopBar({ t, navigation }: { t: any; navigation: RecipesScreenNavigationProp }) {
+function CommunityTopBar({ t, navigation }: { t: any; navigation: CommunityScreenNavigationProp }) {
   return (
     <View style={styles.topBar}>
       <View style={styles.titleRow}>
@@ -110,11 +114,15 @@ function CommunityConfigured({
   anonKey,
   t,
   navigation,
+  pendingFriendUsername,
+  onConsumedPendingFriend,
 }: {
   url: string;
   anonKey: string;
   t: any;
-  navigation: RecipesScreenNavigationProp;
+  navigation: CommunityScreenNavigationProp;
+  pendingFriendUsername?: string;
+  onConsumedPendingFriend: () => void;
 }) {
   const [checking, setChecking] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
@@ -159,7 +167,14 @@ function CommunityConfigured({
   return (
     <SafeAreaView style={styles.flex} edges={['top']}>
       <CommunityTopBar t={t} navigation={navigation} />
-      <Feed url={url} anonKey={anonKey} t={t} onSignedOut={() => setSignedIn(false)} />
+      <Feed
+        url={url}
+        anonKey={anonKey}
+        t={t}
+        onSignedOut={() => setSignedIn(false)}
+        pendingFriendUsername={pendingFriendUsername}
+        onConsumedPendingFriend={onConsumedPendingFriend}
+      />
     </SafeAreaView>
   );
 }
@@ -276,11 +291,15 @@ function Feed({
   anonKey,
   t,
   onSignedOut,
+  pendingFriendUsername,
+  onConsumedPendingFriend,
 }: {
   url: string;
   anonKey: string;
   t: any;
   onSignedOut: () => void;
+  pendingFriendUsername?: string;
+  onConsumedPendingFriend: () => void;
 }) {
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
   const [friends, setFriends] = useState<CommunityProfile[]>([]);
@@ -310,6 +329,32 @@ function Feed({
     setLoading(true);
     load().finally(() => setLoading(false));
   }, [load]);
+
+  const consumingFriendRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (loading || !pendingFriendUsername || !profile) return;
+    if (consumingFriendRef.current === pendingFriendUsername) return;
+    consumingFriendRef.current = pendingFriendUsername;
+    if (pendingFriendUsername.toLowerCase() === profile.username.toLowerCase()) {
+      onConsumedPendingFriend();
+      return;
+    }
+    (async () => {
+      try {
+        await addFriendByUsername(url, anonKey, pendingFriendUsername);
+        await load();
+        Alert.alert(t.community.autoAddedTitle, `${t.community.autoAddedMsgPrefix} @${pendingFriendUsername}`);
+      } catch (err) {
+        Alert.alert(
+          t.community.addFriendFailedTitle,
+          err instanceof CommunityError || err instanceof Error ? err.message : String(err)
+        );
+      } finally {
+        onConsumedPendingFriend();
+      }
+    })();
+  }, [loading, pendingFriendUsername, profile, url, anonKey, load, onConsumedPendingFriend, t]);
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -354,7 +399,8 @@ function Feed({
   function handleInviteFriend() {
     const username = profile?.username;
     if (!username) return;
-    const message = `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}`;
+    const deepLink = `calorvault://add-friend/${encodeURIComponent(username)}`;
+    const message = `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}\n${deepLink}`;
     const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
     Linking.openURL(smsUrl).catch(() => {});
   }
