@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
 import { MealIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
-import { recipeImage, recipePhotoCredit } from '../data/recipePhotos';
+import { recipeImage } from '../data/recipePhotos';
 import { servingsText } from '../lib/mealPlan';
 import { getRecipeMethod, RecipeMethod } from '../lib/recipeApi';
 import { RootStackParamList } from '../navigation/types';
@@ -129,7 +128,6 @@ export function RecipeDetailScreen() {
   }
 
   const image = recipeImage(recipe);
-  const credit = recipePhotoCredit(recipe);
 
   return (
     <SafeAreaView style={styles.flex} edges={['bottom']}>
@@ -139,18 +137,6 @@ export function RecipeDetailScreen() {
           <Image source={image} style={styles.heroImage} />
         ) : (
           <Text style={styles.heroEmoji}>{recipe.emoji}</Text>
-        )}
-        {credit && (
-          <Pressable
-            style={styles.photoCredit}
-            onPress={() => Linking.openURL(credit.url)}
-            hitSlop={6}
-            accessibilityRole="link"
-          >
-            <Text style={styles.photoCreditText} numberOfLines={1}>
-              {t.recipes.photoBy} {credit.author} · {credit.license}
-            </Text>
-          </Pressable>
         )}
       </View>
       <View style={styles.body}>
@@ -222,6 +208,7 @@ export function RecipeDetailScreen() {
             ))}
           </View>
         )}
+
       </View>
       </ScrollView>
     </SafeAreaView>
@@ -260,17 +247,6 @@ const styles = StyleSheet.create({
   },
   heroEmoji: { fontSize: 72 },
   heroImage: { width: '100%', height: '100%' },
-  photoCredit: {
-    position: 'absolute',
-    right: spacing.sm,
-    bottom: spacing.sm,
-    maxWidth: '80%',
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  photoCreditText: { color: colors.white, fontSize: 10 },
   body: { padding: spacing.lg },
   name: {
     color: colors.text,

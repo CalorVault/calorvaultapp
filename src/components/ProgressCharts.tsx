@@ -494,47 +494,16 @@ export function MacroGoalChart({
   );
 }
 
-export function StatTile({
-  label,
-  value,
-  sub,
-  subColor,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  subColor?: string;
-}) {
-  return (
-    <View style={panelStyles.tile}>
-      <Text style={panelStyles.tileLabel} numberOfLines={1}>
-        {label}
-      </Text>
-      <Text style={panelStyles.tileValue} numberOfLines={1} adjustsFontSizeToFit>
-        {value}
-      </Text>
-      {sub ? (
-        <View style={panelStyles.tileSubRow}>
-          {subColor ? <View style={[panelStyles.swatch, { backgroundColor: subColor }]} /> : null}
-          <Text style={panelStyles.tileSub} numberOfLines={1}>
-            {sub}
-          </Text>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-export function PanelLegendItem({ color, label, percent, suffix }: { color: string; label: string; percent: number; suffix: string }) {
+export function PanelLegendItem({ color, label, percent }: { color: string; label: string; percent: number }) {
   return (
     <View style={panelStyles.legendItem}>
       <View style={panelStyles.legendKey}>
         <View style={[panelStyles.swatch, { backgroundColor: color }]} />
-        <Text style={panelStyles.legendLabel}>{label}</Text>
+        <Text style={panelStyles.legendLabel} numberOfLines={1}>
+          {label}
+        </Text>
       </View>
-      <Text style={panelStyles.legendValue}>
-        {percent}%<Text style={panelStyles.legendSuffix}> {suffix}</Text>
-      </Text>
+      <Text style={panelStyles.legendValue}>{percent}%</Text>
     </View>
   );
 }
@@ -551,22 +520,15 @@ export const panelStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
-  tiles: { flexDirection: 'row', gap: spacing.sm },
-  tile: { flex: 1, backgroundColor: PANEL.tile, borderRadius: radius.md, padding: 10, gap: 2 },
-  tileLabel: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
-  tileValue: { color: PANEL.text, fontSize: 17, fontWeight: '700' },
-  tileSubRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  tileSub: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   title: { color: PANEL.text, fontSize: 17, fontWeight: '700' },
   meta: { color: PANEL.muted, fontSize: 12, fontWeight: '600' },
   legendRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  legendItem: { gap: 2 },
+  legendItem: { flex: 1, gap: 2 },
   legendKey: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   swatch: { width: 10, height: 10, borderRadius: 2 },
   legendLabel: { color: PANEL.muted, fontSize: 12, fontWeight: '600' },
-  legendValue: { color: PANEL.text, fontSize: 16, fontWeight: '700' },
-  legendSuffix: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
+  legendValue: { color: PANEL.text, fontSize: 20, fontWeight: '700' },
   detail: {
     flexDirection: 'row',
     alignItems: 'center',

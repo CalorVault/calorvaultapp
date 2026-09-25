@@ -151,7 +151,6 @@ const ro: Translations = {
     },
     apiPrompt:
       'Vrei mai multe opțiuni? Adaugă o cheie API gratuită pentru rețete în Setări ca să cauți mii de alte rețete →',
-    photoBy: 'Foto:',
     recommendedToday: 'Recomandate azi',
     savedRecipes: 'Rețete salvate',
     resultsFor: 'Rezultate pentru',
@@ -271,6 +270,7 @@ const ro: Translations = {
     recentEmpty: 'Mesele pe care le-ai adăugat înainte vor apărea aici, ca să le adaugi din nou dintr-o atingere.',
   },
   settings: {
+    photoCredits: 'Credite foto',
     title: 'Setări',
     subscriptionSection: 'Abonament',
     status: 'Status',

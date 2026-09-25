@@ -153,7 +153,6 @@ const en = {
     },
     apiPrompt:
       'Want more choice? Add a free recipe API key in Settings to search thousands more recipes →',
-    photoBy: 'Photo:',
     recommendedToday: 'Recommended for Today',
     savedRecipes: 'Saved Recipes',
     resultsFor: 'Results for',
@@ -274,6 +273,7 @@ const en = {
       "Meals you've logged before will show up here so you can log them again in one tap.",
   },
   settings: {
+    photoCredits: 'Photo credits',
     title: 'Settings',
     subscriptionSection: 'Subscription',
     status: 'Status',

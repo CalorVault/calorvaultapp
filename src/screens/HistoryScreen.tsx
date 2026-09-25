@@ -17,7 +17,6 @@ import {
   PanelLegendItem,
   PANEL,
   panelStyles,
-  StatTile,
   DayMacros,
   hitAllGoals,
   MACRO_ORDER,
@@ -209,29 +208,11 @@ export function HistoryScreen() {
 
         {plan && goals && (
           <View style={panelStyles.card}>
-            <View style={panelStyles.tiles}>
-              <StatTile label={t.progress.allGoalsHit} value={`${goals.hitDays}/${range} ${t.progress.days}`} />
-              <StatTile label={t.progress.streak} value={`${goals.streak} ${t.progress.days}`} />
-              <StatTile
-                label={t.progress.biggestGap}
-                value={
-                  stats.loggedCount === 0
-                    ? '–'
-                    : goals.gap >= 0 || goals.percents[goals.worst] >= 95
-                    ? t.progress.onTrack
-                    : `${goals.gap}g`
-                }
-                sub={
-                  stats.loggedCount > 0 && goals.gap < 0 && goals.percents[goals.worst] < 95
-                    ? `${({ proteinG: t.onboarding.protein, fatG: t.onboarding.fat, carbsG: t.onboarding.carbs })[goals.worst]} ${t.progress.perDay}`
-                    : undefined
-                }
-                subColor={MACRO_ORDER.find((m) => m.key === goals.worst)?.color}
-              />
-            </View>
             <View style={panelStyles.headerRow}>
               <Text style={panelStyles.title}>{t.progress.macrosVsGoal}</Text>
-              <Text style={panelStyles.meta}>{range === 7 ? t.progress.range7 : t.progress.range30}</Text>
+              <Text style={panelStyles.meta}>
+                {range === 7 ? t.progress.range7 : t.progress.range30} · {t.progress.avgOfGoal}
+              </Text>
             </View>
             <View style={panelStyles.legendRow}>
               {MACRO_ORDER.map((m) => (
@@ -240,7 +221,6 @@ export function HistoryScreen() {
                   color={m.color}
                   label={({ proteinG: t.onboarding.protein, fatG: t.onboarding.fat, carbsG: t.onboarding.carbs })[m.key]}
                   percent={goals.percents[m.key]}
-                  suffix={t.progress.avgOfGoal}
                 />
               ))}
             </View>

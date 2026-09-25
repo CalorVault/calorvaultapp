@@ -187,6 +187,7 @@ export function recipeImage(recipe: Recipe): ImageSourcePropType | null {
   return PHOTOS[recipe.id] ?? null;
 }
 
-export function recipePhotoCredit(recipe: Recipe): PhotoCredit | null {
-  return recipe.imageUrl ? null : CREDITS[recipe.id] ?? null;
+/** Every bundled photo's credit, for the Photo credits list in Settings. */
+export function allPhotoCredits(): { recipeId: string; credit: PhotoCredit }[] {
+  return Object.entries(CREDITS).map(([recipeId, credit]) => ({ recipeId, credit }));
 }

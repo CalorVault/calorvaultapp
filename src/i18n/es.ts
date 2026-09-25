@@ -151,7 +151,6 @@ const es: Translations = {
     },
     apiPrompt:
       '¿Quieres más opciones? Añade una clave API de recetas gratuita en Ajustes para buscar miles de recetas más →',
-    photoBy: 'Foto:',
     recommendedToday: 'Recomendado para hoy',
     savedRecipes: 'Recetas guardadas',
     resultsFor: 'Resultados para',
@@ -271,6 +270,7 @@ const es: Translations = {
     recentEmpty: 'Las comidas que hayas registrado antes aparecerán aquí para registrarlas de nuevo con un toque.',
   },
   settings: {
+    photoCredits: 'Créditos de fotos',
     title: 'Ajustes',
     subscriptionSection: 'Suscripción',
     status: 'Estado',

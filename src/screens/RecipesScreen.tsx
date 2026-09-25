@@ -55,6 +55,7 @@ export function RecipesScreen() {
   const [macroCarbs, setMacroCarbs] = useState(plan ? String(Math.round(plan.carbsG / 3)) : '');
   const [macroFat, setMacroFat] = useState(plan ? String(Math.round(plan.fatG / 3)) : '');
   const [macroResults, setMacroResults] = useState<Recipe[] | null>(null);
+  const [bannerSize, setBannerSize] = useState<{ width: number; height: number } | null>(null);
 
   function handleFindByMacros() {
     setMacroResults(
@@ -142,16 +143,35 @@ export function RecipesScreen() {
               <Pressable
                 style={({ pressed }) => [styles.planBanner, pressed && styles.pressedDim]}
                 onPress={() => navigation.navigate('MealPlan')}
+                onLayout={(e) => {
+                  const { width, height } = e.nativeEvent.layout;
+                  if (width !== bannerSize?.width || height !== bannerSize?.height) {
+                    setBannerSize({ width, height });
+                  }
+                }}
               >
-                <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
-                  <Defs>
-                    <LinearGradient id="planBannerBg" x1="0" y1="0" x2="1" y2="1">
-                      <Stop offset="0" stopColor={colors.primaryDark} />
-                      <Stop offset="1" stopColor={colors.primary} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect width="100%" height="100%" fill="url(#planBannerBg)" />
-                </Svg>
+                {/* Percentage sizes don't fill the card on iOS, so draw at the measured size. */}
+                {bannerSize && (
+                  <Svg
+                    style={StyleSheet.absoluteFill}
+                    width={bannerSize.width}
+                    height={bannerSize.height}
+                  >
+                    <Defs>
+                      <LinearGradient id="planBannerBg" x1="0" y1="0" x2="1" y2="1">
+                        <Stop offset="0" stopColor={colors.primaryDark} />
+                        <Stop offset="1" stopColor={colors.primary} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x={0}
+                      y={0}
+                      width={bannerSize.width}
+                      height={bannerSize.height}
+                      fill="url(#planBannerBg)"
+                    />
+                  </Svg>
+                )}
                 <View style={styles.planBannerBadge}>
                   <PlanDayIcon size={28} color={colors.white} />
                 </View>

@@ -151,7 +151,6 @@ const it: Translations = {
     },
     apiPrompt:
       'Vuoi più scelta? Aggiungi una chiave API gratuita per le ricette nelle Impostazioni per cercare migliaia di altre ricette →',
-    photoBy: 'Foto:',
     recommendedToday: 'Consigliato per oggi',
     savedRecipes: 'Ricette salvate',
     resultsFor: 'Risultati per',
@@ -271,6 +270,7 @@ const it: Translations = {
     recentEmpty: 'I pasti già registrati appariranno qui per registrarli di nuovo con un tocco.',
   },
   settings: {
+    photoCredits: 'Crediti fotografici',
     title: 'Impostazioni',
     subscriptionSection: 'Abbonamento',
     status: 'Stato',

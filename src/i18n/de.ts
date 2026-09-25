@@ -151,7 +151,6 @@ const de: Translations = {
     },
     apiPrompt:
       'Mehr Auswahl? Füge in den Einstellungen einen kostenlosen Rezept-API-Schlüssel hinzu, um Tausende weitere Rezepte zu suchen →',
-    photoBy: 'Foto:',
     recommendedToday: 'Heute empfohlen',
     savedRecipes: 'Gespeicherte Rezepte',
     resultsFor: 'Ergebnisse für',
@@ -271,6 +270,7 @@ const de: Translations = {
     recentEmpty: 'Bereits erfasste Mahlzeiten erscheinen hier, damit du sie mit einem Tipp erneut erfassen kannst.',
   },
   settings: {
+    photoCredits: 'Bildnachweise',
     title: 'Einstellungen',
     subscriptionSection: 'Abonnement',
     status: 'Status',

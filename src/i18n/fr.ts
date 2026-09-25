@@ -151,7 +151,6 @@ const fr: Translations = {
     },
     apiPrompt:
       'Envie de plus de choix ? Ajoute une clé API de recettes gratuite dans les Réglages pour chercher des milliers d’autres recettes →',
-    photoBy: 'Photo :',
     recommendedToday: 'Recommandé aujourd’hui',
     savedRecipes: 'Recettes enregistrées',
     resultsFor: 'Résultats pour',
@@ -271,6 +270,7 @@ const fr: Translations = {
     recentEmpty: 'Les repas que tu as déjà ajoutés apparaîtront ici pour les ajouter à nouveau en un geste.',
   },
   settings: {
+    photoCredits: 'Crédits photo',
     title: 'Réglages',
     subscriptionSection: 'Abonnement',
     status: 'Statut',

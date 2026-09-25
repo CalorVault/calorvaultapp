@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
+import { RECIPES } from '../data/recipes';
+import { allPhotoCredits } from '../data/recipePhotos';
 import { LANGUAGES } from '../i18n';
 import { exportBackup } from '../lib/dataExport';
 import { formatPrice } from '../lib/pricing';
@@ -489,6 +492,8 @@ export function SettingsScreen() {
         >
           <Text style={styles.dangerButtonText}>{t.settings.resetDataButton}</Text>
         </Pressable>
+
+        <PhotoCredits title={t.settings.photoCredits} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -502,6 +507,29 @@ function formatHourMinute(time: string): string {
   return `${hour12}:${minuteStr} ${period}`;
 }
 
+// Recipe photos are Creative Commons, which requires crediting each photographer.
+function PhotoCredits({ title }: { title: string }) {
+  const [open, setOpen] = useState(false);
+  const names = new Map(RECIPES.map((r) => [r.id, r.name]));
+  return (
+    <View style={styles.creditsBlock}>
+      <Pressable onPress={() => setOpen((o) => !o)} hitSlop={8}>
+        <Text style={styles.creditsToggle}>
+          {title} {open ? '▾' : '›'}
+        </Text>
+      </Pressable>
+      {open &&
+        allPhotoCredits().map(({ recipeId, credit }) => (
+          <Pressable key={recipeId} onPress={() => Linking.openURL(credit.url)}>
+            <Text style={styles.creditsLine}>
+              {names.get(recipeId) ?? recipeId}: {credit.author} · {credit.license}
+            </Text>
+          </Pressable>
+        ))}
+    </View>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.row}>
@@ -513,6 +541,9 @@ function Row({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   pressedDim: { opacity: 0.6 },
+  creditsBlock: { marginTop: spacing.lg, gap: 4, alignItems: 'center' },
+  creditsToggle: { color: colors.textMuted, fontSize: 12 },
+  creditsLine: { color: colors.textMuted, fontSize: 11, textAlign: 'center' },
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: spacing.lg, paddingBottom: spacing.xl * 2, gap: spacing.sm },
   title: { color: colors.text, fontSize: 24, fontWeight: '700', marginBottom: spacing.sm },
