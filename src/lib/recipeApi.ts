@@ -47,48 +47,6 @@ async function readErrorMessage(res: Response): Promise<string> {
   return `Recipe search failed (${res.status}).`;
 }
 
-export interface MacroTargets {
-  calories?: number;
-  proteinG?: number;
-  carbsG?: number;
-  fatG?: number;
-}
-
-const MACRO_TOLERANCE = 0.25;
-
-export async function searchRecipesByMacros(
-  apiKey: string,
-  targets: MacroTargets
-): Promise<Recipe[]> {
-  const params = new URLSearchParams({
-    apiKey,
-    number: '20',
-    addRecipeNutrition: 'true',
-    sort: 'popularity',
-  });
-
-  function setRange(paramName: string, value: number | undefined) {
-    if (!value || value <= 0) return;
-    params.set(`min${paramName}`, String(Math.round(value * (1 - MACRO_TOLERANCE))));
-    params.set(`max${paramName}`, String(Math.round(value * (1 + MACRO_TOLERANCE))));
-  }
-  setRange('Calories', targets.calories);
-  setRange('Protein', targets.proteinG);
-  setRange('Carbs', targets.carbsG);
-  setRange('Fat', targets.fatG);
-
-  let res: Response;
-  try {
-    res = await fetch(`${BASE}/recipes/complexSearch?${params.toString()}`);
-  } catch {
-    throw new Error("Couldn't reach the recipe service. Check your connection.");
-  }
-  if (!res.ok) throw new Error(await readErrorMessage(res));
-  const data = await res.json();
-  const results: any[] = data.results ?? [];
-  return results.map(toRecipe);
-}
-
 export interface RecipeMethod {
   /** Per single serving, to match the per-serving nutrition shown everywhere else. */
   ingredients: RecipeIngredient[];
@@ -132,37 +90,6 @@ export async function getRecipeMethod(apiKey: string, recipeId: string): Promise
       .map((s) => (s.endsWith('.') ? s : `${s}.`));
   }
   return { ingredients, steps };
-}
-
-// Only calories and a protein floor are filtered on: pinning all four macros
-// at once almost always returns nothing, and portion scaling in the meal
-// planner closes the remaining gap anyway.
-export async function searchRecipesForMeal(
-  apiKey: string,
-  category: RecipeCategory,
-  targets: { calories: number; proteinG: number }
-): Promise<Recipe[]> {
-  const params = new URLSearchParams({
-    apiKey,
-    number: '10',
-    addRecipeNutrition: 'true',
-    type: CATEGORY_TYPE[category],
-    minCalories: String(Math.round(targets.calories * 0.6)),
-    maxCalories: String(Math.round(targets.calories * 1.4)),
-    minProtein: String(Math.round(targets.proteinG * 0.5)),
-    sort: 'random',
-  });
-
-  let res: Response;
-  try {
-    res = await fetch(`${BASE}/recipes/complexSearch?${params.toString()}`);
-  } catch {
-    throw new Error("Couldn't reach the recipe service. Check your connection.");
-  }
-  if (!res.ok) throw new Error(await readErrorMessage(res));
-  const data = await res.json();
-  const results: any[] = data.results ?? [];
-  return results.map((raw) => ({ ...toRecipe(raw), category }));
 }
 
 export async function searchRecipes(

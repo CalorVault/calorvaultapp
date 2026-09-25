@@ -4,14 +4,14 @@ import Svg, { Circle, Line, Path, Polyline, Text as SvgText } from 'react-native
 import { colors, radius, spacing } from '../theme';
 import { Goal, WeightEntry } from '../types';
 
-const DARK = {
-  card: colors.ink,
-  grid: '#374151',
-  text: colors.white,
-  muted: '#9CA3AF',
-  good: '#5FA37E',
-  bad: '#F87171',
-};
+const PANEL = {
+  card: colors.surface,
+  grid: '#EDEEF1',
+  text: colors.ink,
+  muted: colors.textMuted,
+  good: colors.primary,
+  bad: colors.danger,
+}
 const PLOT_HEIGHT = 130;
 const PAD_Y = 12;
 const AXIS_WIDTH = 44;
@@ -89,8 +89,8 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
   const x = (i: number) =>
     AXIS_WIDTH + (points.length === 1 ? plotW / 2 : 8 + (i / (points.length - 1)) * (plotW - 16));
   const coords = values.map((v, i) => ({ x: x(i), y: y(v), v }));
-  const lineColor = onTrack ? DARK.good : DARK.bad;
-  const pointColor = (v: number) => (!directional || v >= 0 ? DARK.good : DARK.bad);
+  const lineColor = onTrack ? PANEL.good : PANEL.bad;
+  const pointColor = (v: number) => (!directional || v >= 0 ? PANEL.good : PANEL.bad);
   const area =
     coords.length > 1
       ? `M${coords[0].x},${y(0)} ` +
@@ -104,7 +104,7 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
         <Text style={styles.title}>{labels.title}</Text>
         <View style={styles.headerRight}>
           <Text style={styles.current}>{current} kg</Text>
-          <Text style={[styles.summary, { color: onTrack ? DARK.good : DARK.bad }]}>{summary}</Text>
+          <Text style={[styles.summary, { color: onTrack ? PANEL.good : PANEL.bad }]}>{summary}</Text>
         </View>
       </View>
       <View onLayout={onLayout}>
@@ -117,7 +117,7 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
                   x2={width}
                   y1={y(v)}
                   y2={y(v)}
-                  stroke={v === 0 ? DARK.text : DARK.grid}
+                  stroke={v === 0 ? PANEL.text : PANEL.grid}
                   strokeWidth={v === 0 ? 1.5 : 1}
                   opacity={v === 0 ? 0.6 : 1}
                 />
@@ -126,7 +126,7 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
                   y={y(v) + 4}
                   fontSize={11}
                   fontFamily={AXIS_FONT}
-                  fill={DARK.muted}
+                  fill={PANEL.muted}
                   textAnchor="end"
                 >
                   {v === 0 ? '0' : `${fmtKg(v)}kg`}
@@ -153,7 +153,7 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
                   cy={c.y}
                   r={last ? 5 : 3}
                   fill={pointColor(c.v)}
-                  stroke={DARK.card}
+                  stroke={PANEL.card}
                   strokeWidth={2}
                 />
               );
@@ -174,12 +174,22 @@ export function WeightChart({ entries, goal, labels, maxPoints = 30 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: DARK.card, borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm },
+  card: {
+    backgroundColor: PANEL.card,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.sm,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  title: { color: DARK.text, fontSize: 17, fontWeight: '700' },
+  title: { color: PANEL.text, fontSize: 17, fontWeight: '700' },
   headerRight: { alignItems: 'flex-end', gap: 2 },
-  current: { color: DARK.text, fontSize: 18, fontWeight: '700' },
+  current: { color: PANEL.text, fontSize: 18, fontWeight: '700' },
   summary: { fontSize: 12, fontWeight: '700' },
   axisRow: { flexDirection: 'row', justifyContent: 'space-between', paddingLeft: AXIS_WIDTH },
-  axisLabel: { color: DARK.muted, fontSize: 11 },
+  axisLabel: { color: PANEL.muted, fontSize: 11 },
 });

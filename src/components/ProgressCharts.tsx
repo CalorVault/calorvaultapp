@@ -33,16 +33,16 @@ const GRID = '#EDEEF1';
 const GAP = 2;
 const TOP_PAD = 10;
 
-export const DARK = {
-  card: colors.ink,
-  tile: '#1F2937',
-  grid: '#374151',
-  text: colors.white,
-  muted: '#9CA3AF',
-  track: 0.2,
-  bar: '#5FA37E',
-  input: '#1F2937',
-};
+export const PANEL = {
+  card: colors.surface,
+  tile: colors.surfaceAlt,
+  grid: '#EDEEF1',
+  text: colors.ink,
+  muted: colors.textMuted,
+  track: 0.14,
+  bar: colors.primary,
+  input: colors.surfaceAlt,
+}
 
 // react-native-svg falls back to a serif face on web; iOS uses the system font.
 const AXIS_FONT = Platform.OS === 'web' ? 'sans-serif' : undefined;
@@ -112,8 +112,8 @@ function formatTick(v: number): string {
 }
 
 function Axes({ g, width, days, dark }: { g: Geometry; width: number; days: DayMacros[]; dark?: boolean }) {
-  const gridColor = dark ? DARK.grid : GRID;
-  const labelColor = dark ? DARK.muted : colors.textMuted;
+  const gridColor = dark ? PANEL.grid : GRID;
+  const labelColor = dark ? PANEL.muted : colors.textMuted;
   const every = xLabelEvery(days.length);
   return (
     <G>
@@ -190,7 +190,7 @@ export function CaloriesChart({
               <Path
                 key={d.date}
                 d={columnPath(x, g.y(d.calories), g.barW, g.y(0), true)}
-                fill={dark ? DARK.bar : colors.primary}
+                fill={dark ? PANEL.bar : colors.primary}
                 opacity={dim ? 0.3 : 1}
               />
             );
@@ -202,7 +202,7 @@ export function CaloriesChart({
                 x2={width}
                 y1={g.y(target)}
                 y2={g.y(target)}
-                stroke={dark ? DARK.text : colors.ink}
+                stroke={dark ? PANEL.text : colors.ink}
                 strokeWidth={1.5}
                 opacity={0.55}
               />
@@ -374,7 +374,7 @@ export function MacroGoalChart({
                 width={slot - 2}
                 height={GOAL_PLOT + 30}
                 rx={6}
-                fill={DARK.tile}
+                fill={PANEL.tile}
               />
             ) : null
           )}
@@ -385,7 +385,7 @@ export function MacroGoalChart({
                 x2={width}
                 y1={y(v)}
                 y2={y(v)}
-                stroke={v === 1 ? DARK.text : DARK.grid}
+                stroke={v === 1 ? PANEL.text : PANEL.grid}
                 strokeWidth={v === 1 ? 1.5 : 1}
                 opacity={v === 1 ? 0.6 : 1}
               />
@@ -394,7 +394,7 @@ export function MacroGoalChart({
                 y={y(v) + 4}
                 fontSize={11}
                 fontFamily={AXIS_FONT}
-                fill={DARK.muted}
+                fill={PANEL.muted}
                 textAnchor="end"
               >
                 {`${v * 100}%`}
@@ -415,12 +415,12 @@ export function MacroGoalChart({
                   const h = Math.min(ratio, 1) * GOAL_PLOT;
                   return (
                     <G key={m.key}>
-                      <Rect x={x} y={GOAL_TOP} width={tw} height={GOAL_PLOT} fill={m.color} opacity={DARK.track} />
+                      <Rect x={x} y={GOAL_TOP} width={tw} height={GOAL_PLOT} fill={m.color} opacity={PANEL.track} />
                       {d.hasEntries && h > 0 && (
                         <Rect x={x} y={GOAL_TOP + GOAL_PLOT - h} width={tw} height={h} fill={m.color} />
                       )}
                       {d.hasEntries && ratio > OVER_RATIO && (
-                        <Rect x={x} y={GOAL_TOP - 5} width={tw} height={3} fill={DARK.text} />
+                        <Rect x={x} y={GOAL_TOP - 5} width={tw} height={3} fill={PANEL.text} />
                       )}
                     </G>
                   );
@@ -432,7 +432,7 @@ export function MacroGoalChart({
                     fontSize={11}
                     fontFamily={AXIS_FONT}
                     fontWeight={emphasised ? '700' : '500'}
-                    fill={emphasised ? DARK.text : DARK.muted}
+                    fill={emphasised ? PANEL.text : PANEL.muted}
                     textAnchor="middle"
                   >
                     {isToday && d.hitCount === undefined ? todayLabel : d.axisLabel}
@@ -446,7 +446,7 @@ export function MacroGoalChart({
                       fontSize={11}
                       fontWeight="700"
                       fontFamily={AXIS_FONT}
-                      fill="#86B89A"
+                      fill={colors.primary}
                       textAnchor="middle"
                     >
                       {`✓ ${d.hitCount}`}
@@ -494,7 +494,7 @@ export function MacroGoalChart({
   );
 }
 
-export function DarkTile({
+export function StatTile({
   label,
   value,
   sub,
@@ -506,17 +506,17 @@ export function DarkTile({
   subColor?: string;
 }) {
   return (
-    <View style={darkStyles.tile}>
-      <Text style={darkStyles.tileLabel} numberOfLines={1}>
+    <View style={panelStyles.tile}>
+      <Text style={panelStyles.tileLabel} numberOfLines={1}>
         {label}
       </Text>
-      <Text style={darkStyles.tileValue} numberOfLines={1} adjustsFontSizeToFit>
+      <Text style={panelStyles.tileValue} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
       {sub ? (
-        <View style={darkStyles.tileSubRow}>
-          {subColor ? <View style={[darkStyles.swatch, { backgroundColor: subColor }]} /> : null}
-          <Text style={darkStyles.tileSub} numberOfLines={1}>
+        <View style={panelStyles.tileSubRow}>
+          {subColor ? <View style={[panelStyles.swatch, { backgroundColor: subColor }]} /> : null}
+          <Text style={panelStyles.tileSub} numberOfLines={1}>
             {sub}
           </Text>
         </View>
@@ -525,51 +525,61 @@ export function DarkTile({
   );
 }
 
-export function DarkLegendItem({ color, label, percent, suffix }: { color: string; label: string; percent: number; suffix: string }) {
+export function PanelLegendItem({ color, label, percent, suffix }: { color: string; label: string; percent: number; suffix: string }) {
   return (
-    <View style={darkStyles.legendItem}>
-      <View style={darkStyles.legendKey}>
-        <View style={[darkStyles.swatch, { backgroundColor: color }]} />
-        <Text style={darkStyles.legendLabel}>{label}</Text>
+    <View style={panelStyles.legendItem}>
+      <View style={panelStyles.legendKey}>
+        <View style={[panelStyles.swatch, { backgroundColor: color }]} />
+        <Text style={panelStyles.legendLabel}>{label}</Text>
       </View>
-      <Text style={darkStyles.legendValue}>
-        {percent}%<Text style={darkStyles.legendSuffix}> {suffix}</Text>
+      <Text style={panelStyles.legendValue}>
+        {percent}%<Text style={panelStyles.legendSuffix}> {suffix}</Text>
       </Text>
     </View>
   );
 }
 
-export const darkStyles = StyleSheet.create({
-  card: { backgroundColor: DARK.card, borderRadius: radius.lg, padding: spacing.md, gap: spacing.md },
+export const panelStyles = StyleSheet.create({
+  card: {
+    backgroundColor: PANEL.card,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.md,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
   tiles: { flexDirection: 'row', gap: spacing.sm },
-  tile: { flex: 1, backgroundColor: DARK.tile, borderRadius: radius.md, padding: 10, gap: 2 },
-  tileLabel: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
-  tileValue: { color: DARK.text, fontSize: 17, fontWeight: '700' },
+  tile: { flex: 1, backgroundColor: PANEL.tile, borderRadius: radius.md, padding: 10, gap: 2 },
+  tileLabel: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
+  tileValue: { color: PANEL.text, fontSize: 17, fontWeight: '700' },
   tileSubRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  tileSub: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
+  tileSub: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  title: { color: DARK.text, fontSize: 17, fontWeight: '700' },
-  meta: { color: DARK.muted, fontSize: 12, fontWeight: '600' },
+  title: { color: PANEL.text, fontSize: 17, fontWeight: '700' },
+  meta: { color: PANEL.muted, fontSize: 12, fontWeight: '600' },
   legendRow: { flexDirection: 'row', justifyContent: 'space-between' },
   legendItem: { gap: 2 },
   legendKey: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   swatch: { width: 10, height: 10, borderRadius: 2 },
-  legendLabel: { color: DARK.muted, fontSize: 12, fontWeight: '600' },
-  legendValue: { color: DARK.text, fontSize: 16, fontWeight: '700' },
-  legendSuffix: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
+  legendLabel: { color: PANEL.muted, fontSize: 12, fontWeight: '600' },
+  legendValue: { color: PANEL.text, fontSize: 16, fontWeight: '700' },
+  legendSuffix: { color: PANEL.muted, fontSize: 11, fontWeight: '600' },
   detail: {
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: DARK.grid,
+    borderTopColor: PANEL.grid,
     paddingTop: spacing.sm,
     gap: spacing.sm,
   },
-  detailDate: { color: DARK.text, fontSize: 13, fontWeight: '700', minWidth: 56 },
+  detailDate: { color: PANEL.text, fontSize: 13, fontWeight: '700', minWidth: 56 },
   detailValues: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   detailValue: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  detailText: { color: '#D1D5DB', fontSize: 12 },
-  openDay: { backgroundColor: DARK.text, borderRadius: radius.full, paddingVertical: 5, paddingHorizontal: 10 },
-  openDayText: { color: DARK.card, fontWeight: '700', fontSize: 12 },
-  hint: { color: DARK.muted, fontSize: 11 },
+  detailText: { color: PANEL.text, fontSize: 12 },
+  openDay: { backgroundColor: PANEL.text, borderRadius: radius.full, paddingVertical: 5, paddingHorizontal: 10 },
+  openDayText: { color: PANEL.card, fontWeight: '700', fontSize: 12 },
+  hint: { color: PANEL.muted, fontSize: 11 },
 });

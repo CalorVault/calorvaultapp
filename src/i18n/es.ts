@@ -142,7 +142,6 @@ const es: Translations = {
     macrosFatLabel: 'Grasa (g)',
     macrosFindButton: 'Buscar recetas',
     macrosEmptyBeforeSearch: 'Completa tus objetivos arriba y toca Buscar recetas.',
-    macrosEmptyNoResults: 'Ninguna receta coincide — prueba a ampliar un poco los objetivos.',
     searchPlaceholder: '¿Qué te gustaría comer?',
     categories: {
       breakfast: 'Desayuno',
@@ -151,7 +150,8 @@ const es: Translations = {
       snack: 'Merienda',
     },
     apiPrompt:
-      'Mostrando una pequeña lista incorporada. Añade una clave API de recetas gratuita en Ajustes para buscar recetas reales →',
+      '¿Quieres más opciones? Añade una clave API de recetas gratuita en Ajustes para buscar miles de recetas más →',
+    photoBy: 'Foto:',
     recommendedToday: 'Recomendado para hoy',
     savedRecipes: 'Recetas guardadas',
     resultsFor: 'Resultados para',
@@ -173,7 +173,6 @@ const es: Translations = {
     bannerCopy: 'comidas ajustadas a tus macros',
     building: 'Creando tu plan…',
     failed: 'No se pudo crear un plan de comidas.',
-    builtInNote: 'Usando la lista de recetas incorporada. Añade una clave de Spoonacular en Ajustes para más variedad.',
     swap: 'Cambiar',
     log: 'Registrar',
     logged: 'Registrado',

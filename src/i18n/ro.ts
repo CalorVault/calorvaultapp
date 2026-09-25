@@ -142,7 +142,6 @@ const ro: Translations = {
     macrosFatLabel: 'Grăsimi (g)',
     macrosFindButton: 'Găsește rețete',
     macrosEmptyBeforeSearch: 'Completează țintele de mai sus și apasă Găsește rețete.',
-    macrosEmptyNoResults: 'Nicio rețetă nu s-a potrivit — încearcă să lărgești puțin țintele.',
     searchPlaceholder: 'Ce ai vrea să mănânci?',
     categories: {
       breakfast: 'Mic dejun',
@@ -151,7 +150,8 @@ const ro: Translations = {
       snack: 'Gustare',
     },
     apiPrompt:
-      'Se afișează o listă mică, predefinită. Adaugă o cheie API gratuită pentru rețete în Setări ca să cauți rețete reale →',
+      'Vrei mai multe opțiuni? Adaugă o cheie API gratuită pentru rețete în Setări ca să cauți mii de alte rețete →',
+    photoBy: 'Foto:',
     recommendedToday: 'Recomandate azi',
     savedRecipes: 'Rețete salvate',
     resultsFor: 'Rezultate pentru',
@@ -173,7 +173,6 @@ const ro: Translations = {
     bannerCopy: 'mese potrivite macronutrienților tăi',
     building: 'Îți construim planul…',
     failed: 'Nu am putut crea un plan de mese.',
-    builtInNote: 'Se folosește lista predefinită de rețete. Adaugă o cheie Spoonacular în Setări pentru mai multă varietate.',
     swap: 'Schimbă',
     log: 'Adaugă',
     logged: 'Adăugat',

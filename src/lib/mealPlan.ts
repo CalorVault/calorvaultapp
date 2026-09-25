@@ -1,6 +1,5 @@
 import { RECIPES } from '../data/recipes';
 import { DailyPlan, DayMealPlan, PlannedMeal, Recipe, RecipeCategory } from '../types';
-import { searchRecipesForMeal } from './recipeApi';
 
 export const MEAL_SLOTS: RecipeCategory[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -58,10 +57,12 @@ function relErr(actual: number, target: number): number {
 
 // Protein is weighted highest: it's the macro people cutting or bulking care
 // about most, and the one a portion tweak can't fix if the recipe is low in it.
+// Going a bit over on protein is fine, so only a shortfall counts fully.
 function score(meal: PlannedMeal, t: Targets): number {
+  const proteinWeight = meal.proteinG < t.proteinG ? 2 : 0.5;
   return (
     relErr(meal.calories, t.calories) +
-    2 * relErr(meal.proteinG, t.proteinG) +
+    proteinWeight * relErr(meal.proteinG, t.proteinG) +
     relErr(meal.carbsG, t.carbsG) +
     relErr(meal.fatG, t.fatG)
   );
@@ -91,19 +92,9 @@ function pickMeal(
   return close[Math.floor(Math.random() * close.length)].meal;
 }
 
-async function candidatesFor(
-  slot: RecipeCategory,
-  targets: Targets,
-  apiKey: string | null
-): Promise<Recipe[]> {
-  if (apiKey) {
-    try {
-      const live = await searchRecipesForMeal(apiKey, slot, targets);
-      if (live.length > 0) return live;
-    } catch {
-      // Fall back to the built-in list below (no key quota, offline, etc.).
-    }
-  }
+// Only the app's own recipe list is used: it's everyday food people actually
+// cook, where online search results are often unfamiliar dishes.
+function candidatesFor(slot: RecipeCategory): Recipe[] {
   return RECIPES.filter((r) => r.category === slot);
 }
 
@@ -120,18 +111,11 @@ function rebalance(meals: PlannedMeal[], calorieTarget: number): PlannedMeal[] {
   return next;
 }
 
-export async function generateMealPlan(
-  plan: DailyPlan,
-  apiKey: string | null,
-  date: string
-): Promise<DayMealPlan> {
-  const candidateLists = await Promise.all(
-    MEAL_SLOTS.map((slot) => candidatesFor(slot, slotTargets(plan, slot), apiKey))
-  );
+export function generateMealPlan(plan: DailyPlan, date: string): DayMealPlan {
   const used = new Set<string>();
   const meals: PlannedMeal[] = [];
-  MEAL_SLOTS.forEach((slot, i) => {
-    const meal = pickMeal(slot, slotTargets(plan, slot), candidateLists[i], used);
+  MEAL_SLOTS.forEach((slot) => {
+    const meal = pickMeal(slot, slotTargets(plan, slot), candidatesFor(slot), used);
     if (meal) {
       meals.push(meal);
       used.add(meal.recipe.id);
@@ -140,14 +124,13 @@ export async function generateMealPlan(
   return { date, calorieTarget: plan.calorieTarget, meals: rebalance(meals, plan.calorieTarget) };
 }
 
-export async function swapMeal(
+export function swapMeal(
   plan: DailyPlan,
-  apiKey: string | null,
   current: DayMealPlan,
   slot: RecipeCategory
-): Promise<DayMealPlan> {
+): DayMealPlan {
   const targets = slotTargets(plan, slot);
-  const candidates = await candidatesFor(slot, targets, apiKey);
+  const candidates = candidatesFor(slot);
   const avoid = new Set(current.meals.map((m) => m.recipe.id));
   const replacement = pickMeal(slot, targets, candidates, avoid);
   if (!replacement) return current;

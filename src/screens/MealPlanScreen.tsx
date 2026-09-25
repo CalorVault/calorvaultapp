@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
 import { Translations } from '../i18n';
 import { goalLabels } from '../lib/goalLabels';
+import { recipeImage } from '../data/recipePhotos';
 import { generateMealPlan, planTotals, servingsText, swapMeal } from '../lib/mealPlan';
 import { RootStackParamList } from '../navigation/types';
 import { getMealPlan, saveMealPlan, todayIso } from '../storage/db';
@@ -26,7 +27,7 @@ function makeId(): string {
 
 export function MealPlanScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { plan, profile, recipeApiKey, logFood, t } = useApp();
+  const { plan, profile, logFood, t } = useApp();
   const [mealPlan, setMealPlan] = useState<DayMealPlan | null>(null);
   const [building, setBuilding] = useState(true);
   const [swapping, setSwapping] = useState<RecipeCategory | null>(null);
@@ -42,13 +43,13 @@ export function MealPlanScreen() {
     setBuilding(true);
     setError(null);
     try {
-      await persist(await generateMealPlan(plan, recipeApiKey, todayIso()));
+      await persist(generateMealPlan(plan, todayIso()));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.mealPlan.failed);
     } finally {
       setBuilding(false);
     }
-  }, [plan, recipeApiKey, persist, t]);
+  }, [plan, persist, t]);
 
   useEffect(() => {
     if (!plan) return;
@@ -69,7 +70,7 @@ export function MealPlanScreen() {
     if (!plan || !mealPlan) return;
     setSwapping(slot);
     try {
-      const next = await swapMeal(plan, recipeApiKey, mealPlan, slot);
+      const next = swapMeal(plan, mealPlan, slot);
       await persist({
         ...next,
         loggedSlots: (next.loggedSlots ?? []).filter((s) => s !== slot),
@@ -162,8 +163,6 @@ export function MealPlanScreen() {
               />
             </View>
 
-            {!recipeApiKey && <Text style={styles.note}>{t.mealPlan.builtInNote}</Text>}
-
             {mealPlan.meals.map((meal) => (
               <MealCard
                 key={meal.slot}
@@ -240,6 +239,7 @@ function MealCard({
   onLog: () => void;
 }) {
   const { recipe } = meal;
+  const image = recipeImage(recipe);
   return (
     <View style={styles.mealCard}>
       <Text style={styles.slotLabel}>{t.recipes.categories[meal.slot]}</Text>
@@ -248,8 +248,8 @@ function MealCard({
         onPress={onPress}
       >
         <View style={[styles.thumb, { backgroundColor: recipe.tint ?? colors.surfaceAlt }]}>
-          {recipe.imageUrl ? (
-            <Image source={{ uri: recipe.imageUrl }} style={styles.thumbImage} />
+          {image ? (
+            <Image source={image} style={styles.thumbImage} />
           ) : (
             <Text style={styles.thumbEmoji}>{recipe.emoji ?? '🍽️'}</Text>
           )}
@@ -306,7 +306,6 @@ const styles = StyleSheet.create({
   loadingBox: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xl },
   loadingText: { color: colors.textMuted, fontSize: 14 },
   errorText: { color: colors.danger, fontSize: 14 },
-  note: { color: colors.textMuted, fontSize: 12 },
   totalsCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,

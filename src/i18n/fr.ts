@@ -142,7 +142,6 @@ const fr: Translations = {
     macrosFatLabel: 'Lipides (g)',
     macrosFindButton: 'Trouver des recettes',
     macrosEmptyBeforeSearch: 'Remplis tes objectifs ci-dessus puis appuie sur Trouver des recettes.',
-    macrosEmptyNoResults: 'Aucune recette ne correspond — essaie d’élargir un peu les objectifs.',
     searchPlaceholder: 'Qu’aimerais-tu manger ?',
     categories: {
       breakfast: 'Petit-déjeuner',
@@ -151,7 +150,8 @@ const fr: Translations = {
       snack: 'Encas',
     },
     apiPrompt:
-      'Une petite liste intégrée est affichée. Ajoute une clé API de recettes gratuite dans les Réglages pour chercher de vraies recettes →',
+      'Envie de plus de choix ? Ajoute une clé API de recettes gratuite dans les Réglages pour chercher des milliers d’autres recettes →',
+    photoBy: 'Photo :',
     recommendedToday: 'Recommandé aujourd’hui',
     savedRecipes: 'Recettes enregistrées',
     resultsFor: 'Résultats pour',
@@ -173,7 +173,6 @@ const fr: Translations = {
     bannerCopy: 'des repas adaptés à tes macros',
     building: 'Création de ton plan…',
     failed: 'Impossible de créer un plan repas.',
-    builtInNote: 'Liste de recettes intégrée utilisée. Ajoute une clé Spoonacular dans Réglages pour plus de variété.',
     swap: 'Changer',
     log: 'Ajouter',
     logged: 'Ajouté',

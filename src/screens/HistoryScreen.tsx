@@ -14,10 +14,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   CaloriesChart,
-  DarkLegendItem,
-  DARK,
-  darkStyles,
-  DarkTile,
+  PanelLegendItem,
+  PANEL,
+  panelStyles,
+  StatTile,
   DayMacros,
   hitAllGoals,
   MACRO_ORDER,
@@ -208,11 +208,11 @@ export function HistoryScreen() {
         </View>
 
         {plan && goals && (
-          <View style={darkStyles.card}>
-            <View style={darkStyles.tiles}>
-              <DarkTile label={t.progress.allGoalsHit} value={`${goals.hitDays}/${range} ${t.progress.days}`} />
-              <DarkTile label={t.progress.streak} value={`${goals.streak} ${t.progress.days}`} />
-              <DarkTile
+          <View style={panelStyles.card}>
+            <View style={panelStyles.tiles}>
+              <StatTile label={t.progress.allGoalsHit} value={`${goals.hitDays}/${range} ${t.progress.days}`} />
+              <StatTile label={t.progress.streak} value={`${goals.streak} ${t.progress.days}`} />
+              <StatTile
                 label={t.progress.biggestGap}
                 value={
                   stats.loggedCount === 0
@@ -229,13 +229,13 @@ export function HistoryScreen() {
                 subColor={MACRO_ORDER.find((m) => m.key === goals.worst)?.color}
               />
             </View>
-            <View style={darkStyles.headerRow}>
-              <Text style={darkStyles.title}>{t.progress.macrosVsGoal}</Text>
-              <Text style={darkStyles.meta}>{range === 7 ? t.progress.range7 : t.progress.range30}</Text>
+            <View style={panelStyles.headerRow}>
+              <Text style={panelStyles.title}>{t.progress.macrosVsGoal}</Text>
+              <Text style={panelStyles.meta}>{range === 7 ? t.progress.range7 : t.progress.range30}</Text>
             </View>
-            <View style={darkStyles.legendRow}>
+            <View style={panelStyles.legendRow}>
               {MACRO_ORDER.map((m) => (
-                <DarkLegendItem
+                <PanelLegendItem
                   key={m.key}
                   color={m.color}
                   label={({ proteinG: t.onboarding.protein, fatG: t.onboarding.fat, carbsG: t.onboarding.carbs })[m.key]}
@@ -253,8 +253,8 @@ export function HistoryScreen() {
               onSelect={handleSelect}
             />
             {selected ? (
-              <View style={darkStyles.detail}>
-                <Text style={darkStyles.detailDate}>
+              <View style={panelStyles.detail}>
+                <Text style={panelStyles.detailDate}>
                   {selected.spanLabel
                     ? `${selected.spanLabel}\n${t.progress.weekAvg}`
                     : new Date(selected.date + 'T00:00:00').toLocaleDateString(undefined, {
@@ -262,11 +262,11 @@ export function HistoryScreen() {
                         day: 'numeric',
                       })}
                 </Text>
-                <View style={darkStyles.detailValues}>
+                <View style={panelStyles.detailValues}>
                   {MACRO_ORDER.map((m) => (
-                    <View key={m.key} style={darkStyles.detailValue}>
-                      <View style={[darkStyles.swatch, { backgroundColor: m.color }]} />
-                      <Text style={darkStyles.detailText}>
+                    <View key={m.key} style={panelStyles.detailValue}>
+                      <View style={[panelStyles.swatch, { backgroundColor: m.color }]} />
+                      <Text style={panelStyles.detailText}>
                         {Math.round(selected[m.key])}g / {goals.targets[m.key]}g
                       </Text>
                     </View>
@@ -274,26 +274,26 @@ export function HistoryScreen() {
                 </View>
                 {!selected.spanLabel && (
                   <Pressable
-                    style={({ pressed }) => [darkStyles.openDay, pressed && styles.pressedDim]}
+                    style={({ pressed }) => [panelStyles.openDay, pressed && styles.pressedDim]}
                     onPress={() => navigation.navigate('DayDetail', { date: selected.date })}
                   >
-                    <Text style={darkStyles.openDayText}>{t.progress.openDay} ›</Text>
+                    <Text style={panelStyles.openDayText}>{t.progress.openDay} ›</Text>
                   </Pressable>
                 )}
               </View>
             ) : (
-              <Text style={darkStyles.hint}>{t.progress.goalLegend}</Text>
+              <Text style={panelStyles.hint}>{t.progress.goalLegend}</Text>
             )}
           </View>
         )}
 
-        <View style={darkStyles.card}>
+        <View style={panelStyles.card}>
           <View style={styles.cardHeader}>
-            <Text style={darkStyles.title}>{t.progress.caloriesChart}</Text>
+            <Text style={panelStyles.title}>{t.progress.caloriesChart}</Text>
             {plan && (
               <View style={styles.targetKey}>
-                <View style={[styles.targetKeyLine, { backgroundColor: DARK.text }]} />
-                <Text style={darkStyles.meta}>
+                <View style={[styles.targetKeyLine, { backgroundColor: PANEL.text }]} />
+                <Text style={panelStyles.meta}>
                   {t.progress.target} {plan.calorieTarget.toLocaleString()}
                 </Text>
               </View>
@@ -306,7 +306,7 @@ export function HistoryScreen() {
             onSelect={handleSelect}
             dark
           />
-          <Text style={darkStyles.hint}>
+          <Text style={panelStyles.hint}>
             {t.progress.avgCalories}: {Math.round(stats.calories).toLocaleString()} kcal · {t.progress.onTarget}:{' '}
             {stats.onTarget} {t.progress.days}
           </Text>
@@ -314,13 +314,13 @@ export function HistoryScreen() {
 
         {stats.loggedCount === 0 && <Text style={styles.empty}>{t.progress.noData}</Text>}
 
-        <View style={darkStyles.card}>
-          <Text style={darkStyles.title}>{t.tracking.logWeightTitle}</Text>
+        <View style={panelStyles.card}>
+          <Text style={panelStyles.title}>{t.tracking.logWeightTitle}</Text>
           <View style={styles.logWeightRow}>
             <TextInput
               style={styles.logWeightInput}
               placeholder={t.settings.weightLabel}
-              placeholderTextColor={DARK.muted}
+              placeholderTextColor={PANEL.muted}
               value={weightInput}
               onChangeText={setWeightInput}
               keyboardType="decimal-pad"
@@ -417,12 +417,12 @@ const styles = StyleSheet.create({
   logWeightRow: { flexDirection: 'row', gap: spacing.sm },
   logWeightInput: {
     flex: 1,
-    backgroundColor: DARK.input,
+    backgroundColor: PANEL.input,
     borderWidth: 1,
-    borderColor: DARK.grid,
+    borderColor: PANEL.grid,
     borderRadius: radius.md,
     padding: spacing.md,
-    color: DARK.text,
+    color: PANEL.text,
   },
   logWeightButton: {
     backgroundColor: colors.primary,

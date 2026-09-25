@@ -11,12 +11,14 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { RECIPES } from '../data/recipes';
+import { recipeImage } from '../data/recipePhotos';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
-import { BookmarkIcon, BowlIcon, MealIcon, SearchIcon, SettingsIcon } from '../components/NavIcons';
+import { BookmarkIcon, BowlIcon, MealIcon, PlanDayIcon, SearchIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import { Translations } from '../i18n';
-import { searchRecipes, searchRecipesByMacros } from '../lib/recipeApi';
+import { searchRecipes } from '../lib/recipeApi';
 import { RecipesScreenNavigationProp } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { Recipe, RecipeCategory } from '../types';
@@ -53,37 +55,29 @@ export function RecipesScreen() {
   const [macroCarbs, setMacroCarbs] = useState(plan ? String(Math.round(plan.carbsG / 3)) : '');
   const [macroFat, setMacroFat] = useState(plan ? String(Math.round(plan.fatG / 3)) : '');
   const [macroResults, setMacroResults] = useState<Recipe[] | null>(null);
-  const [macroLoading, setMacroLoading] = useState(false);
-  const [macroError, setMacroError] = useState<string | null>(null);
-  const macroRequestId = useRef(0);
 
-  async function handleFindByMacros() {
-    if (!recipeApiKey) return;
-    const id = ++macroRequestId.current;
-    setMacroLoading(true);
-    setMacroError(null);
-    try {
-      const results = await searchRecipesByMacros(recipeApiKey, {
-        calories: Number(macroCalories) || undefined,
-        proteinG: Number(macroProtein) || undefined,
-        carbsG: Number(macroCarbs) || undefined,
-        fatG: Number(macroFat) || undefined,
-      });
-      if (id === macroRequestId.current) setMacroResults(results);
-    } catch (err) {
-      if (id === macroRequestId.current) {
-        setMacroError(err instanceof Error ? err.message : t.recipes.searchFailed);
-      }
-    } finally {
-      if (id === macroRequestId.current) setMacroLoading(false);
-    }
+  function handleFindByMacros() {
+    setMacroResults(
+      closestRecipes({
+        calories: Number(macroCalories) || 0,
+        proteinG: Number(macroProtein) || 0,
+        carbsG: Number(macroCarbs) || 0,
+        fatG: Number(macroFat) || 0,
+      })
+    );
   }
 
+  const searching = query.trim().length > 0;
+
+  // The app's own list is shown by default; the online search only runs when
+  // someone types, so the recommendations stay everyday food.
   useEffect(() => {
-    if (subTab !== 'discover' || !recipeApiKey) return;
     const id = ++requestId.current;
-    setLoading(true);
+    setApiResults(null);
     setError(null);
+    setLoading(false);
+    if (subTab !== 'discover' || !recipeApiKey || !searching) return;
+    setLoading(true);
     const timer = setTimeout(async () => {
       try {
         const results = await searchRecipes(recipeApiKey, query, category);
@@ -97,7 +91,7 @@ export function RecipesScreen() {
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [subTab, recipeApiKey, query, category, t]);
+  }, [subTab, recipeApiKey, searching, query, category, t]);
 
   const results = useMemo(() => {
     if (subTab === 'saved') {
@@ -109,17 +103,16 @@ export function RecipesScreen() {
       return list;
     }
     if (subTab === 'macros') return macroResults ?? [];
-    if (recipeApiKey) return apiResults ?? [];
     let list = RECIPES;
     if (category) list = list.filter((r) => r.category === category);
-    if (query.trim()) {
+    if (searching) {
       const q = query.trim().toLowerCase();
       list = list.filter((r) => r.name.toLowerCase().includes(q));
+      const own = new Set(list.map((r) => r.id));
+      list = [...list, ...(apiResults ?? []).filter((r) => !own.has(r.id))];
     }
     return list;
-  }, [subTab, category, query, savedRecipes, recipeApiKey, apiResults, macroResults]);
-
-  const usingLiveApi = subTab === 'discover' && !!recipeApiKey;
+  }, [subTab, category, query, searching, savedRecipes, apiResults, macroResults]);
 
   return (
     <SafeAreaView style={styles.flex} edges={['top']}>
@@ -150,7 +143,18 @@ export function RecipesScreen() {
                 style={({ pressed }) => [styles.planBanner, pressed && styles.pressedDim]}
                 onPress={() => navigation.navigate('MealPlan')}
               >
-                <Text style={styles.planBannerEmoji}>🍽️</Text>
+                <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
+                  <Defs>
+                    <LinearGradient id="planBannerBg" x1="0" y1="0" x2="1" y2="1">
+                      <Stop offset="0" stopColor={colors.primaryDark} />
+                      <Stop offset="1" stopColor={colors.primary} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect width="100%" height="100%" fill="url(#planBannerBg)" />
+                </Svg>
+                <View style={styles.planBannerBadge}>
+                  <PlanDayIcon size={28} color={colors.white} />
+                </View>
                 <View style={styles.planBannerText}>
                   <Text style={styles.planBannerTitle}>{t.mealPlan.bannerTitle}</Text>
                   <Text style={styles.planBannerCopy}>
@@ -195,7 +199,7 @@ export function RecipesScreen() {
               </View>
             )}
 
-            {subTab === 'macros' && recipeApiKey && (
+            {subTab === 'macros' && (
               <View style={styles.macroForm}>
                 <Text style={styles.macroIntro}>{t.recipes.macrosIntro}</Text>
                 <View style={styles.macroFieldRow}>
@@ -275,7 +279,7 @@ export function RecipesScreen() {
               </View>
             )}
 
-            {!recipeApiKey && (subTab === 'discover' || subTab === 'macros') && (
+            {!recipeApiKey && subTab === 'discover' && (
               <Pressable
                 style={styles.apiPrompt}
                 onPress={() => navigation.navigate('Settings')}
@@ -284,18 +288,14 @@ export function RecipesScreen() {
               </Pressable>
             )}
 
-            {subTab === 'macros' ? (
-              macroError && <Text style={styles.errorText}>{macroError}</Text>
-            ) : (
-              error && <Text style={styles.errorText}>{error}</Text>
-            )}
+            {subTab === 'discover' && error && <Text style={styles.errorText}>{error}</Text>}
 
             <Text style={styles.sectionTitle}>
               {subTab === 'saved'
                 ? t.recipes.savedRecipes
                 : subTab === 'macros'
                 ? t.recipes.byMacros
-                : usingLiveApi && query.trim()
+                : searching
                 ? `${t.recipes.resultsFor} "${query.trim()}"`
                 : t.recipes.recommendedToday}
             </Text>
@@ -311,16 +311,14 @@ export function RecipesScreen() {
           />
         )}
         ListEmptyComponent={
-          (subTab === 'macros' ? macroLoading : loading) ? (
+          subTab === 'discover' && loading ? (
             <ActivityIndicator color={colors.primary} style={styles.loadingIndicator} />
           ) : (
             <Text style={styles.emptyText}>
               {subTab === 'saved'
                 ? t.recipes.emptySaved
                 : subTab === 'macros'
-                ? macroResults === null
-                  ? t.recipes.macrosEmptyBeforeSearch
-                  : t.recipes.macrosEmptyNoResults
+                ? t.recipes.macrosEmptyBeforeSearch
                 : t.recipes.emptySearch}
             </Text>
           )
@@ -328,6 +326,29 @@ export function RecipesScreen() {
       />
     </SafeAreaView>
   );
+}
+
+interface MacroTargets {
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+// Ranks the app's recipes by how close one serving is to the targets. Blank
+// fields are ignored, and protein counts double like in the meal planner.
+function closestRecipes(targets: MacroTargets, count = 10): Recipe[] {
+  const parts: [keyof MacroTargets, number][] = [
+    ['calories', 1],
+    ['proteinG', 2],
+    ['carbsG', 1],
+    ['fatG', 1],
+  ];
+  const active = parts.filter(([key]) => targets[key] > 0);
+  if (active.length === 0) return [];
+  const distance = (r: Recipe) =>
+    active.reduce((sum, [key, weight]) => sum + (weight * Math.abs(r[key] - targets[key])) / targets[key], 0);
+  return [...RECIPES].sort((a, b) => distance(a) - distance(b)).slice(0, count);
 }
 
 function RecipeCard({
@@ -343,10 +364,11 @@ function RecipeCard({
   onPress: () => void;
   t: Translations;
 }) {
+  const image = recipeImage(recipe);
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      {recipe.imageUrl ? (
-        <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} />
+      {image ? (
+        <Image source={image} style={styles.thumb} />
       ) : (
         <View style={[styles.thumb, { backgroundColor: recipe.tint ?? colors.surfaceAlt }]}>
           <Text style={styles.thumbEmoji}>{recipe.emoji ?? '🍽️'}</Text>
@@ -390,16 +412,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.primaryDark,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginTop: spacing.md,
+    overflow: 'hidden',
   },
-  planBannerEmoji: { fontSize: 28 },
+  planBannerBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   planBannerText: { flex: 1, gap: 2 },
-  planBannerTitle: { color: colors.primaryDark, fontSize: 16, fontWeight: '700' },
-  planBannerCopy: { color: colors.primaryDark, fontSize: 13 },
-  planBannerChevron: { color: colors.primaryDark, fontSize: 26, fontWeight: '600' },
+  planBannerTitle: { color: colors.white, fontSize: 16, fontWeight: '700' },
+  planBannerCopy: { color: colors.white, fontSize: 13, opacity: 0.85 },
+  planBannerChevron: { color: colors.white, fontSize: 26, fontWeight: '600' },
   pressedDim: { opacity: 0.6 },
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: spacing.lg, paddingBottom: spacing.xl * 3 },

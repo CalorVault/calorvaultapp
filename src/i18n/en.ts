@@ -144,7 +144,6 @@ const en = {
     macrosFatLabel: 'Fat (g)',
     macrosFindButton: 'Find recipes',
     macrosEmptyBeforeSearch: 'Fill in your targets above and tap Find recipes.',
-    macrosEmptyNoResults: 'No recipes matched those targets — try widening them a bit.',
     searchPlaceholder: 'What would you like to eat?',
     categories: {
       breakfast: 'Breakfast',
@@ -153,7 +152,8 @@ const en = {
       snack: 'Snack',
     },
     apiPrompt:
-      'Showing a small built-in list. Add a free recipe API key in Settings to search real recipes →',
+      'Want more choice? Add a free recipe API key in Settings to search thousands more recipes →',
+    photoBy: 'Photo:',
     recommendedToday: 'Recommended for Today',
     savedRecipes: 'Saved Recipes',
     resultsFor: 'Results for',
@@ -175,7 +175,6 @@ const en = {
     bannerCopy: 'meals matched to your macros',
     building: 'Building your plan…',
     failed: "Couldn't build a meal plan.",
-    builtInNote: 'Using the built-in recipe list. Add a Spoonacular key in Settings for more variety.',
     swap: 'Swap',
     log: 'Log',
     logged: 'Logged',

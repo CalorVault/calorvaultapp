@@ -1,11 +1,21 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
 import { MealIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { recipeImage, recipePhotoCredit } from '../data/recipePhotos';
 import { servingsText } from '../lib/mealPlan';
 import { getRecipeMethod, RecipeMethod } from '../lib/recipeApi';
 import { RootStackParamList } from '../navigation/types';
@@ -29,12 +39,29 @@ function formatAmount(amount: number, unit: string): string {
   return whole > 0 ? `${whole}${frac}` : frac;
 }
 
+function metricAmount(ing: RecipeIngredient, multiplier: number): string {
+  const m = ing.unit === 'g' || ing.unit === 'ml' ? { amount: ing.amount, unit: ing.unit } : ing.metric;
+  if (!m) return '';
+  const amount = formatAmount(m.amount * multiplier, m.unit);
+  return amount ? `${amount}${m.unit}` : '';
+}
+
 function ingredientLine(ing: RecipeIngredient, multiplier: number): string {
   const amount = formatAmount(ing.amount * multiplier, ing.unit);
   const scaled = ing.amount * multiplier;
   const unitWord = scaled > 1 && PLURAL_UNITS[ing.unit] ? PLURAL_UNITS[ing.unit] : ing.unit;
   const unit = unitWord && amount ? (unitWord === 'g' || unitWord === 'ml' ? unitWord : ` ${unitWord}`) : '';
-  return [amount ? `${amount}${unit}` : '', ing.name].filter(Boolean).join(' ');
+  const line = [amount ? `${amount}${unit}` : '', ing.name].filter(Boolean).join(' ');
+  const metric = ing.metric ? metricAmount(ing, multiplier) : '';
+  return metric ? `${line} (${metric})` : line;
+}
+
+// Built-in steps mark amounts as "{index}" so they scale with the servings.
+function stepLine(step: string, ingredients: RecipeIngredient[], multiplier: number): string {
+  return step.replace(/\{(\d+)\}/g, (token, i) => {
+    const ing = ingredients[Number(i)];
+    return ing ? metricAmount(ing, multiplier) || formatAmount(ing.amount * multiplier, ing.unit) : token;
+  });
 }
 
 // Methods fetched from the recipe API are cached for the session so reopening
@@ -101,14 +128,29 @@ export function RecipeDetailScreen() {
     navigation.goBack();
   }
 
+  const image = recipeImage(recipe);
+  const credit = recipePhotoCredit(recipe);
+
   return (
     <SafeAreaView style={styles.flex} edges={['bottom']}>
       <ScrollView>
-      <View style={[styles.hero, recipe.imageUrl ? null : { backgroundColor: recipe.tint ?? colors.surfaceAlt }]}>
-        {recipe.imageUrl ? (
-          <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+      <View style={[styles.hero, image ? null : { backgroundColor: recipe.tint ?? colors.surfaceAlt }]}>
+        {image ? (
+          <Image source={image} style={styles.heroImage} />
         ) : (
           <Text style={styles.heroEmoji}>{recipe.emoji}</Text>
+        )}
+        {credit && (
+          <Pressable
+            style={styles.photoCredit}
+            onPress={() => Linking.openURL(credit.url)}
+            hitSlop={6}
+            accessibilityRole="link"
+          >
+            <Text style={styles.photoCreditText} numberOfLines={1}>
+              {t.recipes.photoBy} {credit.author} · {credit.license}
+            </Text>
+          </Pressable>
         )}
       </View>
       <View style={styles.body}>
@@ -173,7 +215,9 @@ export function RecipeDetailScreen() {
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>{i + 1}</Text>
                 </View>
-                <Text style={styles.stepText}>{step}</Text>
+                <Text style={styles.stepText}>
+                  {stepLine(step, method.ingredients, multiplier)}
+                </Text>
               </View>
             ))}
           </View>
@@ -209,13 +253,24 @@ function MacroStat({
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   hero: {
-    height: 200,
+    height: 240,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroEmoji: { fontSize: 72 },
   heroImage: { width: '100%', height: '100%' },
+  photoCredit: {
+    position: 'absolute',
+    right: spacing.sm,
+    bottom: spacing.sm,
+    maxWidth: '80%',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  photoCreditText: { color: colors.white, fontSize: 10 },
   body: { padding: spacing.lg },
   name: {
     color: colors.text,

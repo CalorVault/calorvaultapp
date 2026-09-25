@@ -142,7 +142,6 @@ const de: Translations = {
     macrosFatLabel: 'Fett (g)',
     macrosFindButton: 'Rezepte finden',
     macrosEmptyBeforeSearch: 'Trage oben deine Ziele ein und tippe auf Rezepte finden.',
-    macrosEmptyNoResults: 'Keine Rezepte gefunden — versuch, die Ziele etwas zu erweitern.',
     searchPlaceholder: 'Worauf hast du Lust?',
     categories: {
       breakfast: 'Frühstück',
@@ -151,7 +150,8 @@ const de: Translations = {
       snack: 'Snack',
     },
     apiPrompt:
-      'Es wird eine kleine integrierte Liste angezeigt. Füge in den Einstellungen einen kostenlosen Rezept-API-Schlüssel hinzu, um echte Rezepte zu suchen →',
+      'Mehr Auswahl? Füge in den Einstellungen einen kostenlosen Rezept-API-Schlüssel hinzu, um Tausende weitere Rezepte zu suchen →',
+    photoBy: 'Foto:',
     recommendedToday: 'Heute empfohlen',
     savedRecipes: 'Gespeicherte Rezepte',
     resultsFor: 'Ergebnisse für',
@@ -173,7 +173,6 @@ const de: Translations = {
     bannerCopy: 'Mahlzeiten passend zu deinen Makros',
     building: 'Dein Plan wird erstellt…',
     failed: 'Essensplan konnte nicht erstellt werden.',
-    builtInNote: 'Integrierte Rezeptliste wird verwendet. Füge in den Einstellungen einen Spoonacular-Schlüssel hinzu für mehr Abwechslung.',
     swap: 'Tauschen',
     log: 'Eintragen',
     logged: 'Eingetragen',

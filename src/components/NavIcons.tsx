@@ -233,3 +233,25 @@ export function MealIcon({ size = 20, color }: IconProps) {
     </Svg>
   );
 }
+
+export function PlanDayIcon({ size = 20, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M5 3v5a2 2 0 0 0 2 2v11M7 3v4M9 3v5a2 2 0 0 1-2 2"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M17 21V3c-2 .8-3 3-3 5.8V13h3"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path d="M20.5 2.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" fill={color} />
+    </Svg>
+  );
+}

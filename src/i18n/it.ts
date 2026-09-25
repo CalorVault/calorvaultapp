@@ -142,7 +142,6 @@ const it: Translations = {
     macrosFatLabel: 'Grassi (g)',
     macrosFindButton: 'Trova ricette',
     macrosEmptyBeforeSearch: 'Compila gli obiettivi sopra e tocca Trova ricette.',
-    macrosEmptyNoResults: 'Nessuna ricetta corrisponde — prova ad ampliare un po’ gli obiettivi.',
     searchPlaceholder: 'Cosa vorresti mangiare?',
     categories: {
       breakfast: 'Colazione',
@@ -151,7 +150,8 @@ const it: Translations = {
       snack: 'Spuntino',
     },
     apiPrompt:
-      'Viene mostrato un piccolo elenco integrato. Aggiungi una chiave API gratuita per le ricette nelle Impostazioni per cercare ricette reali →',
+      'Vuoi più scelta? Aggiungi una chiave API gratuita per le ricette nelle Impostazioni per cercare migliaia di altre ricette →',
+    photoBy: 'Foto:',
     recommendedToday: 'Consigliato per oggi',
     savedRecipes: 'Ricette salvate',
     resultsFor: 'Risultati per',
@@ -173,7 +173,6 @@ const it: Translations = {
     bannerCopy: 'pasti in linea con i tuoi macro',
     building: 'Sto creando il tuo piano…',
     failed: 'Impossibile creare un piano pasti.',
-    builtInNote: "Uso l'elenco di ricette integrato. Aggiungi una chiave Spoonacular nelle Impostazioni per più varietà.",
     swap: 'Cambia',
     log: 'Registra',
     logged: 'Registrato',

@@ -99,7 +99,7 @@ export interface Recipe {
   tint?: string;
   /** Ingredients for one serving. Built-in recipes carry these; API recipes are fetched on demand. */
   ingredients?: RecipeIngredient[];
-  /** Method, one step per entry. */
+  /** Method, one step per entry. "{2}" stands for the amount of ingredient 2. */
   steps?: string[];
 }
 
@@ -108,6 +108,8 @@ export interface RecipeIngredient {
   /** e.g. "g", "ml", "tbsp"; empty for counted items like "2 eggs". */
   unit: string;
   name: string;
+  /** Exact weight or volume for items measured in counts or spoons, e.g. 3 eggs = 150g. */
+  metric?: { amount: number; unit: 'g' | 'ml' };
 }
 
 export interface PlannedMeal {
