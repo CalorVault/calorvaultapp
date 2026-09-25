@@ -14,16 +14,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   CaloriesChart,
-  chartStyles,
+  DarkLegendItem,
+  DARK,
+  darkStyles,
+  DarkTile,
   DayMacros,
-  LegendItem,
-  MacroMeter,
-  MacroStackChart,
+  hitAllGoals,
+  MACRO_ORDER,
+  MacroGoalChart,
 } from '../components/ProgressCharts';
 import { WeightChart } from '../components/WeightChart';
 import { useApp } from '../context/AppContext';
 import { RootStackParamList } from '../navigation/types';
-import { getDayLogs, lastNDates } from '../storage/db';
+import { getDayLogs, lastNDates, todayIso } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
 
 type Range = 7 | 30;
@@ -37,10 +40,10 @@ function formatDate(iso: string): string {
 }
 
 export function HistoryScreen() {
-  const { plan, t, weightLog, logWeight, today } = useApp();
+  const { plan, profile, t, weightLog, logWeight, today } = useApp();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [range, setRange] = useState<Range>(7);
-  const [days, setDays] = useState<DayMacros[]>([]);
+  const [allDays, setAllDays] = useState<DayMacros[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weightInput, setWeightInput] = useState('');
   const [loggingWeight, setLoggingWeight] = useState(false);
@@ -48,19 +51,15 @@ export function HistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      getDayLogs(lastNDates(range)).then((logs) => {
+      getDayLogs(lastNDates(30)).then((logs) => {
         if (cancelled) return;
-        setDays(
+        setAllDays(
           logs.map((log) => {
             const sum = (k: 'calories' | 'proteinG' | 'carbsG' | 'fatG') =>
               log.entries.reduce((s, e) => s + e[k], 0);
-            const d = new Date(log.date + 'T00:00:00');
             return {
               date: log.date,
-              axisLabel:
-                range === 7
-                  ? d.toLocaleDateString(undefined, { weekday: 'short' })
-                  : String(d.getDate()),
+              axisLabel: '',
               calories: sum('calories'),
               proteinG: sum('proteinG'),
               carbsG: sum('carbsG'),
@@ -73,12 +72,54 @@ export function HistoryScreen() {
       return () => {
         cancelled = true;
       };
-    }, [range, today])
+    }, [today])
   );
+
+  const days = useMemo(
+    () =>
+      allDays.slice(-range).map((d) => {
+        const date = new Date(d.date + 'T00:00:00');
+        return {
+          ...d,
+          axisLabel:
+            range === 7 ? date.toLocaleDateString(undefined, { weekday: 'short' }) : String(date.getDate()),
+        };
+      }),
+    [allDays, range]
+  );
+
+  // 30 days of three bars each is unreadable, so the 30-day macro chart shows
+  // weekly averages instead: 7-day chunks back from today, with the leftover
+  // oldest days folded into the first chunk.
+  const macroDays = useMemo(() => {
+    if (range === 7 || !plan) return days;
+    const targets = { proteinG: plan.proteinG, fatG: plan.fatG, carbsG: plan.carbsG };
+    const chunks: DayMacros[][] = [];
+    for (let end = days.length; end > 0; end -= 7) chunks.unshift(days.slice(Math.max(0, end - 7), end));
+    if (chunks.length > 1 && chunks[0].length < 7) chunks.splice(0, 2, [...chunks[0], ...chunks[1]]);
+    const fmt = (iso: string) =>
+      new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return chunks.map((chunk) => {
+      const logged = chunk.filter((d) => d.hasEntries);
+      const avg = (k: 'calories' | 'proteinG' | 'carbsG' | 'fatG') =>
+        logged.length ? logged.reduce((s, d) => s + d[k], 0) / logged.length : 0;
+      return {
+        date: chunk[0].date,
+        axisLabel: fmt(chunk[0].date),
+        calories: avg('calories'),
+        proteinG: avg('proteinG'),
+        carbsG: avg('carbsG'),
+        fatG: avg('fatG'),
+        hasEntries: logged.length > 0,
+        hitCount: chunk.filter((d) => hitAllGoals(d, targets)).length,
+        spanLabel: `${fmt(chunk[0].date)} – ${fmt(chunk[chunk.length - 1].date)}`,
+      };
+    });
+  }, [days, range, plan]);
 
   const stats = useMemo(() => {
     const logged = days.filter((d) => d.hasEntries);
-    const avg = (k: keyof Pick<DayMacros, 'calories' | 'proteinG' | 'carbsG' | 'fatG'>) =>
+    const avg = (k: 'calories' | 'proteinG' | 'carbsG' | 'fatG') =>
       logged.length ? logged.reduce((s, d) => s + d[k], 0) / logged.length : 0;
     const target = plan?.calorieTarget ?? 0;
     const onTarget = target
@@ -94,7 +135,36 @@ export function HistoryScreen() {
     };
   }, [days, plan]);
 
-  const selected = days.find((d) => d.date === selectedDate) ?? null;
+  const goals = useMemo(() => {
+    if (!plan) return null;
+    const targets = { proteinG: plan.proteinG, fatG: plan.fatG, carbsG: plan.carbsG };
+    const logged = days.filter((d) => d.hasEntries);
+    const pct = (k: keyof typeof targets) =>
+      logged.length
+        ? Math.round(
+            (logged.reduce((s, d) => s + Math.min(d[k] / targets[k], 1), 0) / logged.length) * 100
+          )
+        : 0;
+    const percents = { proteinG: pct('proteinG'), fatG: pct('fatG'), carbsG: pct('carbsG') };
+    const hitDays = days.filter((d) => hitAllGoals(d, targets)).length;
+
+    // Streak of consecutive days hitting all three, counting back from today;
+    // today doesn't break it while it's still in progress.
+    let streak = 0;
+    const history = [...allDays].reverse();
+    for (let i = 0; i < history.length; i++) {
+      if (hitAllGoals(history[i], targets)) streak++;
+      else if (i === 0 && history[i].date === todayIso()) continue;
+      else break;
+    }
+
+    const worst = MACRO_ORDER.map((m) => m.key).reduce((a, b) => (percents[a] <= percents[b] ? a : b));
+    const gap = Math.round((stats[worst] as number) - targets[worst]);
+    return { targets, percents, hitDays, streak, worst, gap };
+  }, [plan, days, allDays, stats]);
+
+  const selected =
+    macroDays.find((d) => d.date === selectedDate) ?? days.find((d) => d.date === selectedDate) ?? null;
 
   function handleSelect(date: string) {
     setSelectedDate((current) => (current === date ? null : date));
@@ -113,12 +183,6 @@ export function HistoryScreen() {
       setLoggingWeight(false);
     }
   }
-
-  const macroLabels = {
-    proteinG: t.onboarding.protein,
-    fatG: t.onboarding.fat,
-    carbsG: t.onboarding.carbs,
-  };
 
   return (
     <SafeAreaView style={styles.flex} edges={['top']}>
@@ -143,37 +207,93 @@ export function HistoryScreen() {
           </View>
         </View>
 
-        <View style={styles.kpiRow}>
-          <Kpi label={t.progress.avgCalories} value={Math.round(stats.calories).toLocaleString()} />
-          <Kpi label={t.progress.daysLogged} value={`${stats.loggedCount}/${range}`} />
-          <Kpi label={t.progress.onTarget} value={String(stats.onTarget)} unit={t.progress.days} />
-        </View>
-
-        {selected && (
-          <View style={styles.detailCard}>
-            <View style={styles.detailText}>
-              <Text style={styles.detailDate}>{formatDate(selected.date)}</Text>
-              <Text style={styles.detailValues}>
-                {selected.calories.toLocaleString()} kcal · P {Math.round(selected.proteinG)}g · F{' '}
-                {Math.round(selected.fatG)}g · C {Math.round(selected.carbsG)}g
-              </Text>
+        {plan && goals && (
+          <View style={darkStyles.card}>
+            <View style={darkStyles.tiles}>
+              <DarkTile label={t.progress.allGoalsHit} value={`${goals.hitDays}/${range} ${t.progress.days}`} />
+              <DarkTile label={t.progress.streak} value={`${goals.streak} ${t.progress.days}`} />
+              <DarkTile
+                label={t.progress.biggestGap}
+                value={
+                  stats.loggedCount === 0
+                    ? '–'
+                    : goals.gap >= 0 || goals.percents[goals.worst] >= 95
+                    ? t.progress.onTrack
+                    : `${goals.gap}g`
+                }
+                sub={
+                  stats.loggedCount > 0 && goals.gap < 0 && goals.percents[goals.worst] < 95
+                    ? `${({ proteinG: t.onboarding.protein, fatG: t.onboarding.fat, carbsG: t.onboarding.carbs })[goals.worst]} ${t.progress.perDay}`
+                    : undefined
+                }
+                subColor={MACRO_ORDER.find((m) => m.key === goals.worst)?.color}
+              />
             </View>
-            <Pressable
-              style={({ pressed }) => [styles.openDay, pressed && styles.pressedDim]}
-              onPress={() => navigation.navigate('DayDetail', { date: selected.date })}
-            >
-              <Text style={styles.openDayText}>{t.progress.openDay} ›</Text>
-            </Pressable>
+            <View style={darkStyles.headerRow}>
+              <Text style={darkStyles.title}>{t.progress.macrosVsGoal}</Text>
+              <Text style={darkStyles.meta}>{range === 7 ? t.progress.range7 : t.progress.range30}</Text>
+            </View>
+            <View style={darkStyles.legendRow}>
+              {MACRO_ORDER.map((m) => (
+                <DarkLegendItem
+                  key={m.key}
+                  color={m.color}
+                  label={({ proteinG: t.onboarding.protein, fatG: t.onboarding.fat, carbsG: t.onboarding.carbs })[m.key]}
+                  percent={goals.percents[m.key]}
+                  suffix={t.progress.avgOfGoal}
+                />
+              ))}
+            </View>
+            <MacroGoalChart
+              days={macroDays}
+              targets={goals.targets}
+              todayDate={todayIso()}
+              todayLabel={t.progress.today}
+              selectedDate={selectedDate}
+              onSelect={handleSelect}
+            />
+            {selected ? (
+              <View style={darkStyles.detail}>
+                <Text style={darkStyles.detailDate}>
+                  {selected.spanLabel
+                    ? `${selected.spanLabel}\n${t.progress.weekAvg}`
+                    : new Date(selected.date + 'T00:00:00').toLocaleDateString(undefined, {
+                        weekday: 'short',
+                        day: 'numeric',
+                      })}
+                </Text>
+                <View style={darkStyles.detailValues}>
+                  {MACRO_ORDER.map((m) => (
+                    <View key={m.key} style={darkStyles.detailValue}>
+                      <View style={[darkStyles.swatch, { backgroundColor: m.color }]} />
+                      <Text style={darkStyles.detailText}>
+                        {Math.round(selected[m.key])}g / {goals.targets[m.key]}g
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                {!selected.spanLabel && (
+                  <Pressable
+                    style={({ pressed }) => [darkStyles.openDay, pressed && styles.pressedDim]}
+                    onPress={() => navigation.navigate('DayDetail', { date: selected.date })}
+                  >
+                    <Text style={darkStyles.openDayText}>{t.progress.openDay} ›</Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : (
+              <Text style={darkStyles.hint}>{t.progress.goalLegend}</Text>
+            )}
           </View>
         )}
 
-        <View style={chartStyles.card}>
+        <View style={darkStyles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>{t.progress.caloriesChart}</Text>
+            <Text style={darkStyles.title}>{t.progress.caloriesChart}</Text>
             {plan && (
               <View style={styles.targetKey}>
-                <View style={styles.targetKeyLine} />
-                <Text style={styles.cardMeta}>
+                <View style={[styles.targetKeyLine, { backgroundColor: DARK.text }]} />
+                <Text style={darkStyles.meta}>
                   {t.progress.target} {plan.calorieTarget.toLocaleString()}
                 </Text>
               </View>
@@ -184,43 +304,23 @@ export function HistoryScreen() {
             target={plan?.calorieTarget ?? 0}
             selectedDate={selectedDate}
             onSelect={handleSelect}
+            dark
           />
-          <Text style={styles.hint}>{t.progress.tapHint}</Text>
+          <Text style={darkStyles.hint}>
+            {t.progress.avgCalories}: {Math.round(stats.calories).toLocaleString()} kcal · {t.progress.onTarget}:{' '}
+            {stats.onTarget} {t.progress.days}
+          </Text>
         </View>
-
-        <View style={chartStyles.card}>
-          <Text style={styles.cardTitle}>{t.progress.macrosChart}</Text>
-          <View style={styles.legendRow}>
-            {(['proteinG', 'fatG', 'carbsG'] as const).map((k) => (
-              <LegendItem
-                key={k}
-                color={k === 'proteinG' ? colors.protein : k === 'fatG' ? colors.fat : colors.carbs}
-                label={macroLabels[k]}
-                value={`${Math.round(stats[k])}g ${t.progress.avgPerDay}`}
-              />
-            ))}
-          </View>
-          <MacroStackChart days={days} selectedDate={selectedDate} onSelect={handleSelect} />
-        </View>
-
-        {plan && (
-          <View style={chartStyles.card}>
-            <Text style={styles.cardTitle}>{t.progress.avgVsTarget}</Text>
-            <MacroMeter label={t.onboarding.protein} color={colors.protein} value={stats.proteinG} target={plan.proteinG} />
-            <MacroMeter label={t.onboarding.fat} color={colors.fat} value={stats.fatG} target={plan.fatG} />
-            <MacroMeter label={t.onboarding.carbs} color={colors.carbs} value={stats.carbsG} target={plan.carbsG} />
-          </View>
-        )}
 
         {stats.loggedCount === 0 && <Text style={styles.empty}>{t.progress.noData}</Text>}
 
-        <View style={chartStyles.card}>
-          <Text style={styles.cardTitle}>{t.tracking.logWeightTitle}</Text>
+        <View style={darkStyles.card}>
+          <Text style={darkStyles.title}>{t.tracking.logWeightTitle}</Text>
           <View style={styles.logWeightRow}>
             <TextInput
               style={styles.logWeightInput}
               placeholder={t.settings.weightLabel}
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={DARK.muted}
               value={weightInput}
               onChangeText={setWeightInput}
               keyboardType="decimal-pad"
@@ -243,21 +343,21 @@ export function HistoryScreen() {
           </View>
         </View>
 
-        {weightLog.length > 0 && <WeightChart entries={weightLog} label={t.tracking.weightChartLabel} />}
+        {weightLog.length > 0 && profile && (
+          <WeightChart
+            entries={weightLog}
+            goal={profile.goal}
+            labels={{
+              title: t.tracking.weightProgress,
+              lost: t.tracking.lost,
+              gained: t.tracking.gained,
+              fromStart: t.tracking.fromStart,
+              needMore: t.tracking.weightNeedMore,
+            }}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Kpi({ label, value, unit }: { label: string; value: string; unit?: string }) {
-  return (
-    <View style={styles.kpi}>
-      <Text style={styles.kpiLabel}>{label}</Text>
-      <Text style={styles.kpiValue}>
-        {value}
-        {unit ? <Text style={styles.kpiUnit}> {unit}</Text> : null}
-      </Text>
-    </View>
   );
 }
 
@@ -317,12 +417,12 @@ const styles = StyleSheet.create({
   logWeightRow: { flexDirection: 'row', gap: spacing.sm },
   logWeightInput: {
     flex: 1,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: DARK.input,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: DARK.grid,
     borderRadius: radius.md,
     padding: spacing.md,
-    color: colors.text,
+    color: DARK.text,
   },
   logWeightButton: {
     backgroundColor: colors.primary,
@@ -332,5 +432,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logWeightButtonDisabled: { opacity: 0.4 },
-  logWeightButtonText: { color: colors.background, fontWeight: '700' },
+  logWeightButtonText: { color: colors.white, fontWeight: '700' },
 });

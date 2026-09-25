@@ -12,6 +12,10 @@ export interface DayMacros {
   carbsG: number;
   fatG: number;
   hasEntries: boolean;
+  /** Set on weekly groups (30-day view): how many days in the group hit all 3 goals. */
+  hitCount?: number;
+  /** Set on weekly groups: the date range the group covers, for the detail row. */
+  spanLabel?: string;
 }
 
 // Stack and legend order. Protein and carbs (rose and orange) are too close
@@ -28,6 +32,18 @@ const X_LABEL_HEIGHT = 20;
 const GRID = '#EDEEF1';
 const GAP = 2;
 const TOP_PAD = 10;
+
+export const DARK = {
+  card: colors.ink,
+  tile: '#1F2937',
+  grid: '#374151',
+  text: colors.white,
+  muted: '#9CA3AF',
+  track: 0.2,
+  bar: '#5FA37E',
+  input: '#1F2937',
+};
+
 // react-native-svg falls back to a serif face on web; iOS uses the system font.
 const AXIS_FONT = Platform.OS === 'web' ? 'sans-serif' : undefined;
 
@@ -95,19 +111,21 @@ function formatTick(v: number): string {
   return v >= 1000 ? `${(v / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k` : String(Math.round(v));
 }
 
-function Axes({ g, width, days }: { g: Geometry; width: number; days: DayMacros[] }) {
+function Axes({ g, width, days, dark }: { g: Geometry; width: number; days: DayMacros[]; dark?: boolean }) {
+  const gridColor = dark ? DARK.grid : GRID;
+  const labelColor = dark ? DARK.muted : colors.textMuted;
   const every = xLabelEvery(days.length);
   return (
     <G>
       {g.ticks.map((tick) => (
         <G key={tick}>
-          <Line x1={AXIS_WIDTH} x2={width} y1={g.y(tick)} y2={g.y(tick)} stroke={GRID} strokeWidth={1} />
+          <Line x1={AXIS_WIDTH} x2={width} y1={g.y(tick)} y2={g.y(tick)} stroke={gridColor} strokeWidth={1} />
           <SvgText
             x={AXIS_WIDTH - 8}
             y={g.y(tick) + 4}
             fontSize={11}
             fontFamily={AXIS_FONT}
-            fill={colors.textMuted}
+            fill={labelColor}
             textAnchor="end"
           >
             {formatTick(tick)}
@@ -122,7 +140,7 @@ function Axes({ g, width, days }: { g: Geometry; width: number; days: DayMacros[
             y={TOP_PAD + PLOT_HEIGHT + 15}
             fontSize={11}
             fontFamily={AXIS_FONT}
-            fill={colors.textMuted}
+            fill={labelColor}
             textAnchor="middle"
           >
             {d.axisLabel}
@@ -151,14 +169,20 @@ function HitTargets({ g, days, onSelect }: { g: Geometry; days: DayMacros[]; onS
   );
 }
 
-export function CaloriesChart({ days, target, selectedDate, onSelect }: ChartProps & { target: number }) {
+export function CaloriesChart({
+  days,
+  target,
+  selectedDate,
+  onSelect,
+  dark,
+}: ChartProps & { target: number; dark?: boolean }) {
   const { width, onLayout } = useWidth();
   const g = geometry(width, days.length, Math.max(target, ...days.map((d) => d.calories)));
   return (
     <View onLayout={onLayout}>
       {width > 0 && (
         <Svg width={width} height={TOP_PAD + PLOT_HEIGHT + X_LABEL_HEIGHT}>
-          <Axes g={g} width={width} days={days} />
+          <Axes g={g} width={width} days={days} dark={dark} />
           {days.map((d, i) => {
             const x = AXIS_WIDTH + g.slot * i + (g.slot - g.barW) / 2;
             const dim = selectedDate !== null && selectedDate !== d.date;
@@ -166,7 +190,7 @@ export function CaloriesChart({ days, target, selectedDate, onSelect }: ChartPro
               <Path
                 key={d.date}
                 d={columnPath(x, g.y(d.calories), g.barW, g.y(0), true)}
-                fill={colors.primary}
+                fill={dark ? DARK.bar : colors.primary}
                 opacity={dim ? 0.3 : 1}
               />
             );
@@ -178,7 +202,7 @@ export function CaloriesChart({ days, target, selectedDate, onSelect }: ChartPro
                 x2={width}
                 y1={g.y(target)}
                 y2={g.y(target)}
-                stroke={colors.ink}
+                stroke={dark ? DARK.text : colors.ink}
                 strokeWidth={1.5}
                 opacity={0.55}
               />
@@ -300,4 +324,252 @@ export const chartStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+});
+
+// ---- Macros vs goal (dark card) --------------------------------------------
+
+const GOAL_PLOT = 150;
+const GOAL_TOP = 8;
+// A macro counts as "hit" at 90% of its target; a cap marks going 5%+ over.
+export const HIT_RATIO = 0.9;
+const OVER_RATIO = 1.05;
+
+export interface MacroTargets {
+  proteinG: number;
+  fatG: number;
+  carbsG: number;
+}
+
+export function hitAllGoals(d: DayMacros, targets: MacroTargets): boolean {
+  return d.hasEntries && MACRO_ORDER.every((m) => d[m.key] >= targets[m.key] * HIT_RATIO);
+}
+
+export function MacroGoalChart({
+  days,
+  targets,
+  todayDate,
+  selectedDate,
+  onSelect,
+  todayLabel,
+}: ChartProps & { targets: MacroTargets; todayDate: string; todayLabel: string }) {
+  const { width, onLayout } = useWidth();
+  const ax = 36;
+  const slot = days.length ? (width - ax) / days.length : 0;
+  const gap = days.length > 7 ? 1 : 3;
+  const tw = Math.max(2, Math.min(10, (slot - 6 - gap * 2) / 3));
+  const y = (v: number) => GOAL_TOP + GOAL_PLOT - v * GOAL_PLOT;
+  const every = xLabelEvery(days.length);
+  const height = GOAL_TOP + GOAL_PLOT + 44;
+
+  return (
+    <View onLayout={onLayout}>
+      {width > 0 && (
+        <Svg width={width} height={height}>
+          {days.map((d, i) =>
+            d.date === selectedDate ? (
+              <Rect
+                key="sel"
+                x={ax + slot * i + 1}
+                y={GOAL_TOP - 6}
+                width={slot - 2}
+                height={GOAL_PLOT + 30}
+                rx={6}
+                fill={DARK.tile}
+              />
+            ) : null
+          )}
+          {[0, 0.5, 1].map((v) => (
+            <G key={v}>
+              <Line
+                x1={ax}
+                x2={width}
+                y1={y(v)}
+                y2={y(v)}
+                stroke={v === 1 ? DARK.text : DARK.grid}
+                strokeWidth={v === 1 ? 1.5 : 1}
+                opacity={v === 1 ? 0.6 : 1}
+              />
+              <SvgText
+                x={ax - 6}
+                y={y(v) + 4}
+                fontSize={11}
+                fontFamily={AXIS_FONT}
+                fill={DARK.muted}
+                textAnchor="end"
+              >
+                {`${v * 100}%`}
+              </SvgText>
+            </G>
+          ))}
+          {days.map((d, i) => {
+            const cx = ax + slot * i + slot / 2;
+            const x0 = cx - (3 * tw + 2 * gap) / 2;
+            const isToday = d.date === todayDate;
+            const emphasised = isToday || d.date === selectedDate;
+            const showLabel = days.length <= 7 || i % every === 0 || i === days.length - 1;
+            return (
+              <G key={d.date}>
+                {MACRO_ORDER.map((m, j) => {
+                  const x = x0 + j * (tw + gap);
+                  const ratio = targets[m.key] > 0 ? d[m.key] / targets[m.key] : 0;
+                  const h = Math.min(ratio, 1) * GOAL_PLOT;
+                  return (
+                    <G key={m.key}>
+                      <Rect x={x} y={GOAL_TOP} width={tw} height={GOAL_PLOT} fill={m.color} opacity={DARK.track} />
+                      {d.hasEntries && h > 0 && (
+                        <Rect x={x} y={GOAL_TOP + GOAL_PLOT - h} width={tw} height={h} fill={m.color} />
+                      )}
+                      {d.hasEntries && ratio > OVER_RATIO && (
+                        <Rect x={x} y={GOAL_TOP - 5} width={tw} height={3} fill={DARK.text} />
+                      )}
+                    </G>
+                  );
+                })}
+                {showLabel && (
+                  <SvgText
+                    x={cx}
+                    y={GOAL_TOP + GOAL_PLOT + 17}
+                    fontSize={11}
+                    fontFamily={AXIS_FONT}
+                    fontWeight={emphasised ? '700' : '500'}
+                    fill={emphasised ? DARK.text : DARK.muted}
+                    textAnchor="middle"
+                  >
+                    {isToday && d.hitCount === undefined ? todayLabel : d.axisLabel}
+                  </SvgText>
+                )}
+                {d.hitCount !== undefined ? (
+                  d.hitCount > 0 && (
+                    <SvgText
+                      x={cx}
+                      y={GOAL_TOP + GOAL_PLOT + 37}
+                      fontSize={11}
+                      fontWeight="700"
+                      fontFamily={AXIS_FONT}
+                      fill="#86B89A"
+                      textAnchor="middle"
+                    >
+                      {`✓ ${d.hitCount}`}
+                    </SvgText>
+                  )
+                ) : hitAllGoals(d, targets) && (
+                  <G>
+                    <Rect
+                      x={cx - Math.min(7, slot / 2 - 1)}
+                      y={GOAL_TOP + GOAL_PLOT + 26}
+                      width={Math.min(14, slot - 2)}
+                      height={14}
+                      rx={3}
+                      fill={colors.primary}
+                    />
+                    {slot >= 12 && (
+                      <SvgText
+                        x={cx}
+                        y={GOAL_TOP + GOAL_PLOT + 37}
+                        fontSize={10}
+                        fontWeight="700"
+                        fontFamily={AXIS_FONT}
+                        fill={colors.white}
+                        textAnchor="middle"
+                      >
+                        ✓
+                      </SvgText>
+                    )}
+                  </G>
+                )}
+                <Rect
+                  x={ax + slot * i}
+                  y={0}
+                  width={slot}
+                  height={height}
+                  fill="transparent"
+                  onPress={() => onSelect(d.date)}
+                />
+              </G>
+            );
+          })}
+        </Svg>
+      )}
+    </View>
+  );
+}
+
+export function DarkTile({
+  label,
+  value,
+  sub,
+  subColor,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  subColor?: string;
+}) {
+  return (
+    <View style={darkStyles.tile}>
+      <Text style={darkStyles.tileLabel} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text style={darkStyles.tileValue} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
+      </Text>
+      {sub ? (
+        <View style={darkStyles.tileSubRow}>
+          {subColor ? <View style={[darkStyles.swatch, { backgroundColor: subColor }]} /> : null}
+          <Text style={darkStyles.tileSub} numberOfLines={1}>
+            {sub}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+export function DarkLegendItem({ color, label, percent, suffix }: { color: string; label: string; percent: number; suffix: string }) {
+  return (
+    <View style={darkStyles.legendItem}>
+      <View style={darkStyles.legendKey}>
+        <View style={[darkStyles.swatch, { backgroundColor: color }]} />
+        <Text style={darkStyles.legendLabel}>{label}</Text>
+      </View>
+      <Text style={darkStyles.legendValue}>
+        {percent}%<Text style={darkStyles.legendSuffix}> {suffix}</Text>
+      </Text>
+    </View>
+  );
+}
+
+export const darkStyles = StyleSheet.create({
+  card: { backgroundColor: DARK.card, borderRadius: radius.lg, padding: spacing.md, gap: spacing.md },
+  tiles: { flexDirection: 'row', gap: spacing.sm },
+  tile: { flex: 1, backgroundColor: DARK.tile, borderRadius: radius.md, padding: 10, gap: 2 },
+  tileLabel: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
+  tileValue: { color: DARK.text, fontSize: 17, fontWeight: '700' },
+  tileSubRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  tileSub: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  title: { color: DARK.text, fontSize: 17, fontWeight: '700' },
+  meta: { color: DARK.muted, fontSize: 12, fontWeight: '600' },
+  legendRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  legendItem: { gap: 2 },
+  legendKey: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  swatch: { width: 10, height: 10, borderRadius: 2 },
+  legendLabel: { color: DARK.muted, fontSize: 12, fontWeight: '600' },
+  legendValue: { color: DARK.text, fontSize: 16, fontWeight: '700' },
+  legendSuffix: { color: DARK.muted, fontSize: 11, fontWeight: '600' },
+  detail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: DARK.grid,
+    paddingTop: spacing.sm,
+    gap: spacing.sm,
+  },
+  detailDate: { color: DARK.text, fontSize: 13, fontWeight: '700', minWidth: 56 },
+  detailValues: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  detailValue: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  detailText: { color: '#D1D5DB', fontSize: 12 },
+  openDay: { backgroundColor: DARK.text, borderRadius: radius.full, paddingVertical: 5, paddingHorizontal: 10 },
+  openDayText: { color: DARK.card, fontWeight: '700', fontSize: 12 },
+  hint: { color: DARK.muted, fontSize: 11 },
 });
