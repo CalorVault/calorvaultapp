@@ -158,16 +158,51 @@ export async function listFriends(url: string, anonKey: string): Promise<Communi
   const ids = (rows ?? []).map((r) => r.friend_id as string);
   if (ids.length === 0) return [];
 
-  const { data: profiles, error: profileError } = await supabase
+  const withScores = await supabase
     .from('profiles')
-    .select('id, username, created_at')
+    .select(`id, username, created_at, ${WEEK_COLUMNS}`)
     .in('id', ids);
+  let profiles: Record<string, unknown>[] | null = withScores.data;
+  let profileError = withScores.error;
+  // Before the weekly-score columns exist, still list friends without scores.
+  if (profileError && isMissingColumn(profileError)) {
+    const basic = await supabase.from('profiles').select('id, username, created_at').in('id', ids);
+    profiles = basic.data;
+    profileError = basic.error;
+  }
   if (profileError) throw new CommunityError(profileError.message);
   return (profiles ?? []).map((p) => ({
     id: p.id as string,
     username: p.username as string,
     createdAt: p.created_at as string,
+    weekScore: (p.week_score as number | null | undefined) ?? null,
+    weekStart: (p.week_start as string | null | undefined) ?? null,
+    streak: (p.streak as number | null | undefined) ?? null,
   }));
+}
+
+const WEEK_COLUMNS = 'week_score, week_start, streak';
+
+/**
+ * Shares this week's score and streak on your profile so friends can see
+ * where you rank. Returns false if the columns haven't been added yet.
+ */
+export async function saveMyWeekStats(
+  url: string,
+  anonKey: string,
+  stats: { weekStart: string; weekScore: number | null; streak: number }
+): Promise<boolean> {
+  const userId = await currentUserId(url, anonKey);
+  if (!userId) return false;
+  const { error } = await client(url, anonKey)
+    .from('profiles')
+    .update({ week_start: stats.weekStart, week_score: stats.weekScore, streak: stats.streak })
+    .eq('id', userId);
+  if (error) {
+    if (isMissingColumn(error)) return false;
+    throw new CommunityError(error.message);
+  }
+  return true;
 }
 
 const NUTRITION_COLUMNS = 'calories, protein_g, carbs_g, fat_g';

@@ -3,8 +3,9 @@ import { LayoutChangeEvent, StyleProp, StyleSheet, View, ViewStyle } from 'react
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { colors } from '../theme';
 
-// Black with a hint of slate, used with orange accents to match the logo.
-export const BLACK_GRADIENT = [colors.ink, '#1A2231', '#232C3D'] as const;
+// Near-black in the top-left easing to a lighter slate in the bottom-right,
+// shared by the dark cards (Community score, Plan my whole day, Voice to Meal).
+export const SHADED_GRADIENT = ['#0B0F17', '#1A2230', '#3E4A5F'] as const;
 
 let gradientCounter = 0;
 
@@ -15,7 +16,7 @@ let gradientCounter = 0;
 export function GradientCard({
   style,
   children,
-  stops = BLACK_GRADIENT,
+  stops = SHADED_GRADIENT,
 }: {
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;

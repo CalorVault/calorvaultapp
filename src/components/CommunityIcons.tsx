@@ -54,3 +54,22 @@ export function PlusIcon({ size = 20, color }: IconProps) {
     </Svg>
   );
 }
+
+export function FlameIcon({ size = 16, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M12 2c1 4 5.5 6.2 5.5 11.5a5.5 5.5 0 0 1-11 0c0-2.8 1.3-4.4 2.7-5.5.2 2.1 1.3 3.2 2.4 3.6C11 9 11 5.2 12 2Z"
+        fill={color}
+      />
+    </Svg>
+  );
+}
+
+export function ChevronIcon({ size = 14, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 5l7 7-7 7" stroke={color} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}

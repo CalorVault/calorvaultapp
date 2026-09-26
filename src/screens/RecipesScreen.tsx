@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { SHADED_GRADIENT } from '../components/GradientCard';
 import { RECIPES } from '../data/recipes';
 import { recipeImage } from '../data/recipePhotos';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
@@ -159,8 +160,9 @@ export function RecipesScreen() {
                   >
                     <Defs>
                       <LinearGradient id="planBannerBg" x1="0" y1="0" x2="1" y2="1">
-                        <Stop offset="0" stopColor={colors.ink} />
-                        <Stop offset="1" stopColor="#232C3D" />
+                        {SHADED_GRADIENT.map((color, i) => (
+                          <Stop key={i} offset={String(i / (SHADED_GRADIENT.length - 1))} stopColor={color} />
+                        ))}
                       </LinearGradient>
                     </Defs>
                     <Rect

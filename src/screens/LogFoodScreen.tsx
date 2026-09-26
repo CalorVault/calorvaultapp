@@ -926,21 +926,19 @@ function ManualTab() {
       />
       {apiKey && isPremium && (
         <Pressable
-          style={styles.lookupLink}
+          style={({ pressed }) => [
+            styles.lookupLink,
+            !foodName.trim() && styles.lookupLinkDisabled,
+            pressed && styles.tabButtonPressed,
+          ]}
           onPress={handleLookUp}
           disabled={lookingUp || !foodName.trim()}
         >
+          <IconBadge Icon={SearchIcon} size={30} />
           {lookingUp ? (
-            <ActivityIndicator color={colors.primaryDark} size="small" />
+            <ActivityIndicator color={colors.accent} size="small" />
           ) : (
-            <Text
-              style={[
-                styles.lookupLinkText,
-                !foodName.trim() && styles.lookupLinkTextDisabled,
-              ]}
-            >
-              {t.logFood.lookUpNutrition}
-            </Text>
+            <Text style={styles.lookupLinkText}>{t.logFood.lookUpNutrition}</Text>
           )}
         </Pressable>
       )}
@@ -1612,15 +1610,18 @@ const styles = StyleSheet.create({
   },
   lookupLink: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     paddingVertical: spacing.xs,
   },
-  lookupLinkText: {
-    color: colors.primaryDark,
-    fontWeight: '600',
-    fontSize: 13,
+  lookupLinkDisabled: {
+    opacity: 0.45,
   },
-  lookupLinkTextDisabled: {
-    color: colors.textMuted,
+  lookupLinkText: {
+    color: colors.text,
+    fontWeight: '700',
+    fontSize: 15,
   },
   budgetCard: {
     backgroundColor: colors.primaryMuted,

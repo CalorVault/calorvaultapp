@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../theme';
+import { GradientCard } from './GradientCard';
 
 // A flame with a heartbeat/pulse line cut through it in white -- calories
 // (the flame) and vitality (the pulse) in one mark. Filled with
@@ -66,6 +67,8 @@ interface LogoScanFrameProps {
   /** Glyph width as a fraction of `size`; small badges use a larger share so the leaf stays legible. */
   glyphScale?: number;
   background?: string;
+  /** Draw the same dark-to-slate gradient as the shaded cards instead of a flat background. */
+  shaded?: boolean;
 }
 
 // Wraps the unchanged logo glyph in a dark square with camera-viewfinder
@@ -75,6 +78,7 @@ export function LogoScanFrame({
   size = 160,
   glyphScale = 0.28,
   background = colors.ink,
+  shaded = false,
 }: LogoScanFrameProps) {
   const cornerLength = size * 0.16;
   const cornerThickness = Math.max(2, size * 0.028);
@@ -86,17 +90,16 @@ export function LogoScanFrame({
     borderColor: colors.surface,
   };
 
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size * 0.16,
-        backgroundColor: background,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+  const frameStyle = {
+    width: size,
+    height: size,
+    borderRadius: size * 0.16,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  };
+
+  const content = (
+    <>
       <View
         style={[
           cornerStyle,
@@ -145,7 +148,16 @@ export function LogoScanFrame({
           },
         ]}
       />
-      <LogoGlyph size={size * glyphScale} />
-    </View>
+      {/* Wrapped so it always stacks above the gradient layer. */}
+      <View>
+        <LogoGlyph size={size * glyphScale} />
+      </View>
+    </>
+  );
+
+  return shaded ? (
+    <GradientCard style={frameStyle}>{content}</GradientCard>
+  ) : (
+    <View style={[frameStyle, { backgroundColor: background }]}>{content}</View>
   );
 }

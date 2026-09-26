@@ -103,7 +103,7 @@ export function IntroScreen({ onFinish }: Props) {
           <Animated.View
             style={{ opacity: iconOpacity, transform: [{ translateY: iconTranslateY }] }}
           >
-            <LogoScanFrame size={ICON_SIZE} />
+            <LogoScanFrame size={ICON_SIZE} shaded />
           </Animated.View>
         </View>
 
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   wordmarkCalor: {
-    color: colors.primaryDark,
+    color: colors.ink,
   },
   wordmarkVault: {
     color: colors.accent,

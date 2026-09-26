@@ -141,6 +141,11 @@ export interface CommunityProfile {
   id: string;
   username: string;
   createdAt: string;
+  /** This week's average % of daily goals, shared so friends can be ranked. */
+  weekScore?: number | null;
+  /** Monday (ISO date) of the week `weekScore` belongs to. */
+  weekStart?: string | null;
+  streak?: number | null;
 }
 
 export interface PostNutrition {

@@ -12,6 +12,12 @@ create table if not exists profiles (
   created_at timestamptz not null default now()
 );
 
+-- Weekly score and streak each user shares with friends for the ranking
+-- (added later; safe to re-run).
+alter table profiles add column if not exists week_score smallint;
+alter table profiles add column if not exists week_start date;
+alter table profiles add column if not exists streak smallint;
+
 create table if not exists friendships (
   user_id uuid not null references profiles(id) on delete cascade,
   friend_id uuid not null references profiles(id) on delete cascade,

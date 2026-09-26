@@ -1,14 +1,14 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   RefreshControl,
@@ -19,8 +19,15 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle } from 'react-native-svg';
-import { CameraIcon, CommentIcon, HeartIcon, PlusIcon } from '../components/CommunityIcons';
+import {
+  CameraIcon,
+  ChevronIcon,
+  CommentIcon,
+  FlameIcon,
+  HeartIcon,
+  PlusIcon,
+} from '../components/CommunityIcons';
+import { GradientCard, SHADED_GRADIENT } from '../components/GradientCard';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import { useWeekDays } from '../hooks/useWeekDays';
@@ -36,15 +43,17 @@ import {
   listComments,
   listFeed,
   listFriends,
+  saveMyWeekStats,
   signIn,
   signOut,
   signUp,
   toggleLike,
 } from '../lib/community';
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
-import { getHiddenPostIds, saveHiddenPostIds } from '../storage/db';
+import { currentWeekDates, HIT_SCORE, WeekDayScore, weekSummary } from '../lib/weekScore';
+import { getDayLogs, getHiddenPostIds, saveHiddenPostIds, todayIso } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
-import { CommunityComment, CommunityPost, CommunityProfile, FoodEntry, PostNutrition } from '../types';
+import { CommunityComment, CommunityPost, CommunityProfile, DayLog, FoodEntry, PostNutrition } from '../types';
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
@@ -88,46 +97,6 @@ function timeAgo(iso: string): string {
   const days = Math.round(hours / 24);
   if (days < 7) return `${days}d`;
   return formatTimestamp(iso);
-}
-
-function ProgressRing({
-  percent,
-  color,
-  label,
-}: {
-  percent: number;
-  color: string;
-  label: string;
-}) {
-  const size = 52;
-  const stroke = 5;
-  const r = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * r;
-  const clamped = Math.max(0, Math.min(percent, 100));
-  return (
-    <View style={styles.ringWrap}>
-      <View style={{ width: size, height: size }}>
-        <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-          <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.surfaceAlt} strokeWidth={stroke} fill="none" />
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            stroke={color}
-            strokeWidth={stroke}
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray={`${circumference} ${circumference}`}
-            strokeDashoffset={circumference * (1 - clamped / 100)}
-          />
-        </Svg>
-        <View style={styles.ringCenter}>
-          <Text style={styles.ringPercent}>{Math.round(percent)}%</Text>
-        </View>
-      </View>
-      <Text style={styles.ringLabel}>{label}</Text>
-    </View>
-  );
 }
 
 function NutritionChips({ n, overlay }: { n: PostNutrition; overlay?: boolean }) {
@@ -419,20 +388,35 @@ function Feed({
   const [newUsername, setNewUsername] = useState('');
   const [savingUsername, setSavingUsername] = useState(false);
   const [attachedEntryId, setAttachedEntryId] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [weekLogs, setWeekLogs] = useState<DayLog[]>([]);
   const { today, plan } = useApp();
   const { days: weekDays } = useWeekDays(plan?.calorieTarget ?? 0, today.entries.length);
 
+  useEffect(() => {
+    getDayLogs(currentWeekDates()).then(setWeekLogs);
+  }, [today.entries.length]);
+
+  // A failed load (e.g. no signal) keeps what was on screen and shows a retry
+  // card, rather than looking like you have no username.
   const load = useCallback(async () => {
-    const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
-      getMyProfile(url, anonKey),
-      listFriends(url, anonKey),
-      listFeed(url, anonKey),
-      getHiddenPostIds(),
-    ]);
-    const hidden = new Set(hiddenIds);
-    setProfile(myProfile);
-    setFriends(myFriends);
-    setPosts(feed.filter((p) => !hidden.has(p.id)));
+    try {
+      const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
+        getMyProfile(url, anonKey),
+        listFriends(url, anonKey),
+        listFeed(url, anonKey),
+        getHiddenPostIds(),
+      ]);
+      const hidden = new Set(hiddenIds);
+      setProfile(myProfile);
+      setFriends(myFriends);
+      setPosts(feed.filter((p) => !hidden.has(p.id)));
+      setLoadFailed(false);
+    } catch {
+      setLoadFailed(true);
+    }
   }, [url, anonKey]);
 
   useEffect(() => {
@@ -552,6 +536,7 @@ function Feed({
       setAttachedEntryId(null);
       setPhotoBase64(undefined);
       setPhotoPreviewUri(undefined);
+      setComposing(false);
       await load();
     } catch (err) {
       Alert.alert(
@@ -619,22 +604,9 @@ function Feed({
     ]);
   }
 
-  if (loading) {
-    return (
-      <View style={styles.body}>
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
-
-  // A friend's circle gets a green ring when they've posted in the last day.
-  const postedToday = new Set(
-    posts
-      .filter((p) => Date.now() - new Date(p.createdAt).getTime() < 24 * 60 * 60 * 1000)
-      .map((p) => p.authorId)
-  );
   const myName = profile?.username ?? '';
   const canPost = !!caption.trim() || !!photoBase64 || !!attachedEntryId;
+  const showComposerExtras = composing || canPost;
   const streak = (() => {
     let count = 0;
     for (let i = weekDays.length - 1; i >= 0; i--) {
@@ -643,131 +615,313 @@ function Feed({
     }
     return count;
   })();
-  const totals = today.entries.reduce(
-    (acc, e) => ({
-      calories: acc.calories + e.calories,
-      proteinG: acc.proteinG + e.proteinG,
-      carbsG: acc.carbsG + e.carbsG,
-      fatG: acc.fatG + e.fatG,
-    }),
-    { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
-  );
-  const pct = (value: number, target?: number) => (target ? (value / target) * 100 : 0);
+  const week = useMemo(() => weekSummary(weekLogs, plan, todayIso()), [weekLogs, plan]);
+  const weekStart = weekLogs[0]?.date ?? currentWeekDates()[0];
+
+  // Share this week's score so friends can see where you rank.
+  useEffect(() => {
+    if (!profile) return;
+    saveMyWeekStats(url, anonKey, { weekStart, weekScore: week.average, streak }).catch(() => {});
+  }, [profile, url, anonKey, weekStart, week.average, streak]);
+
+  if (loading) {
+    return (
+      <View style={styles.body}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+
+  // You plus the friends who've shared a score for this same week, best first.
+  const ranked = [
+    ...(profile && week.average !== null
+      ? [{ id: profile.id, username: profile.username, score: week.average, streak, isMe: true }]
+      : []),
+    ...friends
+      .filter((f) => f.weekStart === weekStart && f.weekScore != null)
+      .map((f) => ({ id: f.id, username: f.username, score: f.weekScore as number, streak: f.streak ?? 0, isMe: false })),
+  ].sort((a, b) => b.score - a.score);
+  const myRank = ranked.findIndex((r) => r.isMe) + 1;
+  const showRank = myRank > 0 && ranked.length > 1;
+  const leader = ranked[0];
+  const unranked = friends.filter((f) => !ranked.some((r) => r.id === f.id));
 
   return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
+      <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         contentContainerStyle={styles.feedContainer}
-        ListHeaderComponent={
-          <View style={styles.feedHeader}>
-            {!profile && (
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>{t.community.chooseUsernameTitle}</Text>
-                <Text style={styles.hint}>{t.community.chooseUsernameCopy}</Text>
-                <View style={styles.friendRow}>
-                  <TextInput
-                    style={[styles.pillInput, styles.friendInput]}
-                    placeholder={t.community.usernamePlaceholder}
-                    placeholderTextColor={colors.textMuted}
-                    value={newUsername}
-                    onChangeText={setNewUsername}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  <Pressable
-                    style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
-                    onPress={handleSaveUsername}
-                    disabled={savingUsername}
-                  >
-                    {savingUsername ? (
-                      <ActivityIndicator color={colors.white} size="small" />
-                    ) : (
-                      <Text style={styles.pillButtonText}>{t.community.saveUsername}</Text>
-                    )}
-                  </Pressable>
-                </View>
-              </View>
-            )}
+        keyboardShouldPersistTaps="handled"
+      >
+        {loadFailed && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t.community.loadFailed}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.pillButton, styles.retryButton, pressed && styles.pressedDim]}
+              onPress={handleRefresh}
+            >
+              <Text style={styles.pillButtonText}>{t.community.tryAgain}</Text>
+            </Pressable>
+          </View>
+        )}
 
-            <View style={styles.hero}>
-              <View style={styles.heroTop}>
-                <View style={styles.heroAvatarRing}>
-                  <Avatar name={myName || '?'} size={52} />
-                </View>
-                <View style={styles.heroText}>
-                  <Text style={styles.heroName} numberOfLines={1}>
-                    @{myName || '...'}
-                  </Text>
-                  <Text style={styles.heroMeta} numberOfLines={1}>
-                    🔥 {streak} {t.community.dayStreak}
-                  </Text>
-                  <Text style={styles.heroMeta} numberOfLines={1}>
-                    {friends.length} {t.community.friendsLabel}
-                  </Text>
-                </View>
-                <Pressable
-                  style={({ pressed }) => [styles.heroInvite, pressed && styles.pressedDim]}
-                  onPress={handleInviteFriend}
-                >
-                  <PlusIcon size={14} color={colors.white} />
-                  <Text style={styles.heroInviteText}>{t.community.invite}</Text>
-                </Pressable>
+        {!profile && !loadFailed && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t.community.chooseUsernameTitle}</Text>
+            <Text style={styles.hint}>{t.community.chooseUsernameCopy}</Text>
+            <View style={styles.friendRow}>
+              <TextInput
+                style={[styles.pillInput, styles.friendInput]}
+                placeholder={t.community.usernamePlaceholder}
+                placeholderTextColor={colors.textMuted}
+                value={newUsername}
+                onChangeText={setNewUsername}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <Pressable
+                style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
+                onPress={handleSaveUsername}
+                disabled={savingUsername}
+              >
+                {savingUsername ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <Text style={styles.pillButtonText}>{t.community.saveUsername}</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.scoreShadow}>
+          <GradientCard style={styles.scoreCard} stops={SHADED_GRADIENT}>
+            <View style={styles.scoreTopRow}>
+              <Text style={styles.scoreEyebrow}>{t.community.thisWeek}</Text>
+              <Text style={styles.scoreRange}>{weekRangeLabel()}</Text>
+            </View>
+            <View style={styles.scoreMain}>
+              <View style={styles.scoreMainText}>
+                <Text style={styles.scoreBig}>
+                  {week.average !== null ? week.average : '–'}
+                  {week.average !== null && <Text style={styles.scorePct}>%</Text>}
+                </Text>
+                <Text style={styles.scoreCaption}>
+                  {week.average !== null ? t.community.weekScoreCaption : t.community.weekScoreEmpty}
+                </Text>
               </View>
-              <Text style={styles.heroSection}>{t.community.todaySoFar}</Text>
-              <View style={styles.ringsRow}>
-                <ProgressRing
-                  percent={pct(totals.calories, plan?.calorieTarget)}
-                  color={colors.ink}
-                  label={t.community.calories}
-                />
-                <ProgressRing
-                  percent={pct(totals.proteinG, plan?.proteinG)}
-                  color={colors.protein}
-                  label={t.onboarding.protein}
-                />
-                <ProgressRing
-                  percent={pct(totals.carbsG, plan?.carbsG)}
-                  color={colors.carbs}
-                  label={t.onboarding.carbs}
-                />
-                <ProgressRing
-                  percent={pct(totals.fatG, plan?.fatG)}
-                  color={colors.fat}
-                  label={t.onboarding.fat}
-                />
+              <View style={styles.scoreBadgeWrap}>
+                <View style={styles.scoreBadge}>
+                  {showRank ? (
+                    <Text style={styles.scoreBadgeText}>#{myRank}</Text>
+                  ) : (
+                    <View style={styles.scoreStreak}>
+                      <Text style={styles.scoreBadgeText}>{streak}</Text>
+                      <FlameIcon size={16} color={colors.accent} />
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.scoreBadgeLabel}>
+                  {showRank ? `${t.community.rankOf} ${ranked.length}` : t.community.dayStreak}
+                </Text>
               </View>
             </View>
+            <View style={styles.barsRow}>
+              {week.days.map((d, i) => (
+                <WeekBar key={d.date} day={d} index={i} />
+              ))}
+            </View>
+            <View style={styles.scoreDivider} />
+            <Pressable
+              style={({ pressed }) => [styles.scoreFooter, pressed && styles.pressedDim]}
+              onPress={friends.length > 0 ? () => setFriendsOpen(true) : handleInviteFriend}
+            >
+              {friends.length > 0 ? (
+                <View style={styles.avatarStack}>
+                  {friends.slice(0, 5).map((f, i) => (
+                    <View key={f.id} style={[styles.stackItem, i > 0 && styles.stackOverlap]}>
+                      <Avatar name={f.username} size={28} />
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.inviteDot}>
+                  <PlusIcon size={14} color={colors.white} />
+                </View>
+              )}
+              <Text style={styles.scoreFooterText} numberOfLines={1}>
+                {friends.length === 0 ? (
+                  t.community.inviteToCompete
+                ) : showRank && leader ? (
+                  leader.isMe ? (
+                    <>
+                      {t.community.youLead} <Text style={styles.scoreFooterStrong}>{leader.score}%</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.scoreFooterStrong}>{leader.username}</Text> {t.community.leadsWith}{' '}
+                      {leader.score}%
+                    </>
+                  )
+                ) : (
+                  `${friends.length} ${t.community.friendsLabel}`
+                )}
+              </Text>
+              <ChevronIcon size={14} color={colors.accent} />
+            </Pressable>
+          </GradientCard>
+        </View>
 
-            {friends.length > 0 && (
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>{t.community.activity}</Text>
+          <Pressable
+            style={({ pressed }) => [styles.sectionLink, pressed && styles.pressedDim]}
+            onPress={() => setFriendsOpen(true)}
+            hitSlop={8}
+          >
+            <Text style={styles.sectionLinkText}>{t.community.friendsSection}</Text>
+            <ChevronIcon size={12} color={colors.accent} />
+          </Pressable>
+        </View>
+
+        <View style={styles.activityCard}>
+          <View style={styles.composerRow}>
+            <Avatar name={myName || '?'} size={42} />
+            <TextInput
+              style={styles.composerInput}
+              placeholder={t.community.sharePlaceholder}
+              placeholderTextColor={colors.textMuted}
+              value={caption}
+              onChangeText={setCaption}
+              onFocus={() => setComposing(true)}
+              multiline
+            />
+            <Pressable
+              style={({ pressed }) => [styles.cameraButton, pressed && styles.pressedDim]}
+              onPress={handlePickPhoto}
+              accessibilityLabel={t.community.addPhoto}
+            >
+              <CameraIcon size={20} color={colors.white} />
+            </Pressable>
+          </View>
+          {showComposerExtras && today.entries.length > 0 && (
+            <View style={styles.attachBlock}>
+              <Text style={styles.attachLabel}>{t.community.attachMeal}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.storiesRow}
+                contentContainerStyle={styles.attachRow}
+                keyboardShouldPersistTaps="handled"
               >
-                {friends.map((f) => (
-                  <View key={f.id} style={styles.story}>
-                    <View
-                      style={[
-                        styles.storyRing,
-                        { borderColor: postedToday.has(f.id) ? colors.accent : colors.border },
-                      ]}
+                {today.entries.map((e) => {
+                  const active = e.id === attachedEntryId;
+                  return (
+                    <Pressable
+                      key={e.id}
+                      style={[styles.attachChip, active && styles.attachChipActive]}
+                      onPress={() => {
+                        setAttachedEntryId(active ? null : e.id);
+                        if (!active && !caption.trim()) setCaption(e.foodName);
+                      }}
                     >
-                      <Avatar name={f.username} size={52} />
-                    </View>
-                    <Text style={styles.storyName} numberOfLines={1}>
-                      {f.username}
-                    </Text>
-                  </View>
-                ))}
+                      <Text style={[styles.attachChipText, active && styles.attachChipTextActive]} numberOfLines={1}>
+                        {e.foodName} · {Math.round(e.calories)} kcal
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </ScrollView>
-            )}
+            </View>
+          )}
+          {photoPreviewUri && (
+            <View style={styles.photoPreviewWrap}>
+              <Image source={{ uri: photoPreviewUri }} style={styles.photoPreview} />
+              <Pressable
+                style={({ pressed }) => [styles.removePhotoButton, pressed && styles.pressedDim]}
+                onPress={() => {
+                  setPhotoBase64(undefined);
+                  setPhotoPreviewUri(undefined);
+                }}
+              >
+                <Text style={styles.removePhotoButtonText}>{t.community.removePhoto}</Text>
+              </Pressable>
+            </View>
+          )}
+          {canPost && (
+            <Pressable
+              style={({ pressed }) => [styles.postButton, pressed && styles.pressedDim]}
+              onPress={handlePost}
+              disabled={posting}
+            >
+              {posting ? (
+                <ActivityIndicator color={colors.white} size="small" />
+              ) : (
+                <Text style={styles.pillButtonText}>{t.community.postButton}</Text>
+              )}
+            </Pressable>
+          )}
 
+          {posts.length === 0 ? (
+            <View style={styles.activityEmpty}>
+              <View style={styles.activityDivider} />
+              <Text style={styles.activityEmptyText}>{t.community.noActivity}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.invitePill, pressed && styles.pressedDim]}
+                onPress={handleInviteFriend}
+              >
+                <PlusIcon size={14} color={colors.white} />
+                <Text style={styles.invitePillText}>{t.community.invite}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            posts.map((item) => (
+              <View key={item.id}>
+                <View style={styles.activityDivider} />
+                <ActivityRow
+                  post={item}
+                  isMine={item.authorId === profile?.id}
+                  t={t}
+                  open={expandedPostId === item.id}
+                  onToggle={() => setExpandedPostId(expandedPostId === item.id ? null : item.id)}
+                  onToggleLike={() => handleToggleLike(item)}
+                  onDelete={() => handleDeletePost(item)}
+                  url={url}
+                  anonKey={anonKey}
+                />
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          {!!myName && (
+            <Text style={styles.footerText}>
+              {t.community.signedInAs} @{myName}
+            </Text>
+          )}
+          <Pressable onPress={handleSignOut} hitSlop={8}>
+            <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+
+      <Modal
+        visible={friendsOpen}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setFriendsOpen(false)}
+      >
+        <View style={styles.sheet}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{t.community.friendsSection}</Text>
+            <Pressable onPress={() => setFriendsOpen(false)} hitSlop={10}>
+              <Text style={styles.sheetDone}>{t.community.done}</Text>
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
             <View style={styles.addFriendPill}>
               <TextInput
                 style={styles.addFriendInput}
@@ -793,142 +947,141 @@ function Feed({
               </Pressable>
             </View>
 
-            <View style={styles.composerCard}>
-              <View style={styles.composerRow}>
-                <Avatar name={myName || '?'} size={40} />
-                <TextInput
-                  style={styles.composerInput}
-                  placeholder={t.community.sharePlaceholder}
-                  placeholderTextColor={colors.textMuted}
-                  value={caption}
-                  onChangeText={setCaption}
-                  multiline
-                />
-                <Pressable
-                  style={({ pressed }) => [styles.cameraButton, pressed && styles.pressedDim]}
-                  onPress={handlePickPhoto}
-                  accessibilityLabel={t.community.addPhoto}
-                >
-                  <CameraIcon size={20} color={colors.white} />
-                </Pressable>
+            {(ranked.length > 0 || unranked.length > 0) && (
+              <View style={styles.rankCard}>
+                {ranked.map((r, i) => (
+                  <RankRow
+                    key={r.id}
+                    first={i === 0}
+                    rank={i + 1}
+                    name={r.isMe ? t.community.you : r.username}
+                    avatarName={r.username}
+                    score={r.score}
+                    streak={r.streak}
+                    isMe={r.isMe}
+                    t={t}
+                  />
+                ))}
+                {unranked.map((f, i) => (
+                  <RankRow
+                    key={f.id}
+                    first={ranked.length === 0 && i === 0}
+                    name={f.username}
+                    avatarName={f.username}
+                    streak={f.weekStart === weekStart ? f.streak ?? 0 : 0}
+                    t={t}
+                  />
+                ))}
               </View>
-              {today.entries.length > 0 && (
-                <View style={styles.attachBlock}>
-                  <Text style={styles.attachLabel}>{t.community.attachMeal}</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attachRow}>
-                    {today.entries.map((e) => {
-                      const active = e.id === attachedEntryId;
-                      return (
-                        <Pressable
-                          key={e.id}
-                          style={[styles.attachChip, active && styles.attachChipActive]}
-                          onPress={() => {
-                            setAttachedEntryId(active ? null : e.id);
-                            if (!active && !caption.trim()) setCaption(e.foodName);
-                          }}
-                        >
-                          <Text
-                            style={[styles.attachChipText, active && styles.attachChipTextActive]}
-                            numberOfLines={1}
-                          >
-                            {e.foodName} · {Math.round(e.calories)} kcal
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              )}
-              {photoPreviewUri && (
-                <View style={styles.photoPreviewWrap}>
-                  <Image source={{ uri: photoPreviewUri }} style={styles.photoPreview} />
-                  <Pressable
-                    style={({ pressed }) => [styles.removePhotoButton, pressed && styles.pressedDim]}
-                    onPress={() => {
-                      setPhotoBase64(undefined);
-                      setPhotoPreviewUri(undefined);
-                    }}
-                  >
-                    <Text style={styles.removePhotoButtonText}>{t.community.removePhoto}</Text>
-                  </Pressable>
-                </View>
-              )}
-              {canPost && (
-                <Pressable
-                  style={({ pressed }) => [styles.postButton, pressed && styles.pressedDim]}
-                  onPress={handlePost}
-                  disabled={posting}
-                >
-                  {posting ? (
-                    <ActivityIndicator color={colors.white} size="small" />
-                  ) : (
-                    <Text style={styles.pillButtonText}>{t.community.postButton}</Text>
-                  )}
-                </Pressable>
-              )}
-            </View>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <View style={styles.iconWrap}>
-              <CommunityIcon size={40} color={colors.accent} />
-            </View>
-            <Text style={styles.heading}>{t.community.feedEmptyTitle}</Text>
-            <Text style={styles.copy}>{t.community.feedEmptyCopy}</Text>
+            )}
+
             <Pressable
-              style={({ pressed }) => [styles.pillButtonLarge, pressed && styles.pressedDim]}
+              style={({ pressed }) => [styles.inviteWide, pressed && styles.pressedDim]}
               onPress={handleInviteFriend}
             >
-              <Text style={styles.pillButtonText}>{t.community.inviteFriendButton}</Text>
+              <PlusIcon size={16} color={colors.white} />
+              <Text style={styles.inviteWideText}>{t.community.inviteFriendButton}</Text>
             </Pressable>
-          </View>
-        }
-        ListFooterComponent={
-          <View style={styles.footer}>
-            {!!myName && (
-              <Text style={styles.footerText}>
-                {t.community.signedInAs} @{myName}
-              </Text>
-            )}
-            <Pressable onPress={handleSignOut} hitSlop={8}>
-              <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
-            </Pressable>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <PostCard
-            post={item}
-            t={t}
-            expanded={expandedPostId === item.id}
-            onToggleExpand={() =>
-              setExpandedPostId(expandedPostId === item.id ? null : item.id)
-            }
-            onToggleLike={() => handleToggleLike(item)}
-            onDelete={() => handleDeletePost(item)}
-            url={url}
-            anonKey={anonKey}
-          />
-        )}
-      />
+          </ScrollView>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
 
-function PostCard({
-  post,
+const BAR_MAX = 54;
+// Monday 1 January 2024, used to get locale weekday initials in Monday-first order.
+const REFERENCE_MONDAY = new Date(2024, 0, 1);
+
+function weekRangeLabel(): string {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  return `${fmt(monday)} – ${fmt(sunday)}`;
+}
+
+function WeekBar({ day, index }: { day: WeekDayScore; index: number }) {
+  const labelDate = new Date(REFERENCE_MONDAY);
+  labelDate.setDate(REFERENCE_MONDAY.getDate() + index);
+  const label = labelDate.toLocaleDateString(undefined, { weekday: 'narrow' });
+  const hit = day.score !== null && day.score >= HIT_SCORE;
+  const height = day.score === null ? 4 : Math.max(8, (day.score / 100) * BAR_MAX);
+  const color = day.score === null ? 'rgba(255,255,255,0.14)' : hit ? colors.accent : 'rgba(255,255,255,0.3)';
+  return (
+    <View style={styles.barCol}>
+      <View style={styles.barTrack}>
+        <View style={day.isToday && styles.barTodayRing}>
+          <View style={[styles.bar, { height, backgroundColor: color }]} />
+        </View>
+      </View>
+      <Text style={[styles.barLabel, day.isToday && styles.barLabelToday]}>{label}</Text>
+    </View>
+  );
+}
+
+function RankRow({
+  first,
+  rank,
+  name,
+  avatarName,
+  score,
+  streak,
+  isMe,
   t,
-  expanded,
-  onToggleExpand,
+}: {
+  first: boolean;
+  rank?: number;
+  name: string;
+  avatarName: string;
+  score?: number;
+  streak: number;
+  isMe?: boolean;
+  t: any;
+}) {
+  return (
+    <View style={[styles.rankRow, !first && styles.rankRowBorder]}>
+      <Text style={[styles.rankNumber, (rank === 1 || isMe) && styles.rankNumberHot]}>{rank ?? ''}</Text>
+      <Avatar name={avatarName} size={38} />
+      <View style={styles.rankText}>
+        <Text style={[styles.rankName, isMe && styles.rankNameMe]} numberOfLines={1}>
+          {name}
+        </Text>
+        {streak > 0 && (
+          <View style={styles.rankMeta}>
+            <FlameIcon size={11} color={colors.accent} />
+            <Text style={styles.rankMetaText}>
+              {streak} {t.community.dayStreak}
+            </Text>
+          </View>
+        )}
+      </View>
+      <Text style={styles.rankScore}>
+        {score !== undefined ? score : '–'}
+        {score !== undefined && <Text style={styles.rankScorePct}>%</Text>}
+      </Text>
+    </View>
+  );
+}
+
+function ActivityRow({
+  post,
+  isMine,
+  t,
+  open,
+  onToggle,
   onToggleLike,
   onDelete,
   url,
   anonKey,
 }: {
   post: CommunityPost;
+  isMine: boolean;
   t: any;
-  expanded: boolean;
-  onToggleExpand: () => void;
+  open: boolean;
+  onToggle: () => void;
   onToggleLike: () => void;
   onDelete: () => void;
   url: string;
@@ -940,12 +1093,12 @@ function PostCard({
   const [sendingComment, setSendingComment] = useState(false);
 
   useEffect(() => {
-    if (!expanded) return;
+    if (!open) return;
     setLoadingComments(true);
     listComments(url, anonKey, post.id)
       .then(setComments)
       .finally(() => setLoadingComments(false));
-  }, [expanded, url, anonKey, post.id]);
+  }, [open, url, anonKey, post.id]);
 
   async function handleSendComment() {
     if (!commentInput.trim()) return;
@@ -962,61 +1115,67 @@ function PostCard({
     }
   }
 
+  const action = post.photoUrl || post.nutrition ? t.community.sharedAMeal : t.community.posted;
+  // Time first so it never gets cut off by a long caption.
+  const meta = [
+    timeAgo(post.createdAt),
+    post.caption.trim() || (post.nutrition ? `${post.nutrition.calories} kcal` : ''),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
-    <View style={styles.postCard}>
-      <View style={styles.postHeader}>
-        <Avatar name={post.authorUsername} size={36} />
-        <View style={styles.postHeaderText}>
-          <Text style={styles.postAuthor}>@{post.authorUsername}</Text>
-          <Text style={styles.postTimestamp}>{timeAgo(post.createdAt)}</Text>
-        </View>
-        <Pressable
-          style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
-          onPress={onDelete}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={t.community.delete}
-        >
-          <Text style={styles.postMenuDots}>•••</Text>
-        </Pressable>
-      </View>
-      {post.photoUrl && (
-        <View>
-          <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />
-          {post.nutrition && <NutritionChips n={post.nutrition} overlay />}
-        </View>
-      )}
-      <View style={styles.postBody}>
-        {!post.photoUrl && post.nutrition && <NutritionChips n={post.nutrition} />}
-        <View style={styles.postActions}>
-          <Pressable
-            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
-            onPress={onToggleLike}
-            hitSlop={6}
-          >
-            <HeartIcon
-              size={22}
-              color={post.likedByMe ? colors.protein : colors.text}
-              filled={post.likedByMe}
-            />
-            <Text style={styles.postActionText}>{post.likeCount}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
-            onPress={onToggleExpand}
-            hitSlop={6}
-          >
-            <CommentIcon size={22} color={colors.text} />
-            <Text style={styles.postActionText}>{post.commentCount}</Text>
-          </Pressable>
-        </View>
-        {!!post.caption && (
-          <Text style={styles.postCaption}>
-            <Text style={styles.postCaptionAuthor}>{post.authorUsername} </Text>
-            {post.caption}
+    <View>
+      <Pressable style={({ pressed }) => [styles.actRow, pressed && styles.pressedDim]} onPress={onToggle}>
+        <Avatar name={post.authorUsername} size={42} />
+        <View style={styles.actText}>
+          <Text style={styles.actTitle} numberOfLines={2}>
+            <Text style={styles.actName}>{isMine ? t.community.you : post.authorUsername}</Text> {action}
           </Text>
-        )}
-        {expanded && (
+          <Text style={styles.actMeta} numberOfLines={1}>
+            {meta}
+          </Text>
+        </View>
+        {post.photoUrl && !open && <Image source={{ uri: post.photoUrl }} style={styles.actThumb} />}
+      </Pressable>
+      {open && (
+        <View style={styles.actOpen}>
+          {post.photoUrl && (
+            <View>
+              <Image source={{ uri: post.photoUrl }} style={styles.actPhoto} />
+              {post.nutrition && <NutritionChips n={post.nutrition} overlay />}
+            </View>
+          )}
+          {!post.photoUrl && post.nutrition && <NutritionChips n={post.nutrition} />}
+          {!!post.caption && <Text style={styles.postCaption}>{post.caption}</Text>}
+          <View style={styles.postActions}>
+            <Pressable
+              style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
+              onPress={onToggleLike}
+              hitSlop={6}
+            >
+              <HeartIcon
+                size={22}
+                color={post.likedByMe ? colors.protein : colors.text}
+                filled={post.likedByMe}
+              />
+              <Text style={styles.postActionText}>{post.likeCount}</Text>
+            </Pressable>
+            <View style={styles.postActionButton}>
+              <CommentIcon size={22} color={colors.text} />
+              <Text style={styles.postActionText}>{post.commentCount}</Text>
+            </View>
+            <View style={styles.flexSpacer} />
+            <Pressable
+              style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
+              onPress={onDelete}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t.community.delete}
+            >
+              <Text style={styles.postMenuDots}>•••</Text>
+            </Pressable>
+          </View>
           <View style={styles.commentsWrap}>
             {loadingComments ? (
               <ActivityIndicator color={colors.accent} size="small" />
@@ -1049,8 +1208,8 @@ function PostCard({
               </Pressable>
             </View>
           </View>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -1155,54 +1314,153 @@ const styles = StyleSheet.create({
   linkButton: { alignItems: 'center', paddingTop: spacing.xs },
   linkButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
   feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
-  feedHeader: { gap: spacing.md },
-  hero: {
-    backgroundColor: colors.surface,
-    borderRadius: 24,
-    padding: spacing.md,
-    gap: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+  flexSpacer: { flex: 1 },
+  retryButton: { alignSelf: 'flex-start' },
+  scoreShadow: {
+    borderRadius: 28,
+    shadowColor: '#0B0F17',
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
-  heroTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  heroAvatarRing: { padding: 2, borderRadius: 30, borderWidth: 2, borderColor: colors.border },
-  heroText: { flex: 1 },
-  heroName: { color: colors.text, fontSize: 19, fontWeight: '800' },
-  heroMeta: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
-  heroInvite: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.accent,
-    borderRadius: radius.full,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  heroInviteText: { color: colors.white, fontWeight: '800', fontSize: 13 },
-  heroSection: {
-    color: colors.textMuted,
+  scoreCard: { borderRadius: 28, padding: 20 },
+  scoreTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  scoreEyebrow: {
+    color: colors.accent,
     fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontWeight: '800',
+    letterSpacing: 1,
     textTransform: 'uppercase',
-    marginTop: 2,
   },
-  ringsRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  ringWrap: { alignItems: 'center', gap: 5, flex: 1 },
-  ringCenter: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  scoreRange: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '500' },
+  scoreMain: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 10 },
+  scoreMainText: { flex: 1 },
+  scoreBig: { color: colors.white, fontSize: 64, fontWeight: '900', letterSpacing: -3, lineHeight: 68 },
+  scorePct: { fontSize: 30, fontWeight: '800', letterSpacing: -1 },
+  scoreCaption: { color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 },
+  scoreBadgeWrap: { alignItems: 'center', gap: 5, marginBottom: 4 },
+  scoreBadge: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 2.5,
+    borderColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ringPercent: { color: colors.text, fontSize: 12, fontWeight: '800' },
-  ringLabel: { color: colors.textMuted, fontSize: 11.5 },
+  scoreBadgeText: { color: colors.white, fontSize: 22, fontWeight: '800' },
+  scoreStreak: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  scoreBadgeLabel: { color: 'rgba(255,255,255,0.55)', fontSize: 11 },
+  barsRow: { flexDirection: 'row', gap: 6, marginTop: 18 },
+  barCol: { flex: 1, alignItems: 'center', gap: 6 },
+  barTrack: { height: 60, justifyContent: 'flex-end', alignItems: 'center' },
+  bar: { width: 14, borderRadius: 7 },
+  barTodayRing: { borderWidth: 1.5, borderColor: colors.white, borderRadius: 10, padding: 2 },
+  barLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600' },
+  barLabelToday: { color: colors.white, fontWeight: '800' },
+  scoreDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 16, marginBottom: 14 },
+  scoreFooter: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  avatarStack: { flexDirection: 'row' },
+  stackItem: { borderWidth: 2.5, borderColor: '#1E2735', borderRadius: 17 },
+  stackOverlap: { marginLeft: -10 },
+  inviteDot: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scoreFooterText: { flex: 1, color: 'rgba(255,255,255,0.75)', fontSize: 13 },
+  scoreFooterStrong: { color: colors.white, fontWeight: '700' },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+  },
+  sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
+  sectionLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  sectionLinkText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  activityCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    paddingHorizontal: spacing.md,
+    paddingTop: 14,
+    paddingBottom: 4,
+    gap: 10,
+    shadowColor: '#111827',
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  activityDivider: { height: 1, backgroundColor: colors.border },
+  activityEmpty: { gap: 12, paddingBottom: 14, alignItems: 'center' },
+  activityEmptyText: { color: colors.textMuted, fontSize: 14, textAlign: 'center', lineHeight: 20, marginTop: 4 },
+  invitePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: colors.accent,
+    borderRadius: radius.full,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  invitePillText: { color: colors.white, fontWeight: '800', fontSize: 14 },
+  actRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  actText: { flex: 1, minWidth: 0 },
+  actTitle: { color: colors.text, fontSize: 14.5, lineHeight: 20 },
+  actName: { fontWeight: '800' },
+  actMeta: { color: colors.textMuted, fontSize: 12.5, marginTop: 3 },
+  actThumb: { width: 56, height: 56, borderRadius: 14, backgroundColor: colors.surfaceAlt },
+  actOpen: { gap: 10, paddingBottom: 14 },
+  actPhoto: { width: '100%', aspectRatio: 1, borderRadius: 18, backgroundColor: colors.surfaceAlt },
+  sheet: { flex: 1, backgroundColor: colors.background },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  sheetTitle: { color: colors.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.6 },
+  sheetDone: { color: colors.accent, fontSize: 16, fontWeight: '700' },
+  sheetBody: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl * 2 },
+  rankCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+    shadowColor: '#111827',
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  rankRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  rankRowBorder: { borderTopWidth: 1, borderTopColor: colors.border },
+  rankNumber: { width: 18, color: '#9CA3AF', fontSize: 14, fontWeight: '800' },
+  rankNumberHot: { color: colors.accent },
+  rankText: { flex: 1, minWidth: 0 },
+  rankName: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  rankNameMe: { color: colors.accent, fontWeight: '800' },
+  rankMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
+  rankMetaText: { color: colors.textMuted, fontSize: 12 },
+  rankScore: { color: colors.text, fontSize: 17, fontWeight: '800', letterSpacing: -0.4 },
+  rankScorePct: { color: colors.textMuted, fontSize: 12, fontWeight: '600' },
+  inviteWide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.accent,
+    borderRadius: radius.full,
+    paddingVertical: 15,
+  },
+  inviteWideText: { color: colors.white, fontSize: 15, fontWeight: '800' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chipRowOverlay: { position: 'absolute', left: 10, bottom: 10, right: 10 },
   chip: { borderRadius: radius.full, paddingHorizontal: 9, paddingVertical: 4 },
@@ -1252,10 +1510,6 @@ const styles = StyleSheet.create({
   pillButtonText: { color: colors.white, fontWeight: '700', fontSize: 15 },
   avatar: { alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: colors.white, fontWeight: '800' },
-  storiesRow: { gap: 12, paddingVertical: 2 },
-  story: { alignItems: 'center', width: 68, gap: 6 },
-  storyRing: { padding: 2, borderRadius: 32, borderWidth: 2.5 },
-  storyName: { color: colors.text, fontSize: 12, maxWidth: 68 },
   addFriendPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1286,7 +1540,7 @@ const styles = StyleSheet.create({
   composerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   composerInput: {
     flex: 1,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.background,
     borderRadius: 22,
     paddingHorizontal: spacing.md,
     paddingTop: 11,
@@ -1296,10 +1550,10 @@ const styles = StyleSheet.create({
     maxHeight: 120,
   },
   cameraButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.accent,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1330,29 +1584,12 @@ const styles = StyleSheet.create({
   },
   footer: { alignItems: 'center', gap: 6, paddingTop: spacing.lg },
   footerText: { color: colors.textMuted, fontSize: 12 },
-  postCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  postHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
-  postHeaderText: { flex: 1 },
   postMenuButton: { paddingHorizontal: spacing.xs, paddingVertical: 2 },
   postMenuDots: { color: colors.textMuted, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
-  postAuthor: { color: colors.text, fontWeight: '700', fontSize: 15 },
-  postTimestamp: { color: colors.textMuted, fontSize: 12, marginTop: 1 },
-  postPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.surfaceAlt },
-  postBody: { padding: 12, gap: 8 },
   postActions: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
   postActionButton: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   postActionText: { color: colors.text, fontWeight: '600', fontSize: 14 },
   postCaption: { color: colors.text, fontSize: 14, lineHeight: 20 },
-  postCaptionAuthor: { fontWeight: '700' },
   commentsWrap: { gap: 6, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 },
   commentAuthor: { fontWeight: '700' },
   commentBody: { color: colors.text, fontSize: 14, lineHeight: 19 },
