@@ -50,7 +50,11 @@ export interface FoodEntry extends NutrientEstimate {
   /** ISO timestamp */
   loggedAt: string;
   method: LogMethod;
+  /** The user's own photo; a path inside Documents, or a full URI for older entries. */
   photoUri?: string;
+  /** Recipe the meal was logged from, so it can show the recipe's photo. */
+  recipeId?: string;
+  imageUrl?: string;
 }
 
 export interface DayLog {

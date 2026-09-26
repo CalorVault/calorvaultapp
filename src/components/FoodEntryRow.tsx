@@ -1,19 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { mealImage } from '../lib/mealPhotos';
 import { FoodEntry } from '../types';
-import { MealIcon } from './NavIcons';
+import { LogoScanFrame } from './FlameLogo';
+import { IconBadge } from './IconBadge';
+import { MealIcon, MicIcon, PlanDayIcon, SearchIcon } from './NavIcons';
 import { CarbsIcon, FatIcon, ProteinIcon } from './NutritionIcons';
 import { colors, radius, spacing } from '../theme';
 
-const METHOD_ICON: Record<FoodEntry['method'], string> = {
-  camera: '📷',
-  voice: '🎙️',
-  manual: '✏️',
-  suggested: '💡',
-  repeat: '🔁',
-  recipe: '🍲',
-  barcode: '📦',
-};
+const THUMB_SIZE = 56;
+
+// Entries without a photo get the same black-and-orange badge as the way
+// they were logged in the + menu, instead of an emoji.
+function MethodBadge({ method }: { method: FoodEntry['method'] }) {
+  if (method === 'camera' || method === 'barcode') {
+    return <LogoScanFrame size={THUMB_SIZE} glyphScale={0.38} />;
+  }
+  if (method === 'voice') return <IconBadge Icon={MicIcon} size={THUMB_SIZE} />;
+  if (method === 'manual') return <IconBadge Icon={SearchIcon} size={THUMB_SIZE} />;
+  return <IconBadge Icon={PlanDayIcon} size={THUMB_SIZE} />;
+}
 
 interface Props {
   entry: FoodEntry;
@@ -31,13 +37,15 @@ function formatTime(iso: string): string {
 }
 
 export function FoodEntryRow({ entry, onDelete }: Props) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const image = photoFailed ? null : mealImage(entry);
   return (
     <View style={styles.row}>
-      {entry.photoUri ? (
-        <Image source={{ uri: entry.photoUri }} style={styles.thumb} />
+      {image ? (
+        <Image source={image} style={styles.thumb} onError={() => setPhotoFailed(true)} />
       ) : (
         <View style={styles.thumbFallback}>
-          <Text style={styles.thumbIcon}>{METHOD_ICON[entry.method]}</Text>
+          <MethodBadge method={entry.method} />
         </View>
       )}
       <View style={styles.info}>
@@ -102,16 +110,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   thumbFallback: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: spacing.md,
-  },
-  thumbIcon: {
-    fontSize: 22,
   },
   info: {
     flex: 1,

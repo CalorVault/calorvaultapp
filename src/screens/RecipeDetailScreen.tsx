@@ -122,6 +122,8 @@ export function RecipeDetailScreen() {
       date: todayIso(),
       loggedAt: new Date().toISOString(),
       method: 'recipe',
+      recipeId: recipe.id,
+      imageUrl: recipe.imageUrl,
     });
     setSaving(false);
     navigation.goBack();

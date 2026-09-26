@@ -46,6 +46,7 @@ import {
   suggestMeals,
 } from '../lib/aiFood';
 import { LogFoodTab, RootStackParamList } from '../navigation/types';
+import { keepMealPhoto, mealImage } from '../lib/mealPhotos';
 import { getRecentUniqueFoodEntries, todayIso } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
 import { FoodEntry, LogMethod, NutrientEstimate } from '../types';
@@ -384,14 +385,21 @@ function useSaveEntry() {
   const { logFood, apiKey, isPremium } = useApp();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  async function save(estimate: NutrientEstimate, method: LogMethod, photoUri?: string) {
+  async function save(
+    estimate: NutrientEstimate,
+    method: LogMethod,
+    photoUri?: string,
+    source?: Pick<FoodEntry, 'recipeId' | 'imageUrl'>
+  ) {
+    const id = makeId();
     const entry: FoodEntry = {
       ...estimate,
-      id: makeId(),
+      ...source,
+      id,
       date: todayIso(),
       loggedAt: new Date().toISOString(),
       method,
-      photoUri,
+      photoUri: await keepMealPhoto(photoUri, id),
     };
     await logFood(entry);
     navigation.goBack();
@@ -808,7 +816,9 @@ function VoiceTab() {
     return (
       <View style={styles.listeningOverlay}>
         <Animated.View style={[styles.listeningPulse, { transform: [{ scale: pulse }] }]}>
-          <Text style={styles.listeningMicIcon}>🎙️</Text>
+          <View style={styles.listeningMicCircle}>
+            <MicIcon size={48} color={colors.accent} fill={colors.white} />
+          </View>
         </Animated.View>
         <Text style={styles.listeningTitle}>{processing ? t.logFood.oneSec : t.logFood.listening}</Text>
         <Text style={styles.listeningHint}>
@@ -842,7 +852,7 @@ function VoiceTab() {
     <View style={styles.tabContent}>
       <Text style={styles.voiceHint}>{t.logFood.voiceHint} "{example}"</Text>
       <Pressable style={styles.micButton} onPress={handleStart}>
-        <Text style={styles.micIcon}>🎙️</Text>
+        <MicIcon size={40} color={colors.accent} fill={colors.white} />
       </Pressable>
     </View>
   );
@@ -1101,6 +1111,16 @@ function AskTab() {
   );
 }
 
+const RECENT_THUMB_SIZE = 44;
+
+// The meal's own photo when there is one, otherwise the cutlery badge.
+function RecentThumb({ entry }: { entry: FoodEntry }) {
+  const [failed, setFailed] = useState(false);
+  const image = failed ? null : mealImage(entry);
+  if (!image) return <IconBadge Icon={PlanDayIcon} size={RECENT_THUMB_SIZE} />;
+  return <Image source={image} style={styles.recentThumb} onError={() => setFailed(true)} />;
+}
+
 function RecentTab() {
   const { t } = useApp();
   const { save } = useSaveEntry();
@@ -1126,7 +1146,9 @@ function RecentTab() {
         carbsG: entry.carbsG,
         fatG: entry.fatG,
       },
-      'repeat'
+      'repeat',
+      entry.photoUri,
+      { recipeId: entry.recipeId, imageUrl: entry.imageUrl }
     );
     setLoggingId(null);
   }
@@ -1151,7 +1173,7 @@ function RecentTab() {
     <ScrollView contentContainerStyle={styles.tabContent}>
       {entries.map((entry) => (
         <View key={entry.id} style={styles.suggestionCard}>
-          <Text style={styles.suggestionIcon}>🍽️</Text>
+          <RecentThumb entry={entry} />
           <View style={styles.suggestionInfo}>
             <Text style={styles.suggestionName}>{entry.foodName}</Text>
             <Text style={styles.suggestionMacros}>
@@ -1406,16 +1428,18 @@ const styles = StyleSheet.create({
   voiceHint: { color: colors.textMuted, textAlign: 'center', fontSize: 14 },
   micButton: {
     alignSelf: 'center',
-    width: 80,
-    height: 80,
+    width: 88,
+    height: 88,
     borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    backgroundColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 6,
   },
-  micIcon: { fontSize: 32 },
   listeningOverlay: {
     flex: 1,
     alignItems: 'center',
@@ -1431,7 +1455,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  listeningMicIcon: { fontSize: 48 },
+  listeningMicCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: radius.full,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   listeningTitle: {
     color: colors.text,
     fontSize: 22,
@@ -1649,6 +1680,11 @@ const styles = StyleSheet.create({
   },
   suggestionIcon: {
     fontSize: 24,
+  },
+  recentThumb: {
+    width: RECENT_THUMB_SIZE,
+    height: RECENT_THUMB_SIZE,
+    borderRadius: RECENT_THUMB_SIZE * 0.16,
   },
   suggestionInfo: {
     flex: 1,

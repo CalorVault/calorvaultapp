@@ -93,6 +93,8 @@ export function MealPlanScreen() {
       date: todayIso(),
       loggedAt: new Date().toISOString(),
       method: 'recipe',
+      recipeId: meal.recipe.id,
+      imageUrl: meal.recipe.imageUrl,
     });
     await persist({ ...mealPlan, loggedSlots: [...(mealPlan.loggedSlots ?? []), meal.slot] });
   }
