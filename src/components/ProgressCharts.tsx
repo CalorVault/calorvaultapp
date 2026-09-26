@@ -40,7 +40,7 @@ export const PANEL = {
   text: colors.ink,
   muted: colors.textMuted,
   track: 0.14,
-  bar: colors.primary,
+  bar: colors.accent,
   input: colors.surfaceAlt,
 }
 
@@ -190,7 +190,7 @@ export function CaloriesChart({
               <Path
                 key={d.date}
                 d={columnPath(x, g.y(d.calories), g.barW, g.y(0), true)}
-                fill={dark ? PANEL.bar : colors.primary}
+                fill={dark ? PANEL.bar : colors.accent}
                 opacity={dim ? 0.3 : 1}
               />
             );

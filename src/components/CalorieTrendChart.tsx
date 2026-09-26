@@ -32,7 +32,7 @@ export function CalorieTrendChart({ days, target, label }: Props) {
                 <View
                   style={[
                     styles.bar,
-                    { height, backgroundColor: over ? colors.danger : colors.primary },
+                    { height, backgroundColor: over ? colors.danger : colors.accent },
                   ]}
                 />
                 {target > 0 && (

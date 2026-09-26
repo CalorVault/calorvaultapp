@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     aspectRatio: 9 / 16,
-    backgroundColor: colors.primaryDark,
+    backgroundColor: colors.ink,
     borderRadius: 28,
     alignItems: 'center',
     paddingTop: spacing.xl,
@@ -110,10 +110,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   wordmark: { fontSize: 15, fontWeight: '800' },
-  wordmarkCalor: { color: '#A8D5B8' },
+  wordmarkCalor: { color: colors.white },
   wordmarkVault: { color: colors.accent },
   date: {
-    color: '#8FAA9A',
+    color: '#9CA3AF',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   ringSvg: { position: 'absolute', transform: [{ rotate: '-90deg' }] },
   ringCenter: { alignItems: 'center' },
   ringNum: { color: '#fff', fontSize: 34, fontWeight: '800' },
-  ringLabel: { color: '#A8D5B8', fontSize: 11, marginTop: 2 },
+  ringLabel: { color: '#D1D5DB', fontSize: 11, marginTop: 2 },
   macroRow: {
     flexDirection: 'row',
     gap: spacing.lg,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   macroVal: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  macroLabel: { color: '#8FAA9A', fontSize: 9 },
+  macroLabel: { color: '#9CA3AF', fontSize: 9 },
   streakPill: {
     marginTop: 'auto',
     backgroundColor: 'rgba(216,101,44,0.18)',

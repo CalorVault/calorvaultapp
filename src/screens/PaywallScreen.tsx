@@ -11,6 +11,9 @@ import {
   View,
 } from 'react-native';
 import { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
+import { LogoScanFrame } from '../components/FlameLogo';
+import { IconBadge } from '../components/IconBadge';
+import { MicIcon, PlanDayIcon, SearchIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import { getCurrentOffering, PurchasesCancelledError } from '../lib/purchases';
 import { formatPrice, yearlySavingsPercent } from '../lib/pricing';
@@ -18,7 +21,17 @@ import { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { SubscriptionPlan } from '../types';
 
-const PERK_ICONS = ['📷', '🎙️', '💬', '🔍'];
+const PERK_BADGE_SIZE = 36;
+
+
+// Scan logo, mic, plan-my-day cutlery for AI meal suggestions, and search
+// for nutrition look-up.
+const PERK_ICONS: React.ReactNode[] = [
+  <LogoScanFrame key="scan" size={PERK_BADGE_SIZE} glyphScale={0.38} />,
+  <IconBadge key="voice" Icon={MicIcon} size={PERK_BADGE_SIZE} />,
+  <IconBadge key="meals" Icon={PlanDayIcon} size={PERK_BADGE_SIZE} />,
+  <IconBadge key="search" Icon={SearchIcon} size={PERK_BADGE_SIZE} />,
+];
 
 export function PaywallScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -90,7 +103,7 @@ export function PaywallScreen() {
       <View style={styles.perksCard}>
         {perks.map((perk) => (
           <View key={perk.text} style={styles.perkRow}>
-            <Text style={styles.perkIcon}>{perk.icon}</Text>
+            {perk.icon}
             <Text style={styles.perkText}>{perk.text}</Text>
           </View>
         ))}
@@ -200,9 +213,8 @@ const styles = StyleSheet.create({
   perkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
-  perkIcon: { fontSize: 20 },
   perkText: { color: colors.text, fontSize: 14, fontWeight: '500', flex: 1 },
   plansRow: {
     flexDirection: 'row',
@@ -220,13 +232,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   planCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryMuted,
+    borderColor: colors.accent,
+    backgroundColor: colors.accentMuted,
   },
   saveBadge: {
     position: 'absolute',
     top: -10,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     borderRadius: radius.full,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
@@ -240,7 +252,7 @@ const styles = StyleSheet.create({
   planPrice: { color: colors.text, fontSize: 24, fontWeight: '800', marginTop: spacing.xs },
   planUnit: { color: colors.textMuted, fontSize: 12 },
   subscribeButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.ink,
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',

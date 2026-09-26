@@ -3,9 +3,12 @@ export const colors = {
   surface: '#FFFFFF',
   surfaceAlt: '#F0F1F4',
   border: '#E7E9EE',
-  primary: '#437157',
-  primaryDark: '#264233',
-  primaryMuted: '#E1EAE4',
+  // Black and orange throughout, matching the CalorVault logo. `primary` is
+  // the main action colour (buttons, active states); `primaryDark` is for text
+  // on `primaryMuted` highlight backgrounds.
+  primary: '#111827',
+  primaryDark: '#B94F1D',
+  primaryMuted: '#FBE3D3',
   accent: '#D8652C',
   accentDark: '#B94F1D',
   accentMuted: '#FBE3D3',

@@ -125,7 +125,7 @@ export function RecipesScreen() {
           <View>
             <View style={styles.topBar}>
               <View style={styles.titleRow}>
-                <BowlIcon size={26} color={colors.text} />
+                <BowlIcon size={26} color={colors.accent} />
                 <Text style={styles.title}>{t.recipes.title}</Text>
               </View>
               <Pressable
@@ -159,8 +159,8 @@ export function RecipesScreen() {
                   >
                     <Defs>
                       <LinearGradient id="planBannerBg" x1="0" y1="0" x2="1" y2="1">
-                        <Stop offset="0" stopColor={colors.primaryDark} />
-                        <Stop offset="1" stopColor={colors.primary} />
+                        <Stop offset="0" stopColor={colors.ink} />
+                        <Stop offset="1" stopColor="#232C3D" />
                       </LinearGradient>
                     </Defs>
                     <Rect
@@ -173,7 +173,7 @@ export function RecipesScreen() {
                   </Svg>
                 )}
                 <View style={styles.planBannerBadge}>
-                  <PlanDayIcon size={28} color={colors.white} />
+                  <PlanDayIcon size={28} color={colors.accent} fill={colors.white} />
                 </View>
                 <View style={styles.planBannerText}>
                   <Text style={styles.planBannerTitle}>{t.mealPlan.bannerTitle}</Text>
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.primaryDark,
+    backgroundColor: colors.ink,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginTop: spacing.md,

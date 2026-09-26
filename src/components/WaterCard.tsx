@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPrimary: {
-    backgroundColor: colors.water,
-    borderColor: colors.water,
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
   },
   buttonText: {
     color: colors.text,

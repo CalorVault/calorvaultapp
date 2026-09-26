@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   wordmarkCalor: {
-    color: colors.primaryDark,
+    color: colors.ink,
   },
   wordmarkVault: {
     color: colors.accent,

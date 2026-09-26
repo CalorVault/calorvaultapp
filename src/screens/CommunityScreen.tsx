@@ -21,6 +21,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { CameraIcon, CommentIcon, HeartIcon, PlusIcon } from '../components/CommunityIcons';
+import { BLACK_GRADIENT, GradientCard } from '../components/GradientCard';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import { useWeekDays } from '../hooks/useWeekDays';
@@ -196,7 +197,7 @@ function CommunityTopBar({ t, navigation }: { t: any; navigation: CommunityScree
   return (
     <View style={styles.topBar}>
       <View style={styles.titleRow}>
-        <CommunityIcon size={26} color={colors.text} />
+        <CommunityIcon size={26} color={colors.accent} />
         <Text style={styles.title}>{t.community.title}</Text>
       </View>
       <Pressable
@@ -252,7 +253,7 @@ function CommunityConfigured({
       <SafeAreaView style={styles.flex} edges={['top']}>
         <CommunityTopBar t={t} navigation={navigation} />
         <View style={styles.body}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       </SafeAreaView>
     );
@@ -622,7 +623,7 @@ function Feed({
   if (loading) {
     return (
       <View style={styles.body}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -695,7 +696,7 @@ function Feed({
               </View>
             )}
 
-            <View style={styles.hero}>
+            <GradientCard style={styles.hero} stops={BLACK_GRADIENT}>
               <View style={styles.heroTop}>
                 <View style={styles.heroAvatarRing}>
                   <Avatar name={myName || '?'} size={52} />
@@ -715,7 +716,7 @@ function Feed({
                   style={({ pressed }) => [styles.heroInvite, pressed && styles.pressedDim]}
                   onPress={handleInviteFriend}
                 >
-                  <PlusIcon size={14} color={colors.primaryDark} />
+                  <PlusIcon size={14} color={colors.white} />
                   <Text style={styles.heroInviteText}>{t.community.invite}</Text>
                 </Pressable>
               </View>
@@ -742,7 +743,7 @@ function Feed({
                   label={t.onboarding.fat}
                 />
               </View>
-            </View>
+            </GradientCard>
 
             {friends.length > 0 && (
               <ScrollView
@@ -755,7 +756,7 @@ function Feed({
                     <View
                       style={[
                         styles.storyRing,
-                        { borderColor: postedToday.has(f.id) ? colors.primary : colors.border },
+                        { borderColor: postedToday.has(f.id) ? colors.accent : colors.border },
                       ]}
                     >
                       <Avatar name={f.username} size={52} />
@@ -872,7 +873,7 @@ function Feed({
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <View style={styles.iconWrap}>
-              <CommunityIcon size={40} color={colors.primary} />
+              <CommunityIcon size={40} color={colors.accent} />
             </View>
             <Text style={styles.heading}>{t.community.feedEmptyTitle}</Text>
             <Text style={styles.copy}>{t.community.feedEmptyCopy}</Text>
@@ -1019,7 +1020,7 @@ function PostCard({
         {expanded && (
           <View style={styles.commentsWrap}>
             {loadingComments ? (
-              <ActivityIndicator color={colors.primary} size="small" />
+              <ActivityIndicator color={colors.accent} size="small" />
             ) : (
               comments.map((c) => (
                 <Text key={c.id} style={styles.commentBody}>
@@ -1138,7 +1139,7 @@ const styles = StyleSheet.create({
   },
   hint: { color: colors.textMuted, fontSize: 12 },
   primaryButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.ink,
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
@@ -1153,16 +1154,15 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: colors.text, fontWeight: '700' },
   linkButton: { alignItems: 'center', paddingTop: spacing.xs },
-  linkButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
+  linkButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
   feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
   feedHeader: { gap: spacing.md },
   hero: {
-    backgroundColor: colors.primaryDark,
     borderRadius: 24,
     padding: spacing.md,
     gap: 10,
-    shadowColor: colors.primaryDark,
-    shadowOpacity: 0.28,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
@@ -1176,12 +1176,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.white,
+    backgroundColor: colors.accent,
     borderRadius: radius.full,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  heroInviteText: { color: colors.primaryDark, fontWeight: '800', fontSize: 13 },
+  heroInviteText: { color: colors.white, fontWeight: '800', fontSize: 13 },
   heroSection: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 11,
@@ -1219,7 +1219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     maxWidth: 240,
   },
-  attachChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  attachChipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   attachChipText: { color: colors.text, fontSize: 13, fontWeight: '600' },
   attachChipTextActive: { color: colors.white },
   cardTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
@@ -1234,7 +1234,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   pillButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.ink,
     borderRadius: radius.full,
     paddingHorizontal: 18,
     paddingVertical: 10,
@@ -1243,7 +1243,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   pillButtonLarge: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.ink,
     borderRadius: radius.full,
     paddingHorizontal: 22,
     paddingVertical: 13,
@@ -1299,13 +1299,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   postButton: {
     alignSelf: 'flex-end',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.ink,
     borderRadius: radius.full,
     paddingHorizontal: 22,
     paddingVertical: 10,

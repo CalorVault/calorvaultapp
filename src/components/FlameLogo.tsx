@@ -65,12 +65,17 @@ interface LogoScanFrameProps {
   size?: number;
   /** Glyph width as a fraction of `size`; small badges use a larger share so the leaf stays legible. */
   glyphScale?: number;
+  background?: string;
 }
 
 // Wraps the unchanged logo glyph in a dark square with camera-viewfinder
 // corner brackets, for a "scanning" presentation -- the glyph itself is
 // untouched, only the frame around it is new.
-export function LogoScanFrame({ size = 160, glyphScale = 0.28 }: LogoScanFrameProps) {
+export function LogoScanFrame({
+  size = 160,
+  glyphScale = 0.28,
+  background = colors.ink,
+}: LogoScanFrameProps) {
   const cornerLength = size * 0.16;
   const cornerThickness = Math.max(2, size * 0.028);
   const inset = size * 0.14;
@@ -87,7 +92,7 @@ export function LogoScanFrame({ size = 160, glyphScale = 0.28 }: LogoScanFramePr
         width: size,
         height: size,
         borderRadius: size * 0.16,
-        backgroundColor: colors.ink,
+        backgroundColor: background,
         alignItems: 'center',
         justifyContent: 'center',
       }}

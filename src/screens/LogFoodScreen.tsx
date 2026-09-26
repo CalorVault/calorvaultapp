@@ -27,9 +27,14 @@ import {
   FlashIcon,
   GalleryIcon,
   MealIcon as ScanMealIcon,
+  MicIcon,
+  PlanDayIcon,
+  SearchIcon,
   SparkleIcon,
   TagIcon,
 } from '../components/NavIcons';
+import { LogoScanFrame } from '../components/FlameLogo';
+import { IconBadge } from '../components/IconBadge';
 import { useApp } from '../context/AppContext';
 import { Translations } from '../i18n';
 import { BarcodeLookupError, lookupBarcode } from '../lib/barcodeApi';
@@ -68,13 +73,26 @@ function wait(ms: number): Promise<void> {
 
 type Tab = LogFoodTab;
 const TABS: Tab[] = ['manual', 'camera', 'voice', 'recent'];
-function tabMeta(t: Translations): Record<Tab, { icon: string; label: string }> {
+const TAB_BADGE_SIZE = 30;
+
+// Same black, orange and white badges as the + menu, so each way of logging
+// looks the same wherever it appears.
+function tabMeta(t: Translations): Record<Tab, { badge: React.ReactNode; label: string }> {
   return {
-    camera: { icon: '📷', label: t.logFood.tabs.scan },
-    voice: { icon: '🎙️', label: t.logFood.tabs.voice },
-    manual: { icon: '✏️', label: t.logFood.tabs.manual },
-    ask: { icon: '💬', label: t.logFood.tabs.ask },
-    recent: { icon: '🕐', label: t.logFood.tabs.recent },
+    camera: {
+      badge: <LogoScanFrame size={TAB_BADGE_SIZE} glyphScale={0.38} />,
+      label: t.logFood.tabs.scan,
+    },
+    voice: { badge: <IconBadge Icon={MicIcon} size={TAB_BADGE_SIZE} />, label: t.logFood.tabs.voice },
+    manual: {
+      badge: <IconBadge Icon={SearchIcon} size={TAB_BADGE_SIZE} />,
+      label: t.logFood.tabs.manual,
+    },
+    ask: { badge: <IconBadge Icon={SparkleIcon} size={TAB_BADGE_SIZE} />, label: t.logFood.tabs.ask },
+    recent: {
+      badge: <IconBadge Icon={PlanDayIcon} size={TAB_BADGE_SIZE} />,
+      label: t.logFood.tabs.recent,
+    },
   };
 }
 
@@ -140,9 +158,9 @@ export function LogFoodScreen() {
               style={({ pressed }) => [styles.tabButton, pressed && styles.tabButtonPressed]}
               onPress={() => selectTab(tabName)}
             >
-              <Text style={[styles.tabIcon, tab === tabName && styles.tabIconActive]}>
-                {TAB_META[tabName].icon}
-              </Text>
+              <View style={[styles.tabIcon, tab === tabName && styles.tabIconActive]}>
+                {TAB_META[tabName].badge}
+              </View>
               <Text style={[styles.tabLabel, tab === tabName && styles.tabLabelActive]}>
                 {TAB_META[tabName].label}
               </Text>
@@ -1172,33 +1190,33 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
+    marginHorizontal: spacing.sm,
   },
   tabIndicator: {
     position: 'absolute',
     top: 6,
     bottom: 6,
     left: 0,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.surfaceAlt,
     borderRadius: radius.md,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 2,
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
   },
   tabButtonPressed: {
     opacity: 0.6,
   },
   tabIcon: {
-    fontSize: 20,
-    opacity: 0.5,
+    opacity: 0.4,
   },
   tabIconActive: {
     opacity: 1,
   },
   tabLabel: { color: colors.textMuted, fontWeight: '600', fontSize: 12 },
-  tabLabelActive: { color: colors.primaryDark },
+  tabLabelActive: { color: colors.ink, fontWeight: '700' },
   tabContent: { padding: spacing.lg, gap: spacing.md, flexGrow: 1 },
   center: {
     flex: 1,

@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import { colors, radius, spacing } from '../theme';
 import { LogFoodTab } from '../navigation/types';
 import { LogoScanFrame } from './FlameLogo';
+import { BLACK_GRADIENT, GradientCard } from './GradientCard';
+import { IconBadge } from './IconBadge';
 import { MicIcon, PlanDayIcon, SearchIcon } from './NavIcons';
 
 interface Props {
@@ -12,29 +14,7 @@ interface Props {
   onSelect: (tab: LogFoodTab, opts?: { autoStartVoice?: boolean }) => void;
 }
 
-type IconComponent = (props: { size?: number; color: string; fill?: string }) => React.ReactElement;
-
 const BADGE_SIZE = 46;
-
-// Dark rounded square with an orange-and-white icon, the same look as the
-// Scan logo (LogoScanFrame) so all four options read as one set.
-function DarkBadge({ Icon, background = colors.ink }: { Icon: IconComponent; background?: string }) {
-  return (
-    <View
-      style={[
-        styles.darkBadge,
-        {
-          width: BADGE_SIZE,
-          height: BADGE_SIZE,
-          borderRadius: BADGE_SIZE * 0.16,
-          backgroundColor: background,
-        },
-      ]}
-    >
-      <Icon size={BADGE_SIZE * 0.6} color={colors.accent} fill={colors.white} />
-    </View>
-  );
-}
 
 export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
   const { t } = useApp();
@@ -43,25 +23,27 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
       <Pressable style={styles.backdrop} onPress={onClose}>
         <View style={styles.sheet}>
           <Pressable
-            style={({ pressed }) => [styles.voiceCard, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.voiceShadow, pressed && styles.pressed]}
             onPress={() => onSelect('voice', { autoStartVoice: true })}
           >
-            <DarkBadge Icon={MicIcon} background={VOICE_BADGE_BG} />
-            <View style={styles.voiceTextWrap}>
-              <Text style={styles.voiceTitle}>{t.quickLog.voiceTitle}</Text>
-              <Text style={styles.voiceSubtitle}>{t.quickLog.voiceSubtitle}</Text>
-            </View>
-            <Text style={styles.voiceChevron}>›</Text>
+            <GradientCard style={styles.voiceCard} stops={BLACK_GRADIENT}>
+              <IconBadge Icon={MicIcon} size={BADGE_SIZE} background={VOICE_BADGE_BG} />
+              <View style={styles.voiceTextWrap}>
+                <Text style={styles.voiceTitle}>{t.quickLog.voiceTitle}</Text>
+                <Text style={styles.voiceSubtitle}>{t.quickLog.voiceSubtitle}</Text>
+              </View>
+              <Text style={styles.voiceChevron}>›</Text>
+            </GradientCard>
           </Pressable>
 
           <View style={styles.quickRow}>
             <QuickButton
-              badge={<DarkBadge Icon={SearchIcon} />}
+              badge={<IconBadge Icon={SearchIcon} size={BADGE_SIZE} />}
               label={t.quickLog.search}
               onPress={() => onSelect('manual')}
             />
             <QuickButton
-              badge={<DarkBadge Icon={PlanDayIcon} />}
+              badge={<IconBadge Icon={PlanDayIcon} size={BADGE_SIZE} />}
               label={t.quickLog.previousMeal}
               onPress={() => onSelect('recent')}
             />
@@ -99,9 +81,8 @@ function QuickButton({
   );
 }
 
-// Voice to Meal is the headline option, so its card is dark like the badges
-// and the mic sits straight on it.
-const VOICE_CARD_BG = colors.ink;
+// Voice to Meal is the headline option, so it gets the same dark gradient as
+// the Community hero card, with the mic sitting straight on it.
 const VOICE_BADGE_BG = 'transparent';
 
 const styles = StyleSheet.create({
@@ -116,22 +97,20 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
-  voiceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: VOICE_CARD_BG,
+  voiceShadow: {
     borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.md,
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
-  darkBadge: {
+  voiceCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.md,
   },
   voiceTextWrap: { flex: 1 },
   voiceTitle: { color: colors.white, fontSize: 17, fontWeight: '700' },
