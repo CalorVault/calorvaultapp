@@ -1,5 +1,5 @@
 import { getSupabaseClient } from './supabase';
-import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
+import { CommunityComment, CommunityPost, CommunityProfile, PostNutrition } from '../types';
 
 export class CommunityError extends Error {}
 
@@ -170,17 +170,25 @@ export async function listFriends(url: string, anonKey: string): Promise<Communi
   }));
 }
 
+const NUTRITION_COLUMNS = 'calories, protein_g, carbs_g, fat_g';
+
+function isMissingColumn(error: { code?: string; message?: string }): boolean {
+  return error.code === '42703' || error.code === 'PGRST204' || /column/i.test(error.message ?? '');
+}
+
 export async function listFeed(url: string, anonKey: string, limit = 30): Promise<CommunityPost[]> {
   const supabase = client(url, anonKey);
   const myId = await requireUserId(url, anonKey);
 
-  const { data: postRows, error } = await supabase
-    .from('posts')
-    .select('id, author_id, caption, photo_url, created_at')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  const base = 'id, author_id, caption, photo_url, created_at';
+  const query = (columns: string) =>
+    supabase.from('posts').select(columns).order('created_at', { ascending: false }).limit(limit);
+  // The nutrition columns come from a later schema update; until it has been
+  // run on the project, fall back to posts without them.
+  let { data: postRows, error } = await query(`${base}, ${NUTRITION_COLUMNS}`);
+  if (error && isMissingColumn(error)) ({ data: postRows, error } = await query(base));
   if (error) throw new CommunityError(error.message);
-  const posts = postRows ?? [];
+  const posts = (postRows ?? []) as unknown as Record<string, unknown>[];
   if (posts.length === 0) return [];
 
   const postIds = posts.map((p) => p.id as string);
@@ -214,6 +222,15 @@ export async function listFeed(url: string, anonKey: string, limit = 30): Promis
     caption: (p.caption as string) ?? '',
     photoUrl: (p.photo_url as string | null) ?? undefined,
     createdAt: p.created_at as string,
+    nutrition:
+      typeof p.calories === 'number'
+        ? {
+            calories: p.calories as number,
+            proteinG: (p.protein_g as number) ?? 0,
+            carbsG: (p.carbs_g as number) ?? 0,
+            fatG: (p.fat_g as number) ?? 0,
+          }
+        : undefined,
     likeCount: likeCountByPost.get(p.id as string) ?? 0,
     likedByMe: likedByMeSet.has(p.id as string),
     commentCount: commentCountByPost.get(p.id as string) ?? 0,
@@ -245,7 +262,8 @@ export async function createPost(
   url: string,
   anonKey: string,
   caption: string,
-  photoBase64?: string
+  photoBase64?: string,
+  nutrition?: PostNutrition
 ): Promise<void> {
   const supabase = client(url, anonKey);
   const myId = await requireUserId(url, anonKey);
@@ -262,9 +280,19 @@ export async function createPost(
     photoUrl = publicUrlData.publicUrl;
   }
 
-  const { error } = await supabase
-    .from('posts')
-    .insert({ author_id: myId, caption: caption.trim(), photo_url: photoUrl });
+  const row = { author_id: myId, caption: caption.trim(), photo_url: photoUrl };
+  const withNutrition = nutrition
+    ? {
+        ...row,
+        calories: Math.round(nutrition.calories),
+        protein_g: Math.round(nutrition.proteinG),
+        carbs_g: Math.round(nutrition.carbsG),
+        fat_g: Math.round(nutrition.fatG),
+      }
+    : row;
+  let { error } = await supabase.from('posts').insert(withNutrition);
+  // Before the nutrition columns exist, still post the photo and caption.
+  if (error && nutrition && isMissingColumn(error)) ({ error } = await supabase.from('posts').insert(row));
   if (error) throw new CommunityError(error.message);
 }
 

@@ -19,9 +19,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import { CameraIcon, CommentIcon, HeartIcon, PlusIcon } from '../components/CommunityIcons';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { useWeekDays } from '../hooks/useWeekDays';
 import {
   addComment,
   addFriendByUsername,
@@ -42,7 +44,7 @@ import {
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
 import { getHiddenPostIds, saveHiddenPostIds } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
-import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
+import { CommunityComment, CommunityPost, CommunityProfile, FoodEntry, PostNutrition } from '../types';
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
@@ -86,6 +88,69 @@ function timeAgo(iso: string): string {
   const days = Math.round(hours / 24);
   if (days < 7) return `${days}d`;
   return formatTimestamp(iso);
+}
+
+function ProgressRing({
+  percent,
+  color,
+  label,
+}: {
+  percent: number;
+  color: string;
+  label: string;
+}) {
+  const size = 52;
+  const stroke = 5;
+  const r = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  const clamped = Math.max(0, Math.min(percent, 100));
+  return (
+    <View style={styles.ringWrap}>
+      <View style={{ width: size, height: size }}>
+        <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
+          <Circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.18)" strokeWidth={stroke} fill="none" />
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={circumference * (1 - clamped / 100)}
+          />
+        </Svg>
+        <View style={styles.ringCenter}>
+          <Text style={styles.ringPercent}>{Math.round(percent)}%</Text>
+        </View>
+      </View>
+      <Text style={styles.ringLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function NutritionChips({ n, overlay }: { n: PostNutrition; overlay?: boolean }) {
+  return (
+    <View style={[styles.chipRow, overlay && styles.chipRowOverlay]}>
+      <View style={[styles.chip, { backgroundColor: 'rgba(17,24,39,0.72)' }]}>
+        <Text style={styles.chipText}>{n.calories} kcal</Text>
+      </View>
+      <View style={[styles.chip, { backgroundColor: colors.protein }]}>
+        <Text style={styles.chipText}>P {n.proteinG}g</Text>
+      </View>
+      <View style={[styles.chip, { backgroundColor: colors.carbs }]}>
+        <Text style={styles.chipText}>C {n.carbsG}g</Text>
+      </View>
+      <View style={[styles.chip, { backgroundColor: colors.fat }]}>
+        <Text style={styles.chipText}>F {n.fatG}g</Text>
+      </View>
+    </View>
+  );
+}
+
+function entryNutrition(e: FoodEntry): PostNutrition {
+  return { calories: e.calories, proteinG: e.proteinG, carbsG: e.carbsG, fatG: e.fatG };
 }
 
 export function CommunityScreen() {
@@ -353,6 +418,9 @@ function Feed({
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [newUsername, setNewUsername] = useState('');
   const [savingUsername, setSavingUsername] = useState(false);
+  const [attachedEntryId, setAttachedEntryId] = useState<string | null>(null);
+  const { today, plan } = useApp();
+  const { days: weekDays } = useWeekDays(plan?.calorieTarget ?? 0, today.entries.length);
 
   const load = useCallback(async () => {
     const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
@@ -475,11 +543,13 @@ function Feed({
   }
 
   async function handlePost() {
-    if (!caption.trim() && !photoBase64) return;
+    if (!caption.trim() && !photoBase64 && !attachedEntryId) return;
     setPosting(true);
     try {
-      await createPost(url, anonKey, caption, photoBase64);
+      const attached = today.entries.find((e) => e.id === attachedEntryId);
+      await createPost(url, anonKey, caption, photoBase64, attached && entryNutrition(attached));
       setCaption('');
+      setAttachedEntryId(null);
       setPhotoBase64(undefined);
       setPhotoPreviewUri(undefined);
       await load();
@@ -564,7 +634,25 @@ function Feed({
       .map((p) => p.authorId)
   );
   const myName = profile?.username ?? '';
-  const canPost = !!caption.trim() || !!photoBase64;
+  const canPost = !!caption.trim() || !!photoBase64 || !!attachedEntryId;
+  const streak = (() => {
+    let count = 0;
+    for (let i = weekDays.length - 1; i >= 0; i--) {
+      if (weekDays[i].hasEntries) count++;
+      else break;
+    }
+    return count;
+  })();
+  const totals = today.entries.reduce(
+    (acc, e) => ({
+      calories: acc.calories + e.calories,
+      proteinG: acc.proteinG + e.proteinG,
+      carbsG: acc.carbsG + e.carbsG,
+      fatG: acc.fatG + e.fatG,
+    }),
+    { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
+  );
+  const pct = (value: number, target?: number) => (target ? (value / target) * 100 : 0);
 
   return (
     <KeyboardAvoidingView
@@ -607,36 +695,78 @@ function Feed({
               </View>
             )}
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.storiesRow}
-            >
-              <Pressable
-                style={({ pressed }) => [styles.story, pressed && styles.pressedDim]}
-                onPress={handleInviteFriend}
-              >
-                <View style={styles.inviteCircle}>
-                  <PlusIcon size={26} color={colors.primary} />
+            <View style={styles.hero}>
+              <View style={styles.heroTop}>
+                <View style={styles.heroAvatarRing}>
+                  <Avatar name={myName || '?'} size={52} />
                 </View>
-                <Text style={styles.storyNameStrong}>{t.community.invite}</Text>
-              </Pressable>
-              {friends.map((f) => (
-                <View key={f.id} style={styles.story}>
-                  <View
-                    style={[
-                      styles.storyRing,
-                      { borderColor: postedToday.has(f.id) ? colors.primary : colors.border },
-                    ]}
-                  >
-                    <Avatar name={f.username} size={56} />
-                  </View>
-                  <Text style={styles.storyName} numberOfLines={1}>
-                    {f.username}
+                <View style={styles.heroText}>
+                  <Text style={styles.heroName} numberOfLines={1}>
+                    @{myName || '...'}
+                  </Text>
+                  <Text style={styles.heroMeta} numberOfLines={1}>
+                    🔥 {streak} {t.community.dayStreak}
+                  </Text>
+                  <Text style={styles.heroMeta} numberOfLines={1}>
+                    {friends.length} {t.community.friendsLabel}
                   </Text>
                 </View>
-              ))}
-            </ScrollView>
+                <Pressable
+                  style={({ pressed }) => [styles.heroInvite, pressed && styles.pressedDim]}
+                  onPress={handleInviteFriend}
+                >
+                  <PlusIcon size={14} color={colors.primaryDark} />
+                  <Text style={styles.heroInviteText}>{t.community.invite}</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.heroSection}>{t.community.todaySoFar}</Text>
+              <View style={styles.ringsRow}>
+                <ProgressRing
+                  percent={pct(totals.calories, plan?.calorieTarget)}
+                  color={colors.white}
+                  label={t.community.calories}
+                />
+                <ProgressRing
+                  percent={pct(totals.proteinG, plan?.proteinG)}
+                  color={colors.protein}
+                  label={t.onboarding.protein}
+                />
+                <ProgressRing
+                  percent={pct(totals.carbsG, plan?.carbsG)}
+                  color={colors.carbs}
+                  label={t.onboarding.carbs}
+                />
+                <ProgressRing
+                  percent={pct(totals.fatG, plan?.fatG)}
+                  color={colors.fat}
+                  label={t.onboarding.fat}
+                />
+              </View>
+            </View>
+
+            {friends.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.storiesRow}
+              >
+                {friends.map((f) => (
+                  <View key={f.id} style={styles.story}>
+                    <View
+                      style={[
+                        styles.storyRing,
+                        { borderColor: postedToday.has(f.id) ? colors.primary : colors.border },
+                      ]}
+                    >
+                      <Avatar name={f.username} size={52} />
+                    </View>
+                    <Text style={styles.storyName} numberOfLines={1}>
+                      {f.username}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
 
             <View style={styles.addFriendPill}>
               <TextInput
@@ -668,7 +798,7 @@ function Feed({
                 <Avatar name={myName || '?'} size={40} />
                 <TextInput
                   style={styles.composerInput}
-                  placeholder={t.community.composerPlaceholder}
+                  placeholder={t.community.sharePlaceholder}
                   placeholderTextColor={colors.textMuted}
                   value={caption}
                   onChangeText={setCaption}
@@ -682,6 +812,33 @@ function Feed({
                   <CameraIcon size={20} color={colors.white} />
                 </Pressable>
               </View>
+              {today.entries.length > 0 && (
+                <View style={styles.attachBlock}>
+                  <Text style={styles.attachLabel}>{t.community.attachMeal}</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attachRow}>
+                    {today.entries.map((e) => {
+                      const active = e.id === attachedEntryId;
+                      return (
+                        <Pressable
+                          key={e.id}
+                          style={[styles.attachChip, active && styles.attachChipActive]}
+                          onPress={() => {
+                            setAttachedEntryId(active ? null : e.id);
+                            if (!active && !caption.trim()) setCaption(e.foodName);
+                          }}
+                        >
+                          <Text
+                            style={[styles.attachChipText, active && styles.attachChipTextActive]}
+                            numberOfLines={1}
+                          >
+                            {e.foodName} · {Math.round(e.calories)} kcal
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
               {photoPreviewUri && (
                 <View style={styles.photoPreviewWrap}>
                   <Image source={{ uri: photoPreviewUri }} style={styles.photoPreview} />
@@ -823,8 +980,14 @@ function PostCard({
           <Text style={styles.postMenuDots}>•••</Text>
         </Pressable>
       </View>
-      {post.photoUrl && <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />}
+      {post.photoUrl && (
+        <View>
+          <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />
+          {post.nutrition && <NutritionChips n={post.nutrition} overlay />}
+        </View>
+      )}
       <View style={styles.postBody}>
+        {!post.photoUrl && post.nutrition && <NutritionChips n={post.nutrition} />}
         <View style={styles.postActions}>
           <Pressable
             style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
@@ -993,6 +1156,72 @@ const styles = StyleSheet.create({
   linkButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
   feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
   feedHeader: { gap: spacing.md },
+  hero: {
+    backgroundColor: colors.primaryDark,
+    borderRadius: 24,
+    padding: spacing.md,
+    gap: 10,
+    shadowColor: colors.primaryDark,
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  heroTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  heroAvatarRing: { padding: 2, borderRadius: 30, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' },
+  heroText: { flex: 1 },
+  heroName: { color: colors.white, fontSize: 19, fontWeight: '800' },
+  heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 },
+  heroInvite: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.white,
+    borderRadius: radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  heroInviteText: { color: colors.primaryDark, fontWeight: '800', fontSize: 13 },
+  heroSection: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  ringsRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  ringWrap: { alignItems: 'center', gap: 5, flex: 1 },
+  ringCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringPercent: { color: colors.white, fontSize: 12, fontWeight: '800' },
+  ringLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11.5 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chipRowOverlay: { position: 'absolute', left: 10, bottom: 10, right: 10 },
+  chip: { borderRadius: radius.full, paddingHorizontal: 9, paddingVertical: 4 },
+  chipText: { color: colors.white, fontSize: 12, fontWeight: '800' },
+  attachBlock: { gap: 6 },
+  attachLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '600' },
+  attachRow: { gap: 6 },
+  attachChip: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    maxWidth: 240,
+  },
+  attachChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  attachChipText: { color: colors.text, fontSize: 13, fontWeight: '600' },
+  attachChipTextActive: { color: colors.white },
   cardTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
   friendRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   friendInput: { flex: 1 },
@@ -1025,20 +1254,8 @@ const styles = StyleSheet.create({
   avatarText: { color: colors.white, fontWeight: '800' },
   storiesRow: { gap: 12, paddingVertical: 2 },
   story: { alignItems: 'center', width: 68, gap: 6 },
-  inviteCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.primary,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   storyRing: { padding: 2, borderRadius: 32, borderWidth: 2.5 },
   storyName: { color: colors.text, fontSize: 12, maxWidth: 68 },
-  storyNameStrong: { color: colors.text, fontSize: 12, fontWeight: '700' },
   addFriendPill: {
     flexDirection: 'row',
     alignItems: 'center',

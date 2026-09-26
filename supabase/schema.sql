@@ -27,6 +27,12 @@ create table if not exists posts (
   created_at timestamptz not null default now()
 );
 
+-- Optional nutrition of the meal a post is about (added later; safe to re-run).
+alter table posts add column if not exists calories integer;
+alter table posts add column if not exists protein_g integer;
+alter table posts add column if not exists carbs_g integer;
+alter table posts add column if not exists fat_g integer;
+
 create table if not exists likes (
   post_id uuid not null references posts(id) on delete cascade,
   user_id uuid not null references profiles(id) on delete cascade,

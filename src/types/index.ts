@@ -139,6 +139,13 @@ export interface CommunityProfile {
   createdAt: string;
 }
 
+export interface PostNutrition {
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
 export interface CommunityPost {
   id: string;
   authorId: string;
@@ -146,6 +153,8 @@ export interface CommunityPost {
   caption: string;
   photoUrl?: string;
   createdAt: string;
+  /** Nutrition of the meal the post is about, when the author attached one. */
+  nutrition?: PostNutrition;
   likeCount: number;
   likedByMe: boolean;
   commentCount: number;
