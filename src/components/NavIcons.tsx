@@ -105,10 +105,11 @@ export function CommunityIcon({ size = 20, color }: IconProps) {
   );
 }
 
-export function SearchIcon({ size = 20, color }: IconProps) {
+/** `fill` optionally colours the inside of the lens (two-tone badges). */
+export function SearchIcon({ size = 20, color, fill }: IconProps & { fill?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx="10.5" cy="10.5" r="6.5" stroke={color} strokeWidth={2} fill="none" />
+      <Circle cx="10.5" cy="10.5" r="6.5" stroke={color} strokeWidth={2} fill={fill ?? 'none'} />
       <Path d="M19.5 19.5l-4.3-4.3" stroke={color} strokeWidth={2} strokeLinecap="round" />
     </Svg>
   );
@@ -234,20 +235,23 @@ export function MealIcon({ size = 20, color }: IconProps) {
   );
 }
 
-export function PlanDayIcon({ size = 20, color }: IconProps) {
+/** `fill` optionally colours the fork, leaving the knife in `color` (two-tone badges). */
+export function PlanDayIcon({ size = 20, color, fill }: IconProps & { fill?: string }) {
+  // Two-tone badges are drawn small, so the strokes get a little heavier there.
+  const weight = fill ? 2.1 : 1.6;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
         d="M5 3v5a2 2 0 0 0 2 2v11M7 3v4M9 3v5a2 2 0 0 1-2 2"
-        stroke={color}
-        strokeWidth={1.6}
+        stroke={fill ?? color}
+        strokeWidth={weight}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <Path
         d="M17 21V3c-2 .8-3 3-3 5.8V13h3"
         stroke={color}
-        strokeWidth={1.6}
+        strokeWidth={weight}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -256,10 +260,11 @@ export function PlanDayIcon({ size = 20, color }: IconProps) {
   );
 }
 
-export function MicIcon({ size = 20, color }: IconProps) {
+/** `fill` optionally colours the microphone head (two-tone badges). */
+export function MicIcon({ size = 20, color, fill }: IconProps & { fill?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="9" y="3" width="6" height="11" rx="3" fill={color} />
+      <Rect x="9" y="3" width="6" height="11" rx="3" fill={fill ?? color} />
       <Path
         d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"
         stroke={color}

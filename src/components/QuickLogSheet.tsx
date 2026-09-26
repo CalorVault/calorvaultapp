@@ -1,6 +1,5 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useApp } from '../context/AppContext';
 import { colors, radius, spacing } from '../theme';
 import { LogFoodTab } from '../navigation/types';
@@ -13,42 +12,26 @@ interface Props {
   onSelect: (tab: LogFoodTab, opts?: { autoStartVoice?: boolean }) => void;
 }
 
-type IconComponent = (props: { size?: number; color: string }) => React.ReactElement;
+type IconComponent = (props: { size?: number; color: string; fill?: string }) => React.ReactElement;
 
-// Each option gets its own gradient so the four are easy to tell apart.
-const GRADIENTS = {
-  voice: [colors.primaryDark, colors.primary],
-  search: ['#1D4ED8', '#3B82F6'],
-  meal: [colors.primaryDark, '#5A8F6F'],
-} as const;
+const BADGE_SIZE = 46;
 
-function GradientBadge({
-  id,
-  from,
-  to,
-  size,
-  Icon,
-}: {
-  id: string;
-  from: string;
-  to: string;
-  size: number;
-  Icon: IconComponent;
-}) {
+// Dark rounded square with an orange-and-white icon, the same look as the
+// Scan logo (LogoScanFrame) so all four options read as one set.
+function DarkBadge({ Icon, background = colors.ink }: { Icon: IconComponent; background?: string }) {
   return (
-    <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={from} />
-            <Stop offset="1" stopColor={to} />
-          </LinearGradient>
-        </Defs>
-        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id})`} />
-      </Svg>
-      <View style={styles.badgeIcon}>
-        <Icon size={size * 0.5} color={colors.white} />
-      </View>
+    <View
+      style={[
+        styles.darkBadge,
+        {
+          width: BADGE_SIZE,
+          height: BADGE_SIZE,
+          borderRadius: BADGE_SIZE * 0.16,
+          backgroundColor: background,
+        },
+      ]}
+    >
+      <Icon size={BADGE_SIZE * 0.6} color={colors.accent} fill={colors.white} />
     </View>
   );
 }
@@ -63,36 +46,27 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
             style={({ pressed }) => [styles.voiceCard, pressed && styles.pressed]}
             onPress={() => onSelect('voice', { autoStartVoice: true })}
           >
-            <GradientBadge
-              id="qlVoice"
-              from={GRADIENTS.voice[0]}
-              to={GRADIENTS.voice[1]}
-              size={48}
-              Icon={MicIcon}
-            />
+            <DarkBadge Icon={MicIcon} background={VOICE_BADGE_BG} />
             <View style={styles.voiceTextWrap}>
               <Text style={styles.voiceTitle}>{t.quickLog.voiceTitle}</Text>
               <Text style={styles.voiceSubtitle}>{t.quickLog.voiceSubtitle}</Text>
             </View>
+            <Text style={styles.voiceChevron}>›</Text>
           </Pressable>
 
           <View style={styles.quickRow}>
             <QuickButton
-              id="qlSearch"
-              gradient={GRADIENTS.search}
-              Icon={SearchIcon}
+              badge={<DarkBadge Icon={SearchIcon} />}
               label={t.quickLog.search}
               onPress={() => onSelect('manual')}
             />
             <QuickButton
-              id="qlMeal"
-              gradient={GRADIENTS.meal}
-              Icon={PlanDayIcon}
+              badge={<DarkBadge Icon={PlanDayIcon} />}
               label={t.quickLog.previousMeal}
               onPress={() => onSelect('recent')}
             />
             <QuickButton
-              badge={<LogoScanFrame size={46} />}
+              badge={<LogoScanFrame size={BADGE_SIZE} glyphScale={0.38} />}
               label={t.quickLog.scan}
               onPress={() => onSelect('camera')}
             />
@@ -104,18 +78,11 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
 }
 
 function QuickButton({
-  id,
-  gradient,
-  Icon,
   badge,
   label,
   onPress,
 }: {
-  id?: string;
-  gradient?: readonly [string, string];
-  Icon?: IconComponent;
-  /** Custom badge -- Scan uses the CalorVault logo in a viewfinder, as on the intro screen. */
-  badge?: React.ReactNode;
+  badge: React.ReactNode;
   label: string;
   onPress: () => void;
 }) {
@@ -124,16 +91,18 @@ function QuickButton({
       style={({ pressed }) => [styles.quickButton, pressed && styles.pressed]}
       onPress={onPress}
     >
-      {badge ??
-        (id && gradient && Icon && (
-          <GradientBadge id={id} from={gradient[0]} to={gradient[1]} size={46} Icon={Icon} />
-        ))}
+      {badge}
       <Text style={styles.quickLabel} numberOfLines={2}>
         {label}
       </Text>
     </Pressable>
   );
 }
+
+// Voice to Meal is the headline option, so its card is dark like the badges
+// and the mic sits straight on it.
+const VOICE_CARD_BG = colors.ink;
+const VOICE_BADGE_BG = 'transparent';
 
 const styles = StyleSheet.create({
   backdrop: {
@@ -150,28 +119,24 @@ const styles = StyleSheet.create({
   voiceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: VOICE_CARD_BG,
     borderRadius: radius.lg,
     padding: spacing.lg,
     gap: spacing.md,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
-  badgeIcon: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  darkBadge: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   voiceTextWrap: { flex: 1 },
-  voiceTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
-  voiceSubtitle: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  voiceTitle: { color: colors.white, fontSize: 17, fontWeight: '700' },
+  voiceSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 2 },
+  voiceChevron: { color: colors.accent, fontSize: 30, fontWeight: '600', marginTop: -2 },
   quickRow: {
     flexDirection: 'row',
     gap: spacing.sm,
