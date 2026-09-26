@@ -17,11 +17,21 @@ function client(url: string, anonKey: string) {
   return getSupabaseClient(url, anonKey);
 }
 
+// The signed-in user's id from the saved session (refreshed if it expired).
+// auth.getUser() asks the server every time and can come back empty on a
+// slow or cold start, which made the app think you had no profile.
+async function currentUserId(url: string, anonKey: string): Promise<string | null> {
+  const auth = client(url, anonKey).auth;
+  const { data } = await auth.getSession();
+  if (data.session?.user?.id) return data.session.user.id;
+  const { data: userData } = await auth.getUser();
+  return userData.user?.id ?? null;
+}
+
 async function requireUserId(url: string, anonKey: string): Promise<string> {
-  const { data, error } = await client(url, anonKey).auth.getUser();
-  if (error) throw new CommunityError(error.message);
-  if (!data.user) throw new CommunityError('Not signed in.');
-  return data.user.id;
+  const id = await currentUserId(url, anonKey);
+  if (!id) throw new CommunityError('Not signed in.');
+  return id;
 }
 
 export async function hasSession(url: string, anonKey: string): Promise<boolean> {
@@ -74,8 +84,7 @@ export async function signOut(url: string, anonKey: string): Promise<void> {
 
 export async function getMyProfile(url: string, anonKey: string): Promise<CommunityProfile | null> {
   const supabase = client(url, anonKey);
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
+  const userId = await currentUserId(url, anonKey);
   if (!userId) return null;
   const { data, error } = await supabase
     .from('profiles')
@@ -95,9 +104,17 @@ export async function createMyProfile(url: string, anonKey: string, username: st
     throw new CommunityError('Usernames must be 3-20 characters: letters, numbers, underscores only.');
   }
   const userId = await requireUserId(url, anonKey);
-  const { error } = await client(url, anonKey).from('profiles').insert({ id: userId, username: normalized });
+  const supabase = client(url, anonKey);
+  // If this account already has a profile row, change its username rather
+  // than inserting a second row (which the database rejects).
+  const { data: existing } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
+  const { error } = existing
+    ? await supabase.from('profiles').update({ username: normalized }).eq('id', userId)
+    : await supabase.from('profiles').insert({ id: userId, username: normalized });
   if (error) {
-    if (error.code === '23505') throw new CommunityError('That username is already taken.');
+    if (error.code === '23505' && /username/i.test(`${error.message} ${error.details ?? ''}`)) {
+      throw new CommunityError('That username is already taken.');
+    }
     throw new CommunityError(error.message);
   }
 }
