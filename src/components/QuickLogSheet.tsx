@@ -133,8 +133,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 6,
   },
+  // flexGrow (not flex: 1) so the card keeps its content height on iOS and
+  // still stretches to match the tallest card in the row.
   quickButton: {
-    flex: 1,
+    flexGrow: 1,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,

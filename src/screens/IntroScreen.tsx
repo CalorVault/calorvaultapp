@@ -103,7 +103,7 @@ export function IntroScreen({ onFinish }: Props) {
           <Animated.View
             style={{ opacity: iconOpacity, transform: [{ translateY: iconTranslateY }] }}
           >
-            <LogoScanFrame size={ICON_SIZE} shaded />
+            <LogoScanFrame size={ICON_SIZE} />
           </Animated.View>
         </View>
 

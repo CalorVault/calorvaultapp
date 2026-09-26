@@ -66,8 +66,9 @@ interface LogoScanFrameProps {
   size?: number;
   /** Glyph width as a fraction of `size`; small badges use a larger share so the leaf stays legible. */
   glyphScale?: number;
+  /** A flat background instead of the shading, e.g. on top of a card that's already shaded. */
   background?: string;
-  /** Draw the same dark-to-slate gradient as the shaded cards instead of a flat background. */
+  /** Draw the same dark-to-slate gradient as the shaded cards. On unless `background` is given. */
   shaded?: boolean;
 }
 
@@ -77,8 +78,8 @@ interface LogoScanFrameProps {
 export function LogoScanFrame({
   size = 160,
   glyphScale = 0.28,
-  background = colors.ink,
-  shaded = false,
+  background,
+  shaded = background === undefined,
 }: LogoScanFrameProps) {
   const cornerLength = size * 0.16;
   const cornerThickness = Math.max(2, size * 0.028);
@@ -158,6 +159,6 @@ export function LogoScanFrame({
   return shaded ? (
     <GradientCard style={frameStyle}>{content}</GradientCard>
   ) : (
-    <View style={[frameStyle, { backgroundColor: background }]}>{content}</View>
+    <View style={[frameStyle, { backgroundColor: background ?? colors.ink }]}>{content}</View>
   );
 }

@@ -142,9 +142,13 @@ async function callClaude(
       'anthropic-version': ANTHROPIC_VERSION,
       'anthropic-dangerous-direct-browser-access': 'true',
     },
+    // Sonnet 5 thinks before answering when a request is harder (e.g. a meal
+    // with several foods). Low effort keeps that quick, and the token limit
+    // leaves room for the thinking plus the JSON answer.
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 600,
+      max_tokens: 4000,
+      output_config: { effort: 'low' },
       system: systemPrompt,
       messages: [{ role: 'user', content }],
     }),
@@ -158,9 +162,18 @@ async function callClaude(
   }
 
   const data = await response.json();
-  const text = data?.content?.[0]?.text;
-  if (typeof text !== 'string') {
-    throw new AiFoodError('Unexpected Claude API response shape');
+  if (data?.stop_reason === 'refusal') {
+    throw new AiFoodError("The AI couldn't help with that one. Try describing the food differently.");
+  }
+  // The answer can come after a thinking block, so read every text block
+  // rather than assuming the first block is the answer.
+  const blocks: Array<{ type?: string; text?: unknown }> = Array.isArray(data?.content) ? data.content : [];
+  const text = blocks
+    .filter((b) => b.type === 'text' && typeof b.text === 'string')
+    .map((b) => b.text as string)
+    .join('');
+  if (!text.trim()) {
+    throw new AiFoodError("Couldn't read the AI's answer. Please try again.");
   }
   return text;
 }
@@ -207,7 +220,10 @@ export async function estimateNutritionFromText(
   const text = await callClaude(apiKey, ESTIMATE_SYSTEM_PROMPT, [
     {
       type: 'text',
-      text: `The user said: "${description}". Identify the food they ate and estimate its nutrition. Respond with only the JSON object.`,
+      text:
+        `The user said: "${description}". Identify everything they ate and estimate its nutrition. ` +
+        'If they mention more than one food or drink, add them all together into one combined estimate ' +
+        'and name it after all the items, e.g. "2 eggs + toast". Respond with only the JSON object.',
     },
   ]);
   return extractJson(text);
