@@ -21,7 +21,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { CameraIcon, CommentIcon, HeartIcon, PlusIcon } from '../components/CommunityIcons';
-import { BLACK_GRADIENT, GradientCard } from '../components/GradientCard';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import { useWeekDays } from '../hooks/useWeekDays';
@@ -109,7 +108,7 @@ function ProgressRing({
     <View style={styles.ringWrap}>
       <View style={{ width: size, height: size }}>
         <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-          <Circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.18)" strokeWidth={stroke} fill="none" />
+          <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.surfaceAlt} strokeWidth={stroke} fill="none" />
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -696,7 +695,7 @@ function Feed({
               </View>
             )}
 
-            <GradientCard style={styles.hero} stops={BLACK_GRADIENT}>
+            <View style={styles.hero}>
               <View style={styles.heroTop}>
                 <View style={styles.heroAvatarRing}>
                   <Avatar name={myName || '?'} size={52} />
@@ -724,7 +723,7 @@ function Feed({
               <View style={styles.ringsRow}>
                 <ProgressRing
                   percent={pct(totals.calories, plan?.calorieTarget)}
-                  color={colors.white}
+                  color={colors.ink}
                   label={t.community.calories}
                 />
                 <ProgressRing
@@ -743,7 +742,7 @@ function Feed({
                   label={t.onboarding.fat}
                 />
               </View>
-            </GradientCard>
+            </View>
 
             {friends.length > 0 && (
               <ScrollView
@@ -1158,20 +1157,21 @@ const styles = StyleSheet.create({
   feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
   feedHeader: { gap: spacing.md },
   hero: {
+    backgroundColor: colors.surface,
     borderRadius: 24,
     padding: spacing.md,
     gap: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  heroAvatarRing: { padding: 2, borderRadius: 30, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' },
+  heroAvatarRing: { padding: 2, borderRadius: 30, borderWidth: 2, borderColor: colors.border },
   heroText: { flex: 1 },
-  heroName: { color: colors.white, fontSize: 19, fontWeight: '800' },
-  heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 },
+  heroName: { color: colors.text, fontSize: 19, fontWeight: '800' },
+  heroMeta: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
   heroInvite: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1183,7 +1183,7 @@ const styles = StyleSheet.create({
   },
   heroInviteText: { color: colors.white, fontWeight: '800', fontSize: 13 },
   heroSection: {
-    color: 'rgba(255,255,255,0.7)',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.6,
@@ -1201,8 +1201,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ringPercent: { color: colors.white, fontSize: 12, fontWeight: '800' },
-  ringLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11.5 },
+  ringPercent: { color: colors.text, fontSize: 12, fontWeight: '800' },
+  ringLabel: { color: colors.textMuted, fontSize: 11.5 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chipRowOverlay: { position: 'absolute', left: 10, bottom: 10, right: 10 },
   chip: { borderRadius: radius.full, paddingHorizontal: 9, paddingVertical: 4 },
