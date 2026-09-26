@@ -19,12 +19,14 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CameraIcon, CommentIcon, HeartIcon, PlusIcon } from '../components/CommunityIcons';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
 import {
   addComment,
   addFriendByUsername,
   CommunityError,
+  createMyProfile,
   createPost,
   deletePost,
   getMyProfile,
@@ -50,6 +52,40 @@ function formatTimestamp(iso: string): string {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+const AVATAR_COLORS = ['#437157', '#C2703D', '#4F6FA8', '#8A5A9E', '#2E8B85', '#B5566B'];
+
+function avatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function Avatar({ name, size }: { name: string; size: number }) {
+  return (
+    <View
+      style={[
+        styles.avatar,
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: avatarColor(name) },
+      ]}
+    >
+      <Text style={[styles.avatarText, { fontSize: size * 0.36 }]}>
+        {name.slice(0, 2).toUpperCase()}
+      </Text>
+    </View>
+  );
+}
+
+function timeAgo(iso: string): string {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d`;
+  return formatTimestamp(iso);
 }
 
 export function CommunityScreen() {
@@ -315,6 +351,8 @@ function Feed({
   const [photoPreviewUri, setPhotoPreviewUri] = useState<string | undefined>();
   const [posting, setPosting] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+  const [newUsername, setNewUsername] = useState('');
+  const [savingUsername, setSavingUsername] = useState(false);
 
   const load = useCallback(async () => {
     const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
@@ -407,6 +445,20 @@ function Feed({
     const message = `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}\n${deepLink}`;
     const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
     Linking.openURL(smsUrl).catch(() => {});
+  }
+
+  async function handleSaveUsername() {
+    if (!newUsername.trim()) return;
+    setSavingUsername(true);
+    try {
+      await createMyProfile(url, anonKey, newUsername);
+      setNewUsername('');
+      await load();
+    } catch (err) {
+      Alert.alert('', err instanceof Error ? err.message : String(err));
+    } finally {
+      setSavingUsername(false);
+    }
   }
 
   async function handlePickPhoto() {
@@ -505,6 +557,15 @@ function Feed({
     );
   }
 
+  // A friend's circle gets a green ring when they've posted in the last day.
+  const postedToday = new Set(
+    posts
+      .filter((p) => Date.now() - new Date(p.createdAt).getTime() < 24 * 60 * 60 * 1000)
+      .map((p) => p.authorId)
+  );
+  const myName = profile?.username ?? '';
+  const canPost = !!caption.trim() || !!photoBase64;
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -517,70 +578,115 @@ function Feed({
         contentContainerStyle={styles.feedContainer}
         ListHeaderComponent={
           <View style={styles.feedHeader}>
-            <View style={styles.profileRow}>
-              <Text style={styles.usernameText}>@{profile?.username ?? '...'}</Text>
-              <Pressable onPress={handleSignOut} hitSlop={8}>
-                <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
-              </Pressable>
-            </View>
+            {!profile && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>{t.community.chooseUsernameTitle}</Text>
+                <Text style={styles.hint}>{t.community.chooseUsernameCopy}</Text>
+                <View style={styles.friendRow}>
+                  <TextInput
+                    style={[styles.pillInput, styles.friendInput]}
+                    placeholder={t.community.usernamePlaceholder}
+                    placeholderTextColor={colors.textMuted}
+                    value={newUsername}
+                    onChangeText={setNewUsername}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <Pressable
+                    style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
+                    onPress={handleSaveUsername}
+                    disabled={savingUsername}
+                  >
+                    {savingUsername ? (
+                      <ActivityIndicator color={colors.white} size="small" />
+                    ) : (
+                      <Text style={styles.pillButtonText}>{t.community.saveUsername}</Text>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            )}
 
-            <Text style={styles.sectionLabel}>{t.community.friendsSection}</Text>
-            <View style={styles.friendRow}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.storiesRow}
+            >
+              <Pressable
+                style={({ pressed }) => [styles.story, pressed && styles.pressedDim]}
+                onPress={handleInviteFriend}
+              >
+                <View style={styles.inviteCircle}>
+                  <PlusIcon size={26} color={colors.primary} />
+                </View>
+                <Text style={styles.storyNameStrong}>{t.community.invite}</Text>
+              </Pressable>
+              {friends.map((f) => (
+                <View key={f.id} style={styles.story}>
+                  <View
+                    style={[
+                      styles.storyRing,
+                      { borderColor: postedToday.has(f.id) ? colors.primary : colors.border },
+                    ]}
+                  >
+                    <Avatar name={f.username} size={56} />
+                  </View>
+                  <Text style={styles.storyName} numberOfLines={1}>
+                    {f.username}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.addFriendPill}>
               <TextInput
-                style={[styles.keyInput, styles.friendInput]}
+                style={styles.addFriendInput}
                 placeholder={t.community.addFriendPlaceholder}
                 placeholderTextColor={colors.textMuted}
                 value={friendInput}
                 onChangeText={setFriendInput}
                 autoCapitalize="none"
                 autoCorrect={false}
+                onSubmitEditing={handleAddFriend}
+                returnKeyType="done"
               />
               <Pressable
-                style={({ pressed }) => [styles.addFriendButton, pressed && styles.pressedDim]}
+                style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
                 onPress={handleAddFriend}
-                disabled={addingFriend}
+                disabled={addingFriend || !friendInput.trim()}
               >
                 {addingFriend ? (
-                  <ActivityIndicator color={colors.background} size="small" />
+                  <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                  <Text style={styles.primaryButtonText}>{t.community.addFriendButton}</Text>
+                  <Text style={styles.pillButtonText}>{t.community.addFriendButton}</Text>
                 )}
               </Pressable>
             </View>
-            <Pressable
-              style={({ pressed }) => [styles.inviteButton, pressed && styles.pressedDim]}
-              onPress={handleInviteFriend}
-            >
-              <Text style={styles.inviteButtonText}>{t.community.inviteFriendButton}</Text>
-            </Pressable>
-            {friends.length > 0 && (
-              <View style={styles.friendChipRow}>
-                {friends.map((f) => (
-                  <View key={f.id} style={styles.friendChip}>
-                    <Text style={styles.friendChipText}>@{f.username}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
 
-            <Text style={styles.sectionLabel}>{t.community.composerPlaceholder}</Text>
-            <View style={styles.card}>
-              <TextInput
-                style={styles.composerInput}
-                placeholder={t.community.composerPlaceholder}
-                placeholderTextColor={colors.textMuted}
-                value={caption}
-                onChangeText={setCaption}
-                multiline
-              />
+            <View style={styles.composerCard}>
+              <View style={styles.composerRow}>
+                <Avatar name={myName || '?'} size={40} />
+                <TextInput
+                  style={styles.composerInput}
+                  placeholder={t.community.composerPlaceholder}
+                  placeholderTextColor={colors.textMuted}
+                  value={caption}
+                  onChangeText={setCaption}
+                  multiline
+                />
+                <Pressable
+                  style={({ pressed }) => [styles.cameraButton, pressed && styles.pressedDim]}
+                  onPress={handlePickPhoto}
+                  accessibilityLabel={t.community.addPhoto}
+                >
+                  <CameraIcon size={20} color={colors.white} />
+                </Pressable>
+              </View>
               {photoPreviewUri && (
                 <View style={styles.photoPreviewWrap}>
                   <Image source={{ uri: photoPreviewUri }} style={styles.photoPreview} />
                   <Pressable
-                    style={({ pressed }) => [
-                      styles.removePhotoButton,
-                      pressed && styles.pressedDim,
-                    ]}
+                    style={({ pressed }) => [styles.removePhotoButton, pressed && styles.pressedDim]}
                     onPress={() => {
                       setPhotoBase64(undefined);
                       setPhotoPreviewUri(undefined);
@@ -590,32 +696,47 @@ function Feed({
                   </Pressable>
                 </View>
               )}
-              <View style={styles.composerActions}>
+              {canPost && (
                 <Pressable
-                  style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedDim]}
-                  onPress={handlePickPhoto}
-                >
-                  <Text style={styles.secondaryButtonText}>{t.community.addPhoto}</Text>
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedDim]}
+                  style={({ pressed }) => [styles.postButton, pressed && styles.pressedDim]}
                   onPress={handlePost}
-                  disabled={posting || (!caption.trim() && !photoBase64)}
+                  disabled={posting}
                 >
                   {posting ? (
-                    <ActivityIndicator color={colors.background} size="small" />
+                    <ActivityIndicator color={colors.white} size="small" />
                   ) : (
-                    <Text style={styles.primaryButtonText}>{t.community.postButton}</Text>
+                    <Text style={styles.pillButtonText}>{t.community.postButton}</Text>
                   )}
                 </Pressable>
-              </View>
+              )}
             </View>
           </View>
         }
         ListEmptyComponent={
-          <View style={styles.body}>
+          <View style={styles.emptyState}>
+            <View style={styles.iconWrap}>
+              <CommunityIcon size={40} color={colors.primary} />
+            </View>
             <Text style={styles.heading}>{t.community.feedEmptyTitle}</Text>
             <Text style={styles.copy}>{t.community.feedEmptyCopy}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.pillButtonLarge, pressed && styles.pressedDim]}
+              onPress={handleInviteFriend}
+            >
+              <Text style={styles.pillButtonText}>{t.community.inviteFriendButton}</Text>
+            </Pressable>
+          </View>
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            {!!myName && (
+              <Text style={styles.footerText}>
+                {t.community.signedInAs} @{myName}
+              </Text>
+            )}
+            <Pressable onPress={handleSignOut} hitSlop={8}>
+              <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
+            </Pressable>
           </View>
         }
         renderItem={({ item }) => (
@@ -687,73 +808,86 @@ function PostCard({
   return (
     <View style={styles.postCard}>
       <View style={styles.postHeader}>
-        <Text style={styles.postAuthor}>@{post.authorUsername}</Text>
-        <View style={styles.postHeaderRight}>
-          <Text style={styles.postTimestamp}>{formatTimestamp(post.createdAt)}</Text>
-          <Pressable
-            style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
-            onPress={onDelete}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={t.community.delete}
-          >
-            <Text style={styles.postMenuDots}>•••</Text>
-          </Pressable>
+        <Avatar name={post.authorUsername} size={36} />
+        <View style={styles.postHeaderText}>
+          <Text style={styles.postAuthor}>@{post.authorUsername}</Text>
+          <Text style={styles.postTimestamp}>{timeAgo(post.createdAt)}</Text>
         </View>
+        <Pressable
+          style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
+          onPress={onDelete}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={t.community.delete}
+        >
+          <Text style={styles.postMenuDots}>•••</Text>
+        </Pressable>
       </View>
       {post.photoUrl && <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />}
-      {!!post.caption && <Text style={styles.postCaption}>{post.caption}</Text>}
-      <View style={styles.postActions}>
-        <Pressable
-          style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
-          onPress={onToggleLike}
-        >
-          <Text style={styles.postActionText}>
-            {post.likedByMe ? '❤️' : '🤍'} {post.likeCount}
-          </Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
-          onPress={onToggleExpand}
-        >
-          <Text style={styles.postActionText}>💬 {post.commentCount}</Text>
-        </Pressable>
-      </View>
-      {expanded && (
-        <View style={styles.commentsWrap}>
-          <Text style={styles.sectionLabel}>{t.community.commentsTitle}</Text>
-          {loadingComments ? (
-            <ActivityIndicator color={colors.primary} size="small" />
-          ) : (
-            comments.map((c) => (
-              <View key={c.id} style={styles.commentRow}>
-                <Text style={styles.commentAuthor}>@{c.authorUsername}</Text>
-                <Text style={styles.commentBody}>{c.body}</Text>
-              </View>
-            ))
-          )}
-          <View style={styles.commentInputRow}>
-            <TextInput
-              style={[styles.keyInput, styles.commentInput]}
-              placeholder={t.community.addCommentPlaceholder}
-              placeholderTextColor={colors.textMuted}
-              value={commentInput}
-              onChangeText={setCommentInput}
+      <View style={styles.postBody}>
+        <View style={styles.postActions}>
+          <Pressable
+            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
+            onPress={onToggleLike}
+            hitSlop={6}
+          >
+            <HeartIcon
+              size={22}
+              color={post.likedByMe ? colors.protein : colors.text}
+              filled={post.likedByMe}
             />
-            <Pressable
-              style={({ pressed }) => [styles.addFriendButton, pressed && styles.pressedDim]}
-              onPress={handleSendComment}
-              disabled={sendingComment}
-            >
-              {sendingComment ? (
-                <ActivityIndicator color={colors.background} size="small" />
-              ) : (
-                <Text style={styles.primaryButtonText}>{t.community.postButton}</Text>
-              )}
-            </Pressable>
-          </View>
+            <Text style={styles.postActionText}>{post.likeCount}</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
+            onPress={onToggleExpand}
+            hitSlop={6}
+          >
+            <CommentIcon size={22} color={colors.text} />
+            <Text style={styles.postActionText}>{post.commentCount}</Text>
+          </Pressable>
         </View>
-      )}
+        {!!post.caption && (
+          <Text style={styles.postCaption}>
+            <Text style={styles.postCaptionAuthor}>{post.authorUsername} </Text>
+            {post.caption}
+          </Text>
+        )}
+        {expanded && (
+          <View style={styles.commentsWrap}>
+            {loadingComments ? (
+              <ActivityIndicator color={colors.primary} size="small" />
+            ) : (
+              comments.map((c) => (
+                <Text key={c.id} style={styles.commentBody}>
+                  <Text style={styles.commentAuthor}>{c.authorUsername} </Text>
+                  {c.body}
+                </Text>
+              ))
+            )}
+            <View style={[styles.addFriendPill, styles.commentPill]}>
+              <TextInput
+                style={styles.addFriendInput}
+                placeholder={t.community.addCommentPlaceholder}
+                placeholderTextColor={colors.textMuted}
+                value={commentInput}
+                onChangeText={setCommentInput}
+              />
+              <Pressable
+                style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
+                onPress={handleSendComment}
+                disabled={sendingComment || !commentInput.trim()}
+              >
+                {sendingComment ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <Text style={styles.pillButtonText}>{t.community.postButton}</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -857,62 +991,110 @@ const styles = StyleSheet.create({
   secondaryButtonText: { color: colors.text, fontWeight: '700' },
   linkButton: { alignItems: 'center', paddingTop: spacing.xs },
   linkButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
-  feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 2, gap: spacing.md },
-  feedHeader: { gap: spacing.sm, marginBottom: spacing.sm },
-  profileRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  usernameText: { color: colors.text, fontSize: 18, fontWeight: '700' },
-  sectionLabel: {
-    color: colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: spacing.sm,
-  },
+  feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
+  feedHeader: { gap: spacing.md },
+  cardTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
   friendRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   friendInput: { flex: 1 },
-  addFriendButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
+  pillInput: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.full,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
+    paddingVertical: 12,
+    color: colors.text,
+    fontSize: 15,
+  },
+  pillButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 64,
+  },
+  pillButtonLarge: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    marginTop: spacing.sm,
+  },
+  pillButtonText: { color: colors.white, fontWeight: '700', fontSize: 15 },
+  avatar: { alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: colors.white, fontWeight: '800' },
+  storiesRow: { gap: 12, paddingVertical: 2 },
+  story: { alignItems: 'center', width: 68, gap: 6 },
+  inviteCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: colors.primary,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  friendChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  friendChip: {
-    backgroundColor: colors.primaryMuted,
+  storyRing: { padding: 2, borderRadius: 32, borderWidth: 2.5 },
+  storyName: { color: colors.text, fontSize: 12, maxWidth: 68 },
+  storyNameStrong: { color: colors.text, fontSize: 12, fontWeight: '700' },
+  addFriendPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
     borderRadius: radius.full,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingLeft: spacing.md,
+    padding: 5,
+    gap: spacing.sm,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  friendChipText: { color: colors.primaryDark, fontWeight: '600', fontSize: 13 },
-  inviteButton: {
-    alignSelf: 'flex-start',
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+  commentPill: { backgroundColor: colors.surfaceAlt, shadowOpacity: 0, elevation: 0 },
+  addFriendInput: { flex: 1, color: colors.text, fontSize: 15, paddingVertical: 8 },
+  composerCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: 12,
+    gap: spacing.sm,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  inviteButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
+  composerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   composerInput: {
+    flex: 1,
     backgroundColor: colors.surfaceAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
+    borderRadius: 22,
+    paddingHorizontal: spacing.md,
+    paddingTop: 11,
+    paddingBottom: 11,
     color: colors.text,
-    minHeight: 60,
-    textAlignVertical: 'top',
+    fontSize: 15,
+    maxHeight: 120,
   },
-  composerActions: { flexDirection: 'row', gap: spacing.sm },
+  cameraButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+  },
   photoPreviewWrap: { position: 'relative' },
-  photoPreview: { width: '100%', height: 160, borderRadius: radius.md },
+  photoPreview: { width: '100%', height: 200, borderRadius: radius.md },
   removePhotoButton: {
     position: 'absolute',
     top: spacing.sm,
@@ -923,29 +1105,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   removePhotoButtonText: { color: colors.white, fontSize: 12, fontWeight: '600' },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  footer: { alignItems: 'center', gap: 6, paddingTop: spacing.lg },
+  footerText: { color: colors.textMuted, fontSize: 12 },
   postCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.sm,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  postHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  postHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  postHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+  postHeaderText: { flex: 1 },
   postMenuButton: { paddingHorizontal: spacing.xs, paddingVertical: 2 },
   postMenuDots: { color: colors.textMuted, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
-  postAuthor: { color: colors.text, fontWeight: '700', fontSize: 14 },
-  postTimestamp: { color: colors.textMuted, fontSize: 12 },
-  postPhoto: { width: '100%', height: 220, borderRadius: radius.md },
-  postCaption: { color: colors.text, fontSize: 14, lineHeight: 20 },
+  postAuthor: { color: colors.text, fontWeight: '700', fontSize: 15 },
+  postTimestamp: { color: colors.textMuted, fontSize: 12, marginTop: 1 },
+  postPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.surfaceAlt },
+  postBody: { padding: 12, gap: 8 },
   postActions: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
-  postActionButton: { paddingVertical: spacing.xs },
-  postActionText: { color: colors.textMuted, fontWeight: '600', fontSize: 13 },
-  commentsWrap: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
-  commentRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
-  commentAuthor: { color: colors.text, fontWeight: '700', fontSize: 13 },
-  commentBody: { color: colors.text, fontSize: 13 },
-  commentInputRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-  commentInput: { flex: 1 },
+  postActionButton: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  postActionText: { color: colors.text, fontWeight: '600', fontSize: 14 },
+  postCaption: { color: colors.text, fontSize: 14, lineHeight: 20 },
+  postCaptionAuthor: { fontWeight: '700' },
+  commentsWrap: { gap: 6, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 },
+  commentAuthor: { fontWeight: '700' },
+  commentBody: { color: colors.text, fontSize: 14, lineHeight: 19 },
 });

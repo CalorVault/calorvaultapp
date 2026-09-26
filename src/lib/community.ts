@@ -87,6 +87,21 @@ export async function getMyProfile(url: string, anonKey: string): Promise<Commun
   return { id: data.id, username: data.username, createdAt: data.created_at };
 }
 
+// Accounts whose profile insert failed at sign-up (e.g. before email
+// confirmation was turned off) have no username yet; this lets them pick one.
+export async function createMyProfile(url: string, anonKey: string, username: string): Promise<void> {
+  const normalized = normalizeUsername(username);
+  if (!isValidUsername(normalized)) {
+    throw new CommunityError('Usernames must be 3-20 characters: letters, numbers, underscores only.');
+  }
+  const userId = await requireUserId(url, anonKey);
+  const { error } = await client(url, anonKey).from('profiles').insert({ id: userId, username: normalized });
+  if (error) {
+    if (error.code === '23505') throw new CommunityError('That username is already taken.');
+    throw new CommunityError(error.message);
+  }
+}
+
 export async function addFriendByUsername(
   url: string,
   anonKey: string,

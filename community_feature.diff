@@ -1,0 +1,2122 @@
+diff --git a/index.ts b/index.ts
+index 1d6e981..e9bfea7 100644
+--- a/index.ts
++++ b/index.ts
+@@ -1,3 +1,4 @@
++import 'react-native-url-polyfill/auto';
+ import { registerRootComponent } from 'expo';
+ 
+ import App from './App';
+diff --git a/package-lock.json b/package-lock.json
+index 19c1026..a52a089 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -12,6 +12,7 @@
+         "@react-navigation/bottom-tabs": "^7.18.17",
+         "@react-navigation/native": "^7.3.17",
+         "@react-navigation/native-stack": "^7.18.9",
++        "@supabase/supabase-js": "^2.116.0",
+         "expo": "~57.0.16",
+         "expo-camera": "^57.0.4",
+         "expo-file-system": "~57.0.5",
+@@ -27,6 +28,7 @@
+         "react-native-safe-area-context": "^5.9.1",
+         "react-native-screens": "^4.27.0",
+         "react-native-svg": "^15.15.5",
++        "react-native-url-polyfill": "^4.0.0",
+         "react-native-view-shot": "^5.1.1",
+         "react-native-web": "^0.21.2"
+       },
+@@ -1840,6 +1842,98 @@
+       "integrity": "sha512-hhyNJ+nbR6ZR7pToHvllEFun9TL0sbL+tk/ON75lo+Xas054uez98qRbsuNt7MBCyZKK4+8Yli/OAGZhmfBZ/g==",
+       "license": "MIT"
+     },
++    "node_modules/@supabase/auth-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.116.0.tgz",
++      "integrity": "sha512-Cmosty12gyKGK9N3bQb+lMmuAFev5nmUzaR1AsmZHqKOAGzqX1VQzmp49CNPwOx/pw0H9Qqk4rs9yhwTlKpfDg==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      }
++    },
++    "node_modules/@supabase/functions-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.116.0.tgz",
++      "integrity": "sha512-E+VOc2QDcni/fySqkBFiZhnoB3SGydEdZgFI6/dEAGAHx6yEhB46TN9qb2wXs+E+RSzOBV0R6dasiSlw4xlZAA==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      }
++    },
++    "node_modules/@supabase/phoenix": {
++      "version": "0.4.5",
++      "resolved": "https://registry.npmjs.org/@supabase/phoenix/-/phoenix-0.4.5.tgz",
++      "integrity": "sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==",
++      "license": "MIT"
++    },
++    "node_modules/@supabase/postgrest-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.116.0.tgz",
++      "integrity": "sha512-kGpVZTDHxFTJS3tu+rU0iTAZ+4U0bcLVjxwCk8f3gRhjw3qdCZjTBlgYvc4kGH2XccmAzbkKwXL/mrNHMGSc+A==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      }
++    },
++    "node_modules/@supabase/realtime-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.116.0.tgz",
++      "integrity": "sha512-MHAnlXxi2s6yiJsZsQMfs2B3RFxeVfQWxerqYhIMqcCQV/FuY3LIeouPEkXw/ah7wUWMLYwempF9MOCUScyddg==",
++      "license": "MIT",
++      "dependencies": {
++        "@supabase/phoenix": "0.4.5",
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      }
++    },
++    "node_modules/@supabase/storage-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.116.0.tgz",
++      "integrity": "sha512-6/3hR6vccBP6oGM5B6RfbwZcTCKmQOodd/ZWQdsw8yJsU5zO/a//oBL6yLnmgxcjnHSrelW8rsO7hL5DPybyUQ==",
++      "license": "MIT",
++      "dependencies": {
++        "iceberg-js": "^0.8.1",
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      }
++    },
++    "node_modules/@supabase/supabase-js": {
++      "version": "2.116.0",
++      "resolved": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.116.0.tgz",
++      "integrity": "sha512-YyWmKXt2NspV9iO8FPnlswUFJIRnrLd3oTCb+3ZyYRuKZtBH0xCUDgnUqoyA0fGUxpM/UhfwDjYf/dht/9bp7g==",
++      "license": "MIT",
++      "dependencies": {
++        "@supabase/auth-js": "2.116.0",
++        "@supabase/functions-js": "2.116.0",
++        "@supabase/postgrest-js": "2.116.0",
++        "@supabase/realtime-js": "2.116.0",
++        "@supabase/storage-js": "2.116.0"
++      },
++      "engines": {
++        "node": ">=22.0.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@opentelemetry/api": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@types/emscripten": {
+       "version": "1.41.5",
+       "resolved": "https://registry.npmjs.org/@types/emscripten/-/emscripten-1.41.5.tgz",
+@@ -3941,6 +4035,15 @@
+       "integrity": "sha512-WDC/ui2VVRrz3jOVi+XtjqkDjiVjTtFaAGiW37k6b+ohyQ5wYDOGkvCZa8+H0nx3gyvv0+BST9xuOgIyGQ00gw==",
+       "license": "BSD-3-Clause"
+     },
++    "node_modules/iceberg-js": {
++      "version": "0.8.1",
++      "resolved": "https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz",
++      "integrity": "sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
+     "node_modules/idb": {
+       "version": "8.0.3",
+       "resolved": "https://registry.npmjs.org/idb/-/idb-8.0.3.tgz",
+@@ -5728,6 +5831,15 @@
+         "react-native": "*"
+       }
+     },
++    "node_modules/react-native-url-polyfill": {
++      "version": "4.0.0",
++      "resolved": "https://registry.npmjs.org/react-native-url-polyfill/-/react-native-url-polyfill-4.0.0.tgz",
++      "integrity": "sha512-eqYM3wBAA0eL1sPYbBAoNfbES3+NkgcxUdelQ7QzmoVtqKB5qGG0U13MPTRUroAWK+y2EoJFS3MZUK0fwTf0pA==",
++      "license": "MIT",
++      "peerDependencies": {
++        "react-native": "*"
++      }
++    },
+     "node_modules/react-native-view-shot": {
+       "version": "5.1.1",
+       "resolved": "https://registry.npmjs.org/react-native-view-shot/-/react-native-view-shot-5.1.1.tgz",
+@@ -6494,6 +6606,12 @@
+       "integrity": "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==",
+       "license": "MIT"
+     },
++    "node_modules/tslib": {
++      "version": "2.8.1",
++      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
++      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
++      "license": "0BSD"
++    },
+     "node_modules/type-fest": {
+       "version": "0.7.1",
+       "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-0.7.1.tgz",
+diff --git a/package.json b/package.json
+index 895a687..17b4c40 100644
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,7 @@
+     "@react-navigation/bottom-tabs": "^7.18.17",
+     "@react-navigation/native": "^7.3.17",
+     "@react-navigation/native-stack": "^7.18.9",
++    "@supabase/supabase-js": "^2.116.0",
+     "expo": "~57.0.16",
+     "expo-camera": "^57.0.4",
+     "expo-file-system": "~57.0.5",
+@@ -22,6 +23,7 @@
+     "react-native-safe-area-context": "^5.9.1",
+     "react-native-screens": "^4.27.0",
+     "react-native-svg": "^15.15.5",
++    "react-native-url-polyfill": "^4.0.0",
+     "react-native-view-shot": "^5.1.1",
+     "react-native-web": "^0.21.2"
+   },
+diff --git a/src/context/AppContext.tsx b/src/context/AppContext.tsx
+index 2254661..28303d5 100644
+--- a/src/context/AppContext.tsx
++++ b/src/context/AppContext.tsx
+@@ -27,6 +27,8 @@ import {
+   getRecipeApiKey,
+   getSavedRecipes,
+   getSubscription,
++  getSupabaseAnonKey,
++  getSupabaseUrl,
+   getWaterIntake,
+   getWaterTarget,
+   getWeightLog,
+@@ -38,6 +40,8 @@ import {
+   saveRecipeApiKey as persistRecipeApiKey,
+   saveSavedRecipes,
+   saveSubscription,
++  saveSupabaseAnonKey as persistSupabaseAnonKey,
++  saveSupabaseUrl as persistSupabaseUrl,
+   saveWaterIntake,
+   saveWaterTarget as persistWaterTarget,
+   todayIso,
+@@ -73,6 +77,10 @@ interface AppContextValue {
+   setApiKey: (key: string) => Promise<void>;
+   setRecipeApiKey: (key: string) => Promise<void>;
+   setLanguage: (language: LanguageCode) => Promise<void>;
++  supabaseUrl: string | null;
++  supabaseAnonKey: string | null;
++  setSupabaseUrl: (url: string) => Promise<void>;
++  setSupabaseAnonKey: (key: string) => Promise<void>;
+   logFood: (entry: FoodEntry) => Promise<void>;
+   deleteFood: (entryId: string) => Promise<void>;
+   refreshToday: () => Promise<void>;
+@@ -99,6 +107,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+   const [apiKey, setApiKeyState] = useState<string | null>(null);
+   const [recipeApiKey, setRecipeApiKeyState] = useState<string | null>(null);
+   const [language, setLanguageState] = useState<LanguageCode>(DEFAULT_LANGUAGE);
++  const [supabaseUrl, setSupabaseUrlState] = useState<string | null>(null);
++  const [supabaseAnonKey, setSupabaseAnonKeyState] = useState<string | null>(null);
+   const [subscription, setSubscription] = useState<Subscription | null>(null);
+   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+   const [today, setToday] = useState<DayLog>({ date: todayIso(), entries: [] });
+@@ -121,6 +131,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+           storedKey,
+           storedRecipeKey,
+           storedLanguage,
++          storedSupabaseUrl,
++          storedSupabaseAnonKey,
+           storedSubscription,
+           storedSavedRecipes,
+           storedWeightLog,
+@@ -132,6 +144,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+           getApiKey(),
+           getRecipeApiKey(),
+           getLanguage(),
++          getSupabaseUrl(),
++          getSupabaseAnonKey(),
+           getSubscription(),
+           getSavedRecipes(),
+           getWeightLog(),
+@@ -143,6 +157,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+         setApiKeyState(storedKey);
+         setRecipeApiKeyState(storedRecipeKey);
+         setLanguageState(storedLanguage);
++        setSupabaseUrlState(storedSupabaseUrl);
++        setSupabaseAnonKeyState(storedSupabaseAnonKey);
+         setSubscription(storedSubscription);
+         setSavedRecipes(storedSavedRecipes);
+         setWeightLog(storedWeightLog);
+@@ -211,6 +227,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+     setLanguageState(lang);
+   }, []);
+ 
++  const setSupabaseUrl = useCallback(async (url: string) => {
++    await persistSupabaseUrl(url);
++    setSupabaseUrlState(url);
++  }, []);
++
++  const setSupabaseAnonKey = useCallback(async (key: string) => {
++    await persistSupabaseAnonKey(key);
++    setSupabaseAnonKeyState(key);
++  }, []);
++
+   const t = useMemo(() => getTranslations(language), [language]);
+ 
+   const logFood = useCallback(
+@@ -296,6 +322,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+       t,
+       today,
+       subscription,
++      supabaseUrl,
++      supabaseAnonKey,
++      setSupabaseUrl,
++      setSupabaseAnonKey,
+       // On web, real purchases can never happen (no RevenueCat build for web),
+       // so this preview unlocks premium automatically for testing -- the real
+       // iOS/Android app still gates on the actual purchased entitlement below.
+@@ -330,6 +360,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+       t,
+       today,
+       subscription,
++      supabaseUrl,
++      supabaseAnonKey,
++      setSupabaseUrl,
++      setSupabaseAnonKey,
+       customerInfo,
+       completeOnboarding,
+       updateProfile,
+diff --git a/src/i18n/de.ts b/src/i18n/de.ts
+index bf03776..871b9b4 100644
+--- a/src/i18n/de.ts
++++ b/src/i18n/de.ts
+@@ -87,8 +87,41 @@ const de: Translations = {
+   },
+   community: {
+     title: 'Community',
+-    comingSoon: 'Demnächst',
+-    copy: 'Die Vernetzung mit anderen CalorVault-Mitgliedern erfordert echte Konten und einen gemeinsamen Server, die diese App noch nicht hat. Wir wollten keinen Community-Feed zeigen, der eigentlich mit niemandem kommuniziert.',
++    setupNeededTitle: 'Community einrichten',
++    setupNeededCopy:
++      'Die Community benötigt ein kostenloses Supabase-Projekt, um Konten und Beiträge zu speichern. Füge deine Projekt-URL und den anon public Key in den Einstellungen hinzu, um sie zu aktivieren.',
++    goToSettings: 'Zu den Einstellungen',
++    signInTitle: 'Willkommen zurück',
++    signUpTitle: 'Konto erstellen',
++    emailPlaceholder: 'E-Mail',
++    passwordPlaceholder: 'Passwort',
++    usernamePlaceholder: 'Benutzername',
++    usernameHint: '3-20 Zeichen: Buchstaben, Zahlen, Unterstriche.',
++    signInButton: 'Anmelden',
++    signUpButton: 'Registrieren',
++    switchToSignUp: 'Noch kein Konto? Registrieren',
++    switchToSignIn: 'Schon ein Konto? Anmelden',
++    authErrorTitle: 'Anmeldung fehlgeschlagen',
++    friendsSection: 'Freunde',
++    addFriendPlaceholder: 'Benutzername des Freundes',
++    addFriendButton: 'Hinzufügen',
++    addFriendFailedTitle: 'Freund konnte nicht hinzugefügt werden',
++    noFriendsYet: 'Füge Freunde per Benutzername hinzu, um ihre Beiträge hier zu sehen.',
++    composerPlaceholder: 'Was hast du heute gegessen?',
++    addPhoto: 'Foto hinzufügen',
++    removePhoto: 'Foto entfernen',
++    postButton: 'Posten',
++    postFailedTitle: 'Posten fehlgeschlagen',
++    feedEmptyTitle: 'Noch keine Beiträge',
++    feedEmptyCopy: 'Füge Freunde hinzu oder teile deine erste Mahlzeit, um loszulegen.',
++    commentsTitle: 'Kommentare',
++    addCommentPlaceholder: 'Kommentar hinzufügen...',
++    signOutButton: 'Abmelden',
++    signOutConfirmTitle: 'Abmelden?',
++    signOutConfirmMsg: 'Du musst dich erneut anmelden, um die Community zu sehen.',
++    deletePostConfirmTitle: 'Beitrag löschen?',
++    deletePostConfirmMsg: 'Dies entfernt den Beitrag für alle, die ihn sehen können.',
++    delete: 'Löschen',
+   },
+   recipes: {
+     title: 'Rezepte',
+@@ -247,6 +280,13 @@ const de: Translations = {
+     saveRecipeApiKey: 'Rezept-API-Schlüssel speichern',
+     recipeApiKeyPlaceholder: 'Spoonacular-API-Schlüssel',
+     savedRecipeKeyMsg: 'Dein Rezept-API-Schlüssel wurde auf diesem Gerät gespeichert.',
++    communitySection: 'Community',
++    communityHint:
++      'Füge die URL deines kostenlosen Supabase-Projekts und den anon public Key (in den API-Einstellungen deines Projekts) hinzu, um die Community zu aktivieren.',
++    supabaseUrlPlaceholder: 'Supabase-Projekt-URL',
++    supabaseAnonKeyPlaceholder: 'Supabase anon public Key',
++    saveCommunityConfig: 'Community-Einstellungen speichern',
++    savedCommunityConfigMsg: 'Deine Community-Einstellungen wurden auf diesem Gerät gespeichert.',
+     languageSection: 'Sprache',
+     languageHint: 'Wähle die Anzeigesprache von CalorVault.',
+     cancelPremiumTitle: 'Premium kündigen?',
+diff --git a/src/i18n/en.ts b/src/i18n/en.ts
+index 5fb9224..0c97f10 100644
+--- a/src/i18n/en.ts
++++ b/src/i18n/en.ts
+@@ -89,8 +89,41 @@ const en = {
+   },
+   community: {
+     title: 'Community',
+-    comingSoon: 'Coming soon',
+-    copy: "Connecting with other CalorVault members needs real accounts and a shared backend, which this app doesn't have yet. We didn't want to show a community feed that isn't actually talking to anyone.",
++    setupNeededTitle: 'Set up Community',
++    setupNeededCopy:
++      "Community needs a free Supabase project to store accounts and posts. Add your Project URL and anon public key in Settings to turn it on.",
++    goToSettings: 'Go to Settings',
++    signInTitle: 'Welcome back',
++    signUpTitle: 'Create your account',
++    emailPlaceholder: 'Email',
++    passwordPlaceholder: 'Password',
++    usernamePlaceholder: 'Username',
++    usernameHint: '3-20 characters: letters, numbers, underscores only.',
++    signInButton: 'Sign in',
++    signUpButton: 'Sign up',
++    switchToSignUp: "Don't have an account? Sign up",
++    switchToSignIn: 'Already have an account? Sign in',
++    authErrorTitle: "Couldn't sign in",
++    friendsSection: 'Friends',
++    addFriendPlaceholder: "Friend's username",
++    addFriendButton: 'Add',
++    addFriendFailedTitle: "Couldn't add friend",
++    noFriendsYet: 'Add friends by username to see their posts here.',
++    composerPlaceholder: 'What did you eat today?',
++    addPhoto: 'Add photo',
++    removePhoto: 'Remove photo',
++    postButton: 'Post',
++    postFailedTitle: "Couldn't post",
++    feedEmptyTitle: 'No posts yet',
++    feedEmptyCopy: 'Add friends or share your first meal to get started.',
++    commentsTitle: 'Comments',
++    addCommentPlaceholder: 'Add a comment...',
++    signOutButton: 'Sign out',
++    signOutConfirmTitle: 'Sign out?',
++    signOutConfirmMsg: "You'll need to sign in again to see Community.",
++    deletePostConfirmTitle: 'Delete post?',
++    deletePostConfirmMsg: 'This will remove the post for everyone who can see it.',
++    delete: 'Delete',
+   },
+   recipes: {
+     title: 'Recipes',
+@@ -250,6 +283,13 @@ const en = {
+     saveRecipeApiKey: 'Save recipe API key',
+     recipeApiKeyPlaceholder: 'Spoonacular API key',
+     savedRecipeKeyMsg: 'Your recipe API key has been saved on this device.',
++    communitySection: 'Community',
++    communityHint:
++      'Add your free Supabase project URL and anon public key (from your project\'s API settings) to turn on Community.',
++    supabaseUrlPlaceholder: 'Supabase Project URL',
++    supabaseAnonKeyPlaceholder: 'Supabase anon public key',
++    saveCommunityConfig: 'Save Community settings',
++    savedCommunityConfigMsg: 'Your Community settings have been saved on this device.',
+     languageSection: 'Language',
+     languageHint: 'Choose the language CalorVault displays in.',
+     cancelPremiumTitle: 'Cancel Premium?',
+diff --git a/src/i18n/es.ts b/src/i18n/es.ts
+index 756b9db..c389910 100644
+--- a/src/i18n/es.ts
++++ b/src/i18n/es.ts
+@@ -87,8 +87,41 @@ const es: Translations = {
+   },
+   community: {
+     title: 'Comunidad',
+-    comingSoon: 'Próximamente',
+-    copy: 'Conectar con otros miembros de CalorVault requiere cuentas reales y un servidor compartido, que esta app aún no tiene. No quisimos mostrar un feed de comunidad que en realidad no habla con nadie.',
++    setupNeededTitle: 'Configura la Comunidad',
++    setupNeededCopy:
++      'La Comunidad necesita un proyecto gratuito de Supabase para guardar cuentas y publicaciones. Añade la URL de tu proyecto y la clave anon public en Ajustes para activarla.',
++    goToSettings: 'Ir a Ajustes',
++    signInTitle: 'Bienvenido/a de nuevo',
++    signUpTitle: 'Crea tu cuenta',
++    emailPlaceholder: 'Correo electrónico',
++    passwordPlaceholder: 'Contraseña',
++    usernamePlaceholder: 'Nombre de usuario',
++    usernameHint: '3-20 caracteres: letras, números, guiones bajos.',
++    signInButton: 'Iniciar sesión',
++    signUpButton: 'Registrarse',
++    switchToSignUp: '¿No tienes cuenta? Regístrate',
++    switchToSignIn: '¿Ya tienes cuenta? Inicia sesión',
++    authErrorTitle: 'No se pudo iniciar sesión',
++    friendsSection: 'Amigos',
++    addFriendPlaceholder: 'Nombre de usuario del amigo',
++    addFriendButton: 'Añadir',
++    addFriendFailedTitle: 'No se pudo añadir al amigo',
++    noFriendsYet: 'Añade amigos por su nombre de usuario para ver sus publicaciones aquí.',
++    composerPlaceholder: '¿Qué comiste hoy?',
++    addPhoto: 'Añadir foto',
++    removePhoto: 'Quitar foto',
++    postButton: 'Publicar',
++    postFailedTitle: 'No se pudo publicar',
++    feedEmptyTitle: 'Aún no hay publicaciones',
++    feedEmptyCopy: 'Añade amigos o comparte tu primera comida para empezar.',
++    commentsTitle: 'Comentarios',
++    addCommentPlaceholder: 'Añade un comentario...',
++    signOutButton: 'Cerrar sesión',
++    signOutConfirmTitle: '¿Cerrar sesión?',
++    signOutConfirmMsg: 'Tendrás que iniciar sesión de nuevo para ver la Comunidad.',
++    deletePostConfirmTitle: '¿Eliminar publicación?',
++    deletePostConfirmMsg: 'Esto eliminará la publicación para todos los que puedan verla.',
++    delete: 'Eliminar',
+   },
+   recipes: {
+     title: 'Recetas',
+@@ -247,6 +280,13 @@ const es: Translations = {
+     saveRecipeApiKey: 'Guardar clave API de recetas',
+     recipeApiKeyPlaceholder: 'Clave API de Spoonacular',
+     savedRecipeKeyMsg: 'Tu clave API de recetas se ha guardado en este dispositivo.',
++    communitySection: 'Comunidad',
++    communityHint:
++      'Añade la URL de tu proyecto Supabase gratuito y la clave anon public (en los ajustes de API de tu proyecto) para activar la Comunidad.',
++    supabaseUrlPlaceholder: 'URL del proyecto Supabase',
++    supabaseAnonKeyPlaceholder: 'Clave anon public de Supabase',
++    saveCommunityConfig: 'Guardar ajustes de Comunidad',
++    savedCommunityConfigMsg: 'Tus ajustes de Comunidad se han guardado en este dispositivo.',
+     languageSection: 'Idioma',
+     languageHint: 'Elige el idioma en el que se muestra CalorVault.',
+     cancelPremiumTitle: '¿Cancelar Premium?',
+diff --git a/src/i18n/fr.ts b/src/i18n/fr.ts
+index added0b..4f00fdd 100644
+--- a/src/i18n/fr.ts
++++ b/src/i18n/fr.ts
+@@ -87,8 +87,41 @@ const fr: Translations = {
+   },
+   community: {
+     title: 'Communauté',
+-    comingSoon: 'Bientôt disponible',
+-    copy: 'Se connecter avec d’autres membres CalorVault nécessite de vrais comptes et un serveur partagé, que cette application n’a pas encore. Nous ne voulions pas afficher un fil communautaire qui ne parle en réalité à personne.',
++    setupNeededTitle: 'Configurer la Communauté',
++    setupNeededCopy:
++      "La Communauté nécessite un projet Supabase gratuit pour stocker les comptes et les publications. Ajoutez l'URL de votre projet et la clé anon public dans Réglages pour l'activer.",
++    goToSettings: 'Aller aux Réglages',
++    signInTitle: 'Content de vous revoir',
++    signUpTitle: 'Créer votre compte',
++    emailPlaceholder: 'E-mail',
++    passwordPlaceholder: 'Mot de passe',
++    usernamePlaceholder: "Nom d'utilisateur",
++    usernameHint: '3 à 20 caractères : lettres, chiffres, underscores.',
++    signInButton: 'Se connecter',
++    signUpButton: "S'inscrire",
++    switchToSignUp: 'Pas de compte ? Inscrivez-vous',
++    switchToSignIn: 'Déjà un compte ? Connectez-vous',
++    authErrorTitle: 'Connexion impossible',
++    friendsSection: 'Amis',
++    addFriendPlaceholder: "Nom d'utilisateur de l'ami",
++    addFriendButton: 'Ajouter',
++    addFriendFailedTitle: "Impossible d'ajouter l'ami",
++    noFriendsYet: 'Ajoutez des amis par nom d’utilisateur pour voir leurs publications ici.',
++    composerPlaceholder: 'Qu’avez-vous mangé aujourd’hui ?',
++    addPhoto: 'Ajouter une photo',
++    removePhoto: 'Retirer la photo',
++    postButton: 'Publier',
++    postFailedTitle: 'Publication impossible',
++    feedEmptyTitle: 'Aucune publication pour le moment',
++    feedEmptyCopy: 'Ajoutez des amis ou partagez votre premier repas pour commencer.',
++    commentsTitle: 'Commentaires',
++    addCommentPlaceholder: 'Ajouter un commentaire...',
++    signOutButton: 'Se déconnecter',
++    signOutConfirmTitle: 'Se déconnecter ?',
++    signOutConfirmMsg: 'Vous devrez vous reconnecter pour voir la Communauté.',
++    deletePostConfirmTitle: 'Supprimer la publication ?',
++    deletePostConfirmMsg: 'Cela supprimera la publication pour tous ceux qui peuvent la voir.',
++    delete: 'Supprimer',
+   },
+   recipes: {
+     title: 'Recettes',
+@@ -247,6 +280,13 @@ const fr: Translations = {
+     saveRecipeApiKey: 'Enregistrer la clé API des recettes',
+     recipeApiKeyPlaceholder: 'Clé API Spoonacular',
+     savedRecipeKeyMsg: 'Ta clé API de recettes a été enregistrée sur cet appareil.',
++    communitySection: 'Communauté',
++    communityHint:
++      "Ajoutez l'URL de votre projet Supabase gratuit et la clé anon public (dans les réglages API de votre projet) pour activer la Communauté.",
++    supabaseUrlPlaceholder: 'URL du projet Supabase',
++    supabaseAnonKeyPlaceholder: 'Clé anon public Supabase',
++    saveCommunityConfig: 'Enregistrer les réglages Communauté',
++    savedCommunityConfigMsg: 'Vos réglages Communauté ont été enregistrés sur cet appareil.',
+     languageSection: 'Langue',
+     languageHint: 'Choisis la langue d’affichage de CalorVault.',
+     cancelPremiumTitle: 'Annuler Premium ?',
+diff --git a/src/i18n/it.ts b/src/i18n/it.ts
+index 3e5e4f2..d520f14 100644
+--- a/src/i18n/it.ts
++++ b/src/i18n/it.ts
+@@ -87,8 +87,41 @@ const it: Translations = {
+   },
+   community: {
+     title: 'Community',
+-    comingSoon: 'Prossimamente',
+-    copy: 'Connettersi con altri membri di CalorVault richiede account reali e un server condiviso, che questa app non ha ancora. Non volevamo mostrare un feed di community che in realtà non parla con nessuno.',
++    setupNeededTitle: 'Configura la Community',
++    setupNeededCopy:
++      "La Community richiede un progetto Supabase gratuito per salvare account e post. Aggiungi l'URL del progetto e la chiave anon public nelle Impostazioni per attivarla.",
++    goToSettings: 'Vai alle Impostazioni',
++    signInTitle: 'Bentornato/a',
++    signUpTitle: 'Crea il tuo account',
++    emailPlaceholder: 'Email',
++    passwordPlaceholder: 'Password',
++    usernamePlaceholder: 'Nome utente',
++    usernameHint: '3-20 caratteri: lettere, numeri, underscore.',
++    signInButton: 'Accedi',
++    signUpButton: 'Registrati',
++    switchToSignUp: 'Non hai un account? Registrati',
++    switchToSignIn: 'Hai già un account? Accedi',
++    authErrorTitle: 'Accesso non riuscito',
++    friendsSection: 'Amici',
++    addFriendPlaceholder: "Nome utente dell'amico",
++    addFriendButton: 'Aggiungi',
++    addFriendFailedTitle: "Impossibile aggiungere l'amico",
++    noFriendsYet: 'Aggiungi amici tramite nome utente per vedere qui i loro post.',
++    composerPlaceholder: 'Cosa hai mangiato oggi?',
++    addPhoto: 'Aggiungi foto',
++    removePhoto: 'Rimuovi foto',
++    postButton: 'Pubblica',
++    postFailedTitle: 'Pubblicazione non riuscita',
++    feedEmptyTitle: 'Ancora nessun post',
++    feedEmptyCopy: 'Aggiungi amici o condividi il tuo primo pasto per iniziare.',
++    commentsTitle: 'Commenti',
++    addCommentPlaceholder: 'Aggiungi un commento...',
++    signOutButton: 'Esci',
++    signOutConfirmTitle: 'Uscire?',
++    signOutConfirmMsg: 'Dovrai accedere di nuovo per vedere la Community.',
++    deletePostConfirmTitle: 'Eliminare il post?',
++    deletePostConfirmMsg: 'Questo rimuoverà il post per chiunque possa vederlo.',
++    delete: 'Elimina',
+   },
+   recipes: {
+     title: 'Ricette',
+@@ -247,6 +280,13 @@ const it: Translations = {
+     saveRecipeApiKey: 'Salva chiave API delle ricette',
+     recipeApiKeyPlaceholder: 'Chiave API Spoonacular',
+     savedRecipeKeyMsg: 'La tua chiave API delle ricette è stata salvata su questo dispositivo.',
++    communitySection: 'Community',
++    communityHint:
++      "Aggiungi l'URL del tuo progetto Supabase gratuito e la chiave anon public (nelle impostazioni API del progetto) per attivare la Community.",
++    supabaseUrlPlaceholder: 'URL progetto Supabase',
++    supabaseAnonKeyPlaceholder: 'Chiave anon public Supabase',
++    saveCommunityConfig: 'Salva impostazioni Community',
++    savedCommunityConfigMsg: 'Le tue impostazioni Community sono state salvate su questo dispositivo.',
+     languageSection: 'Lingua',
+     languageHint: 'Scegli la lingua in cui viene mostrato CalorVault.',
+     cancelPremiumTitle: 'Annullare Premium?',
+diff --git a/src/i18n/ro.ts b/src/i18n/ro.ts
+index bdf66aa..8f2a1ab 100644
+--- a/src/i18n/ro.ts
++++ b/src/i18n/ro.ts
+@@ -87,8 +87,41 @@ const ro: Translations = {
+   },
+   community: {
+     title: 'Comunitate',
+-    comingSoon: 'În curând',
+-    copy: 'Conectarea cu alți membri CalorVault necesită conturi reale și un server comun, pe care aplicația nu le are încă. Nu am vrut să afișăm un flux de comunitate care nu vorbește de fapt cu nimeni.',
++    setupNeededTitle: 'Configurează Comunitatea',
++    setupNeededCopy:
++      'Comunitatea are nevoie de un proiect Supabase gratuit pentru a stoca conturi și postări. Adaugă URL-ul proiectului și cheia anon public în Setări pentru a o activa.',
++    goToSettings: 'Mergi la Setări',
++    signInTitle: 'Bine ai revenit',
++    signUpTitle: 'Creează-ți contul',
++    emailPlaceholder: 'Email',
++    passwordPlaceholder: 'Parolă',
++    usernamePlaceholder: 'Nume de utilizator',
++    usernameHint: '3-20 caractere: litere, cifre, underscore.',
++    signInButton: 'Autentificare',
++    signUpButton: 'Înregistrare',
++    switchToSignUp: 'Nu ai cont? Înregistrează-te',
++    switchToSignIn: 'Ai deja cont? Autentifică-te',
++    authErrorTitle: 'Autentificare eșuată',
++    friendsSection: 'Prieteni',
++    addFriendPlaceholder: 'Numele de utilizator al prietenului',
++    addFriendButton: 'Adaugă',
++    addFriendFailedTitle: 'Nu am putut adăuga prietenul',
++    noFriendsYet: 'Adaugă prieteni după numele de utilizator ca să le vezi postările aici.',
++    composerPlaceholder: 'Ce ai mâncat azi?',
++    addPhoto: 'Adaugă poză',
++    removePhoto: 'Elimină poza',
++    postButton: 'Postează',
++    postFailedTitle: 'Postarea a eșuat',
++    feedEmptyTitle: 'Nicio postare încă',
++    feedEmptyCopy: 'Adaugă prieteni sau distribuie prima ta masă pentru a începe.',
++    commentsTitle: 'Comentarii',
++    addCommentPlaceholder: 'Adaugă un comentariu...',
++    signOutButton: 'Deconectare',
++    signOutConfirmTitle: 'Te deconectezi?',
++    signOutConfirmMsg: 'Va trebui să te autentifici din nou ca să vezi Comunitatea.',
++    deletePostConfirmTitle: 'Ștergi postarea?',
++    deletePostConfirmMsg: 'Aceasta va elimina postarea pentru toți cei care o pot vedea.',
++    delete: 'Șterge',
+   },
+   recipes: {
+     title: 'Rețete',
+@@ -247,6 +280,13 @@ const ro: Translations = {
+     saveRecipeApiKey: 'Salvează cheia API pentru rețete',
+     recipeApiKeyPlaceholder: 'Cheie API Spoonacular',
+     savedRecipeKeyMsg: 'Cheia ta API pentru rețete a fost salvată pe acest dispozitiv.',
++    communitySection: 'Comunitate',
++    communityHint:
++      'Adaugă URL-ul proiectului tău Supabase gratuit și cheia anon public (din setările API ale proiectului) pentru a activa Comunitatea.',
++    supabaseUrlPlaceholder: 'URL proiect Supabase',
++    supabaseAnonKeyPlaceholder: 'Cheia anon public Supabase',
++    saveCommunityConfig: 'Salvează setările Comunității',
++    savedCommunityConfigMsg: 'Setările Comunității au fost salvate pe acest dispozitiv.',
+     languageSection: 'Limbă',
+     languageHint: 'Alege limba în care se afișează CalorVault.',
+     cancelPremiumTitle: 'Anulezi Premium?',
+diff --git a/src/lib/community.ts b/src/lib/community.ts
+new file mode 100644
+index 0000000..8ad3b1a
+--- /dev/null
++++ b/src/lib/community.ts
+@@ -0,0 +1,305 @@
++import { getSupabaseClient } from './supabase';
++import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
++
++export class CommunityError extends Error {}
++
++const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
++
++export function normalizeUsername(raw: string): string {
++  return raw.trim().toLowerCase();
++}
++
++export function isValidUsername(raw: string): boolean {
++  return USERNAME_PATTERN.test(normalizeUsername(raw));
++}
++
++function client(url: string, anonKey: string) {
++  return getSupabaseClient(url, anonKey);
++}
++
++async function requireUserId(url: string, anonKey: string): Promise<string> {
++  const { data, error } = await client(url, anonKey).auth.getUser();
++  if (error) throw new CommunityError(error.message);
++  if (!data.user) throw new CommunityError('Not signed in.');
++  return data.user.id;
++}
++
++export async function hasSession(url: string, anonKey: string): Promise<boolean> {
++  const { data } = await client(url, anonKey).auth.getSession();
++  return !!data.session;
++}
++
++export async function signUp(
++  url: string,
++  anonKey: string,
++  email: string,
++  password: string,
++  username: string
++): Promise<void> {
++  const normalized = normalizeUsername(username);
++  if (!isValidUsername(normalized)) {
++    throw new CommunityError('Usernames must be 3-20 characters: letters, numbers, underscores only.');
++  }
++  const supabase = client(url, anonKey);
++  const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
++  if (error) throw new CommunityError(error.message);
++  const userId = data.user?.id;
++  if (!userId) throw new CommunityError('Sign up did not return a user.');
++
++  const { error: profileError } = await supabase
++    .from('profiles')
++    .insert({ id: userId, username: normalized });
++  if (profileError) {
++    if (profileError.code === '23505') throw new CommunityError('That username is already taken.');
++    throw new CommunityError(profileError.message);
++  }
++}
++
++export async function signIn(
++  url: string,
++  anonKey: string,
++  email: string,
++  password: string
++): Promise<void> {
++  const { error } = await client(url, anonKey).auth.signInWithPassword({
++    email: email.trim(),
++    password,
++  });
++  if (error) throw new CommunityError(error.message);
++}
++
++export async function signOut(url: string, anonKey: string): Promise<void> {
++  await client(url, anonKey).auth.signOut();
++}
++
++export async function getMyProfile(url: string, anonKey: string): Promise<CommunityProfile | null> {
++  const supabase = client(url, anonKey);
++  const { data: userData } = await supabase.auth.getUser();
++  const userId = userData.user?.id;
++  if (!userId) return null;
++  const { data, error } = await supabase
++    .from('profiles')
++    .select('id, username, created_at')
++    .eq('id', userId)
++    .maybeSingle();
++  if (error) throw new CommunityError(error.message);
++  if (!data) return null;
++  return { id: data.id, username: data.username, createdAt: data.created_at };
++}
++
++export async function addFriendByUsername(
++  url: string,
++  anonKey: string,
++  username: string
++): Promise<void> {
++  const supabase = client(url, anonKey);
++  const myId = await requireUserId(url, anonKey);
++  const normalized = normalizeUsername(username);
++
++  const { data: friendProfile, error: findError } = await supabase
++    .from('profiles')
++    .select('id')
++    .eq('username', normalized)
++    .maybeSingle();
++  if (findError) throw new CommunityError(findError.message);
++  if (!friendProfile) throw new CommunityError('No user with that username.');
++  if (friendProfile.id === myId) throw new CommunityError("You can't add yourself.");
++
++  const { error } = await supabase
++    .from('friendships')
++    .insert({ user_id: myId, friend_id: friendProfile.id });
++  if (error) {
++    if (error.code === '23505') throw new CommunityError("You're already friends with them.");
++    throw new CommunityError(error.message);
++  }
++}
++
++export async function listFriends(url: string, anonKey: string): Promise<CommunityProfile[]> {
++  const supabase = client(url, anonKey);
++  const myId = await requireUserId(url, anonKey);
++
++  const { data: rows, error } = await supabase
++    .from('friendships')
++    .select('friend_id')
++    .eq('user_id', myId);
++  if (error) throw new CommunityError(error.message);
++  const ids = (rows ?? []).map((r) => r.friend_id as string);
++  if (ids.length === 0) return [];
++
++  const { data: profiles, error: profileError } = await supabase
++    .from('profiles')
++    .select('id, username, created_at')
++    .in('id', ids);
++  if (profileError) throw new CommunityError(profileError.message);
++  return (profiles ?? []).map((p) => ({
++    id: p.id as string,
++    username: p.username as string,
++    createdAt: p.created_at as string,
++  }));
++}
++
++export async function listFeed(url: string, anonKey: string, limit = 30): Promise<CommunityPost[]> {
++  const supabase = client(url, anonKey);
++  const myId = await requireUserId(url, anonKey);
++
++  const { data: postRows, error } = await supabase
++    .from('posts')
++    .select('id, author_id, caption, photo_url, created_at')
++    .order('created_at', { ascending: false })
++    .limit(limit);
++  if (error) throw new CommunityError(error.message);
++  const posts = postRows ?? [];
++  if (posts.length === 0) return [];
++
++  const postIds = posts.map((p) => p.id as string);
++  const authorIds = Array.from(new Set(posts.map((p) => p.author_id as string)));
++
++  const [{ data: authors }, { data: likeRows }, { data: commentRows }, { data: myLikeRows }] =
++    await Promise.all([
++      supabase.from('profiles').select('id, username').in('id', authorIds),
++      supabase.from('likes').select('post_id').in('post_id', postIds),
++      supabase.from('comments').select('post_id').in('post_id', postIds),
++      supabase.from('likes').select('post_id').in('post_id', postIds).eq('user_id', myId),
++    ]);
++
++  const usernameById = new Map((authors ?? []).map((a) => [a.id as string, a.username as string]));
++  const likeCountByPost = new Map<string, number>();
++  for (const row of likeRows ?? []) {
++    const id = row.post_id as string;
++    likeCountByPost.set(id, (likeCountByPost.get(id) ?? 0) + 1);
++  }
++  const commentCountByPost = new Map<string, number>();
++  for (const row of commentRows ?? []) {
++    const id = row.post_id as string;
++    commentCountByPost.set(id, (commentCountByPost.get(id) ?? 0) + 1);
++  }
++  const likedByMeSet = new Set((myLikeRows ?? []).map((r) => r.post_id as string));
++
++  return posts.map((p) => ({
++    id: p.id as string,
++    authorId: p.author_id as string,
++    authorUsername: usernameById.get(p.author_id as string) ?? 'unknown',
++    caption: (p.caption as string) ?? '',
++    photoUrl: (p.photo_url as string | null) ?? undefined,
++    createdAt: p.created_at as string,
++    likeCount: likeCountByPost.get(p.id as string) ?? 0,
++    likedByMe: likedByMeSet.has(p.id as string),
++    commentCount: commentCountByPost.get(p.id as string) ?? 0,
++  }));
++}
++
++const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
++
++function base64ToBytes(base64: string): Uint8Array {
++  const clean = base64.replace(/[^A-Za-z0-9+/=]/g, '');
++  const bytes: number[] = [];
++  let buffer = 0;
++  let bits = 0;
++  for (const char of clean) {
++    if (char === '=') break;
++    const value = BASE64_CHARS.indexOf(char);
++    if (value === -1) continue;
++    buffer = (buffer << 6) | value;
++    bits += 6;
++    if (bits >= 8) {
++      bits -= 8;
++      bytes.push((buffer >> bits) & 0xff);
++    }
++  }
++  return new Uint8Array(bytes);
++}
++
++export async function createPost(
++  url: string,
++  anonKey: string,
++  caption: string,
++  photoBase64?: string
++): Promise<void> {
++  const supabase = client(url, anonKey);
++  const myId = await requireUserId(url, anonKey);
++
++  let photoUrl: string | undefined;
++  if (photoBase64) {
++    const path = `${myId}/${Date.now()}.jpg`;
++    const bytes = base64ToBytes(photoBase64);
++    const { error: uploadError } = await supabase.storage
++      .from('post-photos')
++      .upload(path, bytes, { contentType: 'image/jpeg' });
++    if (uploadError) throw new CommunityError(uploadError.message);
++    const { data: publicUrlData } = supabase.storage.from('post-photos').getPublicUrl(path);
++    photoUrl = publicUrlData.publicUrl;
++  }
++
++  const { error } = await supabase
++    .from('posts')
++    .insert({ author_id: myId, caption: caption.trim(), photo_url: photoUrl });
++  if (error) throw new CommunityError(error.message);
++}
++
++export async function deletePost(url: string, anonKey: string, postId: string): Promise<void> {
++  const { error } = await client(url, anonKey).from('posts').delete().eq('id', postId);
++  if (error) throw new CommunityError(error.message);
++}
++
++export async function toggleLike(
++  url: string,
++  anonKey: string,
++  postId: string,
++  liked: boolean
++): Promise<void> {
++  const supabase = client(url, anonKey);
++  const myId = await requireUserId(url, anonKey);
++  if (liked) {
++    const { error } = await supabase
++      .from('likes')
++      .delete()
++      .eq('post_id', postId)
++      .eq('user_id', myId);
++    if (error) throw new CommunityError(error.message);
++  } else {
++    const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: myId });
++    if (error) throw new CommunityError(error.message);
++  }
++}
++
++export async function listComments(
++  url: string,
++  anonKey: string,
++  postId: string
++): Promise<CommunityComment[]> {
++  const supabase = client(url, anonKey);
++  const { data: rows, error } = await supabase
++    .from('comments')
++    .select('id, post_id, author_id, body, created_at')
++    .eq('post_id', postId)
++    .order('created_at', { ascending: true });
++  if (error) throw new CommunityError(error.message);
++  const comments = rows ?? [];
++  if (comments.length === 0) return [];
++
++  const authorIds = Array.from(new Set(comments.map((c) => c.author_id as string)));
++  const { data: authors } = await supabase.from('profiles').select('id, username').in('id', authorIds);
++  const usernameById = new Map((authors ?? []).map((a) => [a.id as string, a.username as string]));
++
++  return comments.map((c) => ({
++    id: c.id as string,
++    postId: c.post_id as string,
++    authorId: c.author_id as string,
++    authorUsername: usernameById.get(c.author_id as string) ?? 'unknown',
++    body: c.body as string,
++    createdAt: c.created_at as string,
++  }));
++}
++
++export async function addComment(
++  url: string,
++  anonKey: string,
++  postId: string,
++  body: string
++): Promise<void> {
++  const myId = await requireUserId(url, anonKey);
++  const { error } = await client(url, anonKey)
++    .from('comments')
++    .insert({ post_id: postId, author_id: myId, body: body.trim() });
++  if (error) throw new CommunityError(error.message);
++}
+diff --git a/src/lib/supabase.ts b/src/lib/supabase.ts
+new file mode 100644
+index 0000000..d70a4bc
+--- /dev/null
++++ b/src/lib/supabase.ts
+@@ -0,0 +1,21 @@
++import AsyncStorage from '@react-native-async-storage/async-storage';
++import { createClient, SupabaseClient } from '@supabase/supabase-js';
++
++let cachedClient: SupabaseClient | null = null;
++let cachedKey = '';
++
++/** Lazily creates (and recreates, if the URL/key change) the Supabase client. */
++export function getSupabaseClient(url: string, anonKey: string): SupabaseClient {
++  const cacheKey = `${url}|${anonKey}`;
++  if (cachedClient && cachedKey === cacheKey) return cachedClient;
++  cachedClient = createClient(url, anonKey, {
++    auth: {
++      storage: AsyncStorage,
++      autoRefreshToken: true,
++      persistSession: true,
++      detectSessionInUrl: false,
++    },
++  });
++  cachedKey = cacheKey;
++  return cachedClient;
++}
+diff --git a/src/screens/CommunityScreen.tsx b/src/screens/CommunityScreen.tsx
+index 13d9c4d..b657e91 100644
+--- a/src/screens/CommunityScreen.tsx
++++ b/src/screens/CommunityScreen.tsx
+@@ -1,42 +1,668 @@
+ import { useNavigation } from '@react-navigation/native';
+-import React from 'react';
+-import { Pressable, StyleSheet, Text, View } from 'react-native';
++import * as ImagePicker from 'expo-image-picker';
++import React, { useCallback, useEffect, useState } from 'react';
++import {
++  ActivityIndicator,
++  Alert,
++  FlatList,
++  Image,
++  KeyboardAvoidingView,
++  Platform,
++  Pressable,
++  RefreshControl,
++  ScrollView,
++  StyleSheet,
++  Text,
++  TextInput,
++  View,
++} from 'react-native';
+ import { SafeAreaView } from 'react-native-safe-area-context';
+ import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
+ import { useApp } from '../context/AppContext';
++import {
++  addComment,
++  addFriendByUsername,
++  CommunityError,
++  createPost,
++  deletePost,
++  getMyProfile,
++  hasSession,
++  listComments,
++  listFeed,
++  listFriends,
++  signIn,
++  signOut,
++  signUp,
++  toggleLike,
++} from '../lib/community';
+ import { RecipesScreenNavigationProp } from '../navigation/types';
+ import { colors, radius, spacing } from '../theme';
++import { CommunityComment, CommunityPost, CommunityProfile } from '../types';
++
++function formatTimestamp(iso: string): string {
++  const d = new Date(iso);
++  return d.toLocaleString(undefined, {
++    month: 'short',
++    day: 'numeric',
++    hour: 'numeric',
++    minute: '2-digit',
++  });
++}
+ 
+ export function CommunityScreen() {
+   const navigation = useNavigation<RecipesScreenNavigationProp>();
+-  const { t } = useApp();
++  const { t, supabaseUrl, supabaseAnonKey } = useApp();
++
++  if (!supabaseUrl || !supabaseAnonKey) {
++    return (
++      <SafeAreaView style={styles.flex} edges={['top']}>
++        <CommunityTopBar t={t} navigation={navigation} />
++        <View style={styles.body}>
++          <View style={styles.iconWrap}>
++            <CommunityIcon size={40} color={colors.textMuted} />
++          </View>
++          <Text style={styles.heading}>{t.community.setupNeededTitle}</Text>
++          <Text style={styles.copy}>{t.community.setupNeededCopy}</Text>
++          <Pressable
++            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedDim]}
++            onPress={() => navigation.navigate('Settings')}
++          >
++            <Text style={styles.primaryButtonText}>{t.community.goToSettings}</Text>
++          </Pressable>
++        </View>
++      </SafeAreaView>
++    );
++  }
++
++  return (
++    <CommunityConfigured
++      url={supabaseUrl}
++      anonKey={supabaseAnonKey}
++      t={t}
++      navigation={navigation}
++    />
++  );
++}
++
++function CommunityTopBar({ t, navigation }: { t: any; navigation: RecipesScreenNavigationProp }) {
++  return (
++    <View style={styles.topBar}>
++      <View style={styles.titleRow}>
++        <CommunityIcon size={26} color={colors.text} />
++        <Text style={styles.title}>{t.community.title}</Text>
++      </View>
++      <Pressable
++        style={({ pressed }) => [styles.settingsButton, pressed && styles.pressedDim]}
++        onPress={() => navigation.navigate('Settings')}
++        hitSlop={8}
++        accessibilityLabel={t.common.settings}
++        accessibilityRole="button"
++      >
++        <SettingsIcon size={18} color={colors.text} />
++      </Pressable>
++    </View>
++  );
++}
++
++function CommunityConfigured({
++  url,
++  anonKey,
++  t,
++  navigation,
++}: {
++  url: string;
++  anonKey: string;
++  t: any;
++  navigation: RecipesScreenNavigationProp;
++}) {
++  const [checking, setChecking] = useState(true);
++  const [signedIn, setSignedIn] = useState(false);
++
++  useEffect(() => {
++    let cancelled = false;
++    (async () => {
++      try {
++        const session = await hasSession(url, anonKey);
++        if (!cancelled) setSignedIn(session);
++      } catch {
++        if (!cancelled) setSignedIn(false);
++      } finally {
++        if (!cancelled) setChecking(false);
++      }
++    })();
++    return () => {
++      cancelled = true;
++    };
++  }, [url, anonKey]);
++
++  if (checking) {
++    return (
++      <SafeAreaView style={styles.flex} edges={['top']}>
++        <CommunityTopBar t={t} navigation={navigation} />
++        <View style={styles.body}>
++          <ActivityIndicator color={colors.primary} />
++        </View>
++      </SafeAreaView>
++    );
++  }
++
++  if (!signedIn) {
++    return (
++      <SafeAreaView style={styles.flex} edges={['top']}>
++        <CommunityTopBar t={t} navigation={navigation} />
++        <AuthGate url={url} anonKey={anonKey} t={t} onSignedIn={() => setSignedIn(true)} />
++      </SafeAreaView>
++    );
++  }
+ 
+   return (
+     <SafeAreaView style={styles.flex} edges={['top']}>
+-      <View style={styles.topBar}>
+-        <View style={styles.titleRow}>
+-          <CommunityIcon size={26} color={colors.text} />
+-          <Text style={styles.title}>{t.community.title}</Text>
++      <CommunityTopBar t={t} navigation={navigation} />
++      <Feed url={url} anonKey={anonKey} t={t} onSignedOut={() => setSignedIn(false)} />
++    </SafeAreaView>
++  );
++}
++
++function AuthGate({
++  url,
++  anonKey,
++  t,
++  onSignedIn,
++}: {
++  url: string;
++  anonKey: string;
++  t: any;
++  onSignedIn: () => void;
++}) {
++  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
++  const [email, setEmail] = useState('');
++  const [password, setPassword] = useState('');
++  const [username, setUsername] = useState('');
++  const [busy, setBusy] = useState(false);
++
++  async function handleSubmit() {
++    setBusy(true);
++    try {
++      if (mode === 'signUp') {
++        await signUp(url, anonKey, email, password, username);
++      } else {
++        await signIn(url, anonKey, email, password);
++      }
++      onSignedIn();
++    } catch (err) {
++      Alert.alert(
++        t.community.authErrorTitle,
++        err instanceof CommunityError || err instanceof Error ? err.message : String(err)
++      );
++    } finally {
++      setBusy(false);
++    }
++  }
++
++  return (
++    <KeyboardAvoidingView
++      style={styles.flex}
++      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
++    >
++      <ScrollView contentContainerStyle={styles.authContainer} keyboardShouldPersistTaps="handled">
++        <Text style={styles.heading}>
++          {mode === 'signUp' ? t.community.signUpTitle : t.community.signInTitle}
++        </Text>
++        <View style={styles.card}>
++          <TextInput
++            style={styles.keyInput}
++            placeholder={t.community.emailPlaceholder}
++            placeholderTextColor={colors.textMuted}
++            value={email}
++            onChangeText={setEmail}
++            autoCapitalize="none"
++            autoCorrect={false}
++            keyboardType="email-address"
++          />
++          <TextInput
++            style={styles.keyInput}
++            placeholder={t.community.passwordPlaceholder}
++            placeholderTextColor={colors.textMuted}
++            value={password}
++            onChangeText={setPassword}
++            secureTextEntry
++            autoCapitalize="none"
++            autoCorrect={false}
++          />
++          {mode === 'signUp' && (
++            <>
++              <TextInput
++                style={styles.keyInput}
++                placeholder={t.community.usernamePlaceholder}
++                placeholderTextColor={colors.textMuted}
++                value={username}
++                onChangeText={setUsername}
++                autoCapitalize="none"
++                autoCorrect={false}
++              />
++              <Text style={styles.hint}>{t.community.usernameHint}</Text>
++            </>
++          )}
++          <Pressable
++            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedDim]}
++            onPress={handleSubmit}
++            disabled={busy}
++          >
++            {busy ? (
++              <ActivityIndicator color={colors.background} />
++            ) : (
++              <Text style={styles.primaryButtonText}>
++                {mode === 'signUp' ? t.community.signUpButton : t.community.signInButton}
++              </Text>
++            )}
++          </Pressable>
++          <Pressable
++            style={({ pressed }) => [styles.linkButton, pressed && styles.pressedDim]}
++            onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}
++          >
++            <Text style={styles.linkButtonText}>
++              {mode === 'signUp' ? t.community.switchToSignIn : t.community.switchToSignUp}
++            </Text>
++          </Pressable>
+         </View>
++      </ScrollView>
++    </KeyboardAvoidingView>
++  );
++}
++
++function Feed({
++  url,
++  anonKey,
++  t,
++  onSignedOut,
++}: {
++  url: string;
++  anonKey: string;
++  t: any;
++  onSignedOut: () => void;
++}) {
++  const [profile, setProfile] = useState<CommunityProfile | null>(null);
++  const [friends, setFriends] = useState<CommunityProfile[]>([]);
++  const [posts, setPosts] = useState<CommunityPost[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [refreshing, setRefreshing] = useState(false);
++  const [friendInput, setFriendInput] = useState('');
++  const [addingFriend, setAddingFriend] = useState(false);
++  const [caption, setCaption] = useState('');
++  const [photoBase64, setPhotoBase64] = useState<string | undefined>();
++  const [photoPreviewUri, setPhotoPreviewUri] = useState<string | undefined>();
++  const [posting, setPosting] = useState(false);
++  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
++
++  const load = useCallback(async () => {
++    const [myProfile, myFriends, feed] = await Promise.all([
++      getMyProfile(url, anonKey),
++      listFriends(url, anonKey),
++      listFeed(url, anonKey),
++    ]);
++    setProfile(myProfile);
++    setFriends(myFriends);
++    setPosts(feed);
++  }, [url, anonKey]);
++
++  useEffect(() => {
++    setLoading(true);
++    load().finally(() => setLoading(false));
++  }, [load]);
++
++  async function handleRefresh() {
++    setRefreshing(true);
++    try {
++      await load();
++    } finally {
++      setRefreshing(false);
++    }
++  }
++
++  function handleSignOut() {
++    Alert.alert(t.community.signOutConfirmTitle, t.community.signOutConfirmMsg, [
++      { text: t.common.cancel, style: 'cancel' },
++      {
++        text: t.community.signOutButton,
++        style: 'destructive',
++        onPress: async () => {
++          await signOut(url, anonKey);
++          onSignedOut();
++        },
++      },
++    ]);
++  }
++
++  async function handleAddFriend() {
++    if (!friendInput.trim()) return;
++    setAddingFriend(true);
++    try {
++      await addFriendByUsername(url, anonKey, friendInput.trim());
++      setFriendInput('');
++      await load();
++    } catch (err) {
++      Alert.alert(
++        t.community.addFriendFailedTitle,
++        err instanceof CommunityError || err instanceof Error ? err.message : String(err)
++      );
++    } finally {
++      setAddingFriend(false);
++    }
++  }
++
++  async function handlePickPhoto() {
++    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
++    if (!perm.granted) return;
++    const result = await ImagePicker.launchImageLibraryAsync({
++      mediaTypes: 'images',
++      base64: true,
++      quality: 0.5,
++    });
++    if (result.canceled || !result.assets[0]?.base64) return;
++    setPhotoBase64(result.assets[0].base64);
++    setPhotoPreviewUri(result.assets[0].uri);
++  }
++
++  async function handlePost() {
++    if (!caption.trim() && !photoBase64) return;
++    setPosting(true);
++    try {
++      await createPost(url, anonKey, caption, photoBase64);
++      setCaption('');
++      setPhotoBase64(undefined);
++      setPhotoPreviewUri(undefined);
++      await load();
++    } catch (err) {
++      Alert.alert(
++        t.community.postFailedTitle,
++        err instanceof CommunityError || err instanceof Error ? err.message : String(err)
++      );
++    } finally {
++      setPosting(false);
++    }
++  }
++
++  async function handleToggleLike(post: CommunityPost) {
++    setPosts((prev) =>
++      prev.map((p) =>
++        p.id === post.id
++          ? { ...p, likedByMe: !p.likedByMe, likeCount: p.likeCount + (p.likedByMe ? -1 : 1) }
++          : p
++      )
++    );
++    try {
++      await toggleLike(url, anonKey, post.id, post.likedByMe);
++    } catch {
++      await load();
++    }
++  }
++
++  function handleDeletePost(post: CommunityPost) {
++    Alert.alert(t.community.deletePostConfirmTitle, t.community.deletePostConfirmMsg, [
++      { text: t.common.cancel, style: 'cancel' },
++      {
++        text: t.community.delete,
++        style: 'destructive',
++        onPress: async () => {
++          await deletePost(url, anonKey, post.id);
++          await load();
++        },
++      },
++    ]);
++  }
++
++  if (loading) {
++    return (
++      <View style={styles.body}>
++        <ActivityIndicator color={colors.primary} />
++      </View>
++    );
++  }
++
++  return (
++    <KeyboardAvoidingView
++      style={styles.flex}
++      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
++    >
++      <FlatList
++        data={posts}
++        keyExtractor={(item) => item.id}
++        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
++        contentContainerStyle={styles.feedContainer}
++        ListHeaderComponent={
++          <View style={styles.feedHeader}>
++            <View style={styles.profileRow}>
++              <Text style={styles.usernameText}>@{profile?.username ?? '...'}</Text>
++              <Pressable onPress={handleSignOut} hitSlop={8}>
++                <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
++              </Pressable>
++            </View>
++
++            <Text style={styles.sectionLabel}>{t.community.friendsSection}</Text>
++            <View style={styles.friendRow}>
++              <TextInput
++                style={[styles.keyInput, styles.friendInput]}
++                placeholder={t.community.addFriendPlaceholder}
++                placeholderTextColor={colors.textMuted}
++                value={friendInput}
++                onChangeText={setFriendInput}
++                autoCapitalize="none"
++                autoCorrect={false}
++              />
++              <Pressable
++                style={({ pressed }) => [styles.addFriendButton, pressed && styles.pressedDim]}
++                onPress={handleAddFriend}
++                disabled={addingFriend}
++              >
++                {addingFriend ? (
++                  <ActivityIndicator color={colors.background} size="small" />
++                ) : (
++                  <Text style={styles.primaryButtonText}>{t.community.addFriendButton}</Text>
++                )}
++              </Pressable>
++            </View>
++            {friends.length > 0 && (
++              <View style={styles.friendChipRow}>
++                {friends.map((f) => (
++                  <View key={f.id} style={styles.friendChip}>
++                    <Text style={styles.friendChipText}>@{f.username}</Text>
++                  </View>
++                ))}
++              </View>
++            )}
++
++            <Text style={styles.sectionLabel}>{t.community.composerPlaceholder}</Text>
++            <View style={styles.card}>
++              <TextInput
++                style={styles.composerInput}
++                placeholder={t.community.composerPlaceholder}
++                placeholderTextColor={colors.textMuted}
++                value={caption}
++                onChangeText={setCaption}
++                multiline
++              />
++              {photoPreviewUri && (
++                <View style={styles.photoPreviewWrap}>
++                  <Image source={{ uri: photoPreviewUri }} style={styles.photoPreview} />
++                  <Pressable
++                    style={({ pressed }) => [
++                      styles.removePhotoButton,
++                      pressed && styles.pressedDim,
++                    ]}
++                    onPress={() => {
++                      setPhotoBase64(undefined);
++                      setPhotoPreviewUri(undefined);
++                    }}
++                  >
++                    <Text style={styles.removePhotoButtonText}>{t.community.removePhoto}</Text>
++                  </Pressable>
++                </View>
++              )}
++              <View style={styles.composerActions}>
++                <Pressable
++                  style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedDim]}
++                  onPress={handlePickPhoto}
++                >
++                  <Text style={styles.secondaryButtonText}>{t.community.addPhoto}</Text>
++                </Pressable>
++                <Pressable
++                  style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedDim]}
++                  onPress={handlePost}
++                  disabled={posting || (!caption.trim() && !photoBase64)}
++                >
++                  {posting ? (
++                    <ActivityIndicator color={colors.background} size="small" />
++                  ) : (
++                    <Text style={styles.primaryButtonText}>{t.community.postButton}</Text>
++                  )}
++                </Pressable>
++              </View>
++            </View>
++          </View>
++        }
++        ListEmptyComponent={
++          <View style={styles.body}>
++            <Text style={styles.heading}>{t.community.feedEmptyTitle}</Text>
++            <Text style={styles.copy}>{t.community.feedEmptyCopy}</Text>
++          </View>
++        }
++        renderItem={({ item }) => (
++          <PostCard
++            post={item}
++            t={t}
++            isMine={item.authorId === profile?.id}
++            expanded={expandedPostId === item.id}
++            onToggleExpand={() =>
++              setExpandedPostId(expandedPostId === item.id ? null : item.id)
++            }
++            onToggleLike={() => handleToggleLike(item)}
++            onDelete={() => handleDeletePost(item)}
++            url={url}
++            anonKey={anonKey}
++          />
++        )}
++      />
++    </KeyboardAvoidingView>
++  );
++}
++
++function PostCard({
++  post,
++  t,
++  isMine,
++  expanded,
++  onToggleExpand,
++  onToggleLike,
++  onDelete,
++  url,
++  anonKey,
++}: {
++  post: CommunityPost;
++  t: any;
++  isMine: boolean;
++  expanded: boolean;
++  onToggleExpand: () => void;
++  onToggleLike: () => void;
++  onDelete: () => void;
++  url: string;
++  anonKey: string;
++}) {
++  const [comments, setComments] = useState<CommunityComment[]>([]);
++  const [loadingComments, setLoadingComments] = useState(false);
++  const [commentInput, setCommentInput] = useState('');
++  const [sendingComment, setSendingComment] = useState(false);
++
++  useEffect(() => {
++    if (!expanded) return;
++    setLoadingComments(true);
++    listComments(url, anonKey, post.id)
++      .then(setComments)
++      .finally(() => setLoadingComments(false));
++  }, [expanded, url, anonKey, post.id]);
++
++  async function handleSendComment() {
++    if (!commentInput.trim()) return;
++    setSendingComment(true);
++    try {
++      await addComment(url, anonKey, post.id, commentInput);
++      setCommentInput('');
++      const fresh = await listComments(url, anonKey, post.id);
++      setComments(fresh);
++    } catch (err) {
++      Alert.alert('', err instanceof Error ? err.message : String(err));
++    } finally {
++      setSendingComment(false);
++    }
++  }
++
++  return (
++    <View style={styles.postCard}>
++      <View style={styles.postHeader}>
++        <Text style={styles.postAuthor}>@{post.authorUsername}</Text>
++        <Text style={styles.postTimestamp}>{formatTimestamp(post.createdAt)}</Text>
++      </View>
++      {post.photoUrl && <Image source={{ uri: post.photoUrl }} style={styles.postPhoto} />}
++      {!!post.caption && <Text style={styles.postCaption}>{post.caption}</Text>}
++      <View style={styles.postActions}>
++        <Pressable
++          style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
++          onPress={onToggleLike}
++        >
++          <Text style={styles.postActionText}>
++            {post.likedByMe ? '❤️' : '🤍'} {post.likeCount}
++          </Text>
++        </Pressable>
+         <Pressable
+-          style={({ pressed }) => [styles.settingsButton, pressed && styles.pressedDim]}
+-          onPress={() => navigation.navigate('Settings')}
+-          hitSlop={8}
+-          accessibilityLabel={t.common.settings}
+-          accessibilityRole="button"
++          style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
++          onPress={onToggleExpand}
+         >
+-          <SettingsIcon size={18} color={colors.text} />
++          <Text style={styles.postActionText}>💬 {post.commentCount}</Text>
+         </Pressable>
++        {isMine && (
++          <Pressable
++            style={({ pressed }) => [styles.postActionButton, pressed && styles.pressedDim]}
++            onPress={onDelete}
++          >
++            <Text style={styles.postActionTextDanger}>🗑️</Text>
++          </Pressable>
++        )}
+       </View>
+-
+-      <View style={styles.body}>
+-        <View style={styles.iconWrap}>
+-          <CommunityIcon size={40} color={colors.textMuted} />
++      {expanded && (
++        <View style={styles.commentsWrap}>
++          <Text style={styles.sectionLabel}>{t.community.commentsTitle}</Text>
++          {loadingComments ? (
++            <ActivityIndicator color={colors.primary} size="small" />
++          ) : (
++            comments.map((c) => (
++              <View key={c.id} style={styles.commentRow}>
++                <Text style={styles.commentAuthor}>@{c.authorUsername}</Text>
++                <Text style={styles.commentBody}>{c.body}</Text>
++              </View>
++            ))
++          )}
++          <View style={styles.commentInputRow}>
++            <TextInput
++              style={[styles.keyInput, styles.commentInput]}
++              placeholder={t.community.addCommentPlaceholder}
++              placeholderTextColor={colors.textMuted}
++              value={commentInput}
++              onChangeText={setCommentInput}
++            />
++            <Pressable
++              style={({ pressed }) => [styles.addFriendButton, pressed && styles.pressedDim]}
++              onPress={handleSendComment}
++              disabled={sendingComment}
++            >
++              {sendingComment ? (
++                <ActivityIndicator color={colors.background} size="small" />
++              ) : (
++                <Text style={styles.primaryButtonText}>{t.community.postButton}</Text>
++              )}
++            </Pressable>
++          </View>
+         </View>
+-        <Text style={styles.heading}>{t.community.comingSoon}</Text>
+-        <Text style={styles.copy}>{t.community.copy}</Text>
+-      </View>
+-    </SafeAreaView>
++      )}
++    </View>
+   );
+ }
+ 
+@@ -93,6 +719,7 @@ const styles = StyleSheet.create({
+     color: colors.text,
+     fontSize: 20,
+     fontWeight: '700',
++    textAlign: 'center',
+   },
+   copy: {
+     color: colors.textMuted,
+@@ -100,4 +727,122 @@ const styles = StyleSheet.create({
+     textAlign: 'center',
+     lineHeight: 20,
+   },
++  authContainer: {
++    padding: spacing.lg,
++    gap: spacing.md,
++  },
++  card: {
++    backgroundColor: colors.surface,
++    borderRadius: radius.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.sm,
++  },
++  keyInput: {
++    backgroundColor: colors.surfaceAlt,
++    borderWidth: 1,
++    borderColor: colors.border,
++    borderRadius: radius.md,
++    padding: spacing.md,
++    color: colors.text,
++  },
++  hint: { color: colors.textMuted, fontSize: 12 },
++  primaryButton: {
++    backgroundColor: colors.primary,
++    borderRadius: radius.md,
++    padding: spacing.md,
++    alignItems: 'center',
++  },
++  primaryButtonText: { color: colors.background, fontWeight: '700' },
++  secondaryButton: {
++    backgroundColor: colors.surfaceAlt,
++    borderRadius: radius.md,
++    padding: spacing.md,
++    alignItems: 'center',
++    flex: 1,
++  },
++  secondaryButtonText: { color: colors.text, fontWeight: '700' },
++  linkButton: { alignItems: 'center', paddingTop: spacing.xs },
++  linkButtonText: { color: colors.primary, fontWeight: '600', fontSize: 13 },
++  feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 2, gap: spacing.md },
++  feedHeader: { gap: spacing.sm, marginBottom: spacing.sm },
++  profileRow: {
++    flexDirection: 'row',
++    justifyContent: 'space-between',
++    alignItems: 'center',
++  },
++  usernameText: { color: colors.text, fontSize: 18, fontWeight: '700' },
++  sectionLabel: {
++    color: colors.textMuted,
++    fontSize: 13,
++    fontWeight: '600',
++    textTransform: 'uppercase',
++    letterSpacing: 0.5,
++    marginTop: spacing.sm,
++  },
++  friendRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
++  friendInput: { flex: 1 },
++  addFriendButton: {
++    backgroundColor: colors.primary,
++    borderRadius: radius.md,
++    paddingHorizontal: spacing.md,
++    paddingVertical: spacing.sm + 4,
++    alignItems: 'center',
++    justifyContent: 'center',
++  },
++  friendChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
++  friendChip: {
++    backgroundColor: colors.primaryMuted,
++    borderRadius: radius.full,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.md,
++  },
++  friendChipText: { color: colors.primaryDark, fontWeight: '600', fontSize: 13 },
++  composerInput: {
++    backgroundColor: colors.surfaceAlt,
++    borderWidth: 1,
++    borderColor: colors.border,
++    borderRadius: radius.md,
++    padding: spacing.md,
++    color: colors.text,
++    minHeight: 60,
++    textAlignVertical: 'top',
++  },
++  composerActions: { flexDirection: 'row', gap: spacing.sm },
++  photoPreviewWrap: { position: 'relative' },
++  photoPreview: { width: '100%', height: 160, borderRadius: radius.md },
++  removePhotoButton: {
++    position: 'absolute',
++    top: spacing.sm,
++    right: spacing.sm,
++    backgroundColor: 'rgba(0,0,0,0.6)',
++    borderRadius: radius.full,
++    paddingVertical: spacing.xs,
++    paddingHorizontal: spacing.sm,
++  },
++  removePhotoButtonText: { color: colors.white, fontSize: 12, fontWeight: '600' },
++  postCard: {
++    backgroundColor: colors.surface,
++    borderRadius: radius.lg,
++    borderWidth: 1,
++    borderColor: colors.border,
++    padding: spacing.md,
++    gap: spacing.sm,
++  },
++  postHeader: { flexDirection: 'row', justifyContent: 'space-between' },
++  postAuthor: { color: colors.text, fontWeight: '700', fontSize: 14 },
++  postTimestamp: { color: colors.textMuted, fontSize: 12 },
++  postPhoto: { width: '100%', height: 220, borderRadius: radius.md },
++  postCaption: { color: colors.text, fontSize: 14, lineHeight: 20 },
++  postActions: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
++  postActionButton: { paddingVertical: spacing.xs },
++  postActionText: { color: colors.textMuted, fontWeight: '600', fontSize: 13 },
++  postActionTextDanger: { color: colors.danger, fontWeight: '600', fontSize: 13 },
++  commentsWrap: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
++  commentRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
++  commentAuthor: { color: colors.text, fontWeight: '700', fontSize: 13 },
++  commentBody: { color: colors.text, fontSize: 13 },
++  commentInputRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
++  commentInput: { flex: 1 },
+ });
+diff --git a/src/screens/SettingsScreen.tsx b/src/screens/SettingsScreen.tsx
+index e80c90c..6d89925 100644
+--- a/src/screens/SettingsScreen.tsx
++++ b/src/screens/SettingsScreen.tsx
+@@ -43,10 +43,16 @@ export function SettingsScreen() {
+     restorePremium,
+     waterTargetMl,
+     setWaterTarget,
++    supabaseUrl,
++    supabaseAnonKey,
++    setSupabaseUrl,
++    setSupabaseAnonKey,
+   } = useApp();
+   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+   const [keyInput, setKeyInput] = useState(apiKey ?? '');
+   const [recipeKeyInput, setRecipeKeyInput] = useState(recipeApiKey ?? '');
++  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrl ?? '');
++  const [supabaseAnonKeyInput, setSupabaseAnonKeyInput] = useState(supabaseAnonKey ?? '');
+   const [waterTargetInput, setWaterTargetInput] = useState(String(waterTargetMl));
+   const [exporting, setExporting] = useState(false);
+   const [restoringPurchases, setRestoringPurchases] = useState(false);
+@@ -89,6 +95,14 @@ export function SettingsScreen() {
+     Alert.alert(t.settings.savedTitle, t.settings.savedRecipeKeyMsg);
+   }
+ 
++  async function handleSaveCommunityConfig() {
++    await Promise.all([
++      setSupabaseUrl(supabaseUrlInput.trim()),
++      setSupabaseAnonKey(supabaseAnonKeyInput.trim()),
++    ]);
++    Alert.alert(t.settings.savedTitle, t.settings.savedCommunityConfigMsg);
++  }
++
+   async function handleSaveWaterTarget() {
+     const ml = parseInt(waterTargetInput, 10);
+     if (Number.isNaN(ml) || ml <= 0) return;
+@@ -383,6 +397,37 @@ export function SettingsScreen() {
+           </Pressable>
+         </View>
+ 
++        <Text style={styles.sectionLabel}>{t.settings.communitySection}</Text>
++        <View style={styles.card}>
++          <Text style={styles.hint}>{t.settings.communityHint}</Text>
++          <TextInput
++            style={styles.keyInput}
++            placeholder={t.settings.supabaseUrlPlaceholder}
++            placeholderTextColor={colors.textMuted}
++            value={supabaseUrlInput}
++            onChangeText={setSupabaseUrlInput}
++            autoCapitalize="none"
++            autoCorrect={false}
++            keyboardType="url"
++          />
++          <TextInput
++            style={styles.keyInput}
++            placeholder={t.settings.supabaseAnonKeyPlaceholder}
++            placeholderTextColor={colors.textMuted}
++            value={supabaseAnonKeyInput}
++            onChangeText={setSupabaseAnonKeyInput}
++            secureTextEntry
++            autoCapitalize="none"
++            autoCorrect={false}
++          />
++          <Pressable
++            style={({ pressed }) => [styles.saveButton, pressed && styles.pressedDim]}
++            onPress={handleSaveCommunityConfig}
++          >
++            <Text style={styles.saveButtonText}>{t.settings.saveCommunityConfig}</Text>
++          </Pressable>
++        </View>
++
+         <Text style={styles.sectionLabel}>{t.settings.remindersSection}</Text>
+         <View style={styles.card}>
+           <View style={styles.row}>
+diff --git a/src/storage/db.ts b/src/storage/db.ts
+index 3f23cda..08cea5b 100644
+--- a/src/storage/db.ts
++++ b/src/storage/db.ts
+@@ -24,6 +24,8 @@ const KEYS = {
+   waterPrefix: 'kailo:water:',
+   waterTargetMl: 'kailo:waterTargetMl',
+   reminderSettings: 'kailo:reminderSettings',
++  supabaseUrl: 'kailo:supabaseUrl',
++  supabaseAnonKey: 'kailo:supabaseAnonKey',
+ };
+ 
+ export const DEFAULT_WATER_TARGET_ML = 2000;
+@@ -256,6 +258,22 @@ export async function saveReminderSettings(settings: ReminderSettings): Promise<
+   await safeSetItem(KEYS.reminderSettings, JSON.stringify(settings));
+ }
+ 
++export async function getSupabaseUrl(): Promise<string | null> {
++  return safeGetItem(KEYS.supabaseUrl);
++}
++
++export async function saveSupabaseUrl(url: string): Promise<void> {
++  await safeSetItem(KEYS.supabaseUrl, url);
++}
++
++export async function getSupabaseAnonKey(): Promise<string | null> {
++  return safeGetItem(KEYS.supabaseAnonKey);
++}
++
++export async function saveSupabaseAnonKey(key: string): Promise<void> {
++  await safeSetItem(KEYS.supabaseAnonKey, key);
++}
++
+ export async function clearAllData(): Promise<void> {
+   const allKeys = await withFallback(AsyncStorage.getAllKeys(), [] as string[]);
+   const kailoKeys = allKeys.filter((k) => k.startsWith('kailo:'));
+diff --git a/src/types/index.ts b/src/types/index.ts
+index cfa0199..b014843 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -98,3 +98,30 @@ export interface Recipe {
+   /** Thumbnail background tint when there's no photo. */
+   tint?: string;
+ }
++
++export interface CommunityProfile {
++  id: string;
++  username: string;
++  createdAt: string;
++}
++
++export interface CommunityPost {
++  id: string;
++  authorId: string;
++  authorUsername: string;
++  caption: string;
++  photoUrl?: string;
++  createdAt: string;
++  likeCount: number;
++  likedByMe: boolean;
++  commentCount: number;
++}
++
++export interface CommunityComment {
++  id: string;
++  postId: string;
++  authorId: string;
++  authorUsername: string;
++  body: string;
++  createdAt: string;
++}
+diff --git a/supabase/schema.sql b/supabase/schema.sql
+new file mode 100644
+index 0000000..2630fe8
+--- /dev/null
++++ b/supabase/schema.sql
+@@ -0,0 +1,135 @@
++-- CalorVault Community schema.
++-- Paste this whole file into the Supabase SQL Editor (Project -> SQL Editor -> New query) and run it once.
++-- Safe to re-run: uses "if not exists" / "on conflict do nothing" everywhere it can.
++
++create extension if not exists pgcrypto;
++
++-- ---------- Tables ----------
++
++create table if not exists profiles (
++  id uuid primary key references auth.users(id) on delete cascade,
++  username text unique not null,
++  created_at timestamptz not null default now()
++);
++
++create table if not exists friendships (
++  user_id uuid not null references profiles(id) on delete cascade,
++  friend_id uuid not null references profiles(id) on delete cascade,
++  created_at timestamptz not null default now(),
++  primary key (user_id, friend_id)
++);
++
++create table if not exists posts (
++  id uuid primary key default gen_random_uuid(),
++  author_id uuid not null references profiles(id) on delete cascade,
++  caption text not null default '',
++  photo_url text,
++  created_at timestamptz not null default now()
++);
++
++create table if not exists likes (
++  post_id uuid not null references posts(id) on delete cascade,
++  user_id uuid not null references profiles(id) on delete cascade,
++  created_at timestamptz not null default now(),
++  primary key (post_id, user_id)
++);
++
++create table if not exists comments (
++  id uuid primary key default gen_random_uuid(),
++  post_id uuid not null references posts(id) on delete cascade,
++  author_id uuid not null references profiles(id) on delete cascade,
++  body text not null,
++  created_at timestamptz not null default now()
++);
++
++-- ---------- Row Level Security ----------
++
++alter table profiles enable row level security;
++alter table friendships enable row level security;
++alter table posts enable row level security;
++alter table likes enable row level security;
++alter table comments enable row level security;
++
++-- Profiles: any signed-in user can look up a username (needed to add friends
++-- and to show author names on posts); you can only create/edit your own row.
++drop policy if exists "profiles select all" on profiles;
++create policy "profiles select all" on profiles for select using (true);
++
++drop policy if exists "profiles insert own" on profiles;
++create policy "profiles insert own" on profiles for insert with check (id = auth.uid());
++
++drop policy if exists "profiles update own" on profiles;
++create policy "profiles update own" on profiles for update using (id = auth.uid());
++
++-- Friendships: you can only see/add/remove your own list. Adding someone as
++-- a friend is one-directional -- it means "let me see their posts" (like a
++-- follow), it doesn't require them to add you back.
++drop policy if exists "friendships select own" on friendships;
++create policy "friendships select own" on friendships for select using (user_id = auth.uid());
++
++drop policy if exists "friendships insert own" on friendships;
++create policy "friendships insert own" on friendships for insert
++  with check (user_id = auth.uid() and friend_id != auth.uid());
++
++drop policy if exists "friendships delete own" on friendships;
++create policy "friendships delete own" on friendships for delete using (user_id = auth.uid());
++
++-- Posts: visible to their author and to anyone who has added the author as
++-- a friend. You can only create posts as yourself, and only delete your own.
++drop policy if exists "posts select visible" on posts;
++create policy "posts select visible" on posts for select
++  using (
++    author_id = auth.uid()
++    or auth.uid() in (select user_id from friendships where friend_id = posts.author_id)
++  );
++
++drop policy if exists "posts insert own" on posts;
++create policy "posts insert own" on posts for insert with check (author_id = auth.uid());
++
++drop policy if exists "posts delete own" on posts;
++create policy "posts delete own" on posts for delete using (author_id = auth.uid());
++
++-- Likes: same visibility as the post they're on; you can only like/unlike as yourself.
++drop policy if exists "likes select visible" on likes;
++create policy "likes select visible" on likes for select
++  using (
++    exists (
++      select 1 from posts p
++      where p.id = likes.post_id
++        and (p.author_id = auth.uid() or auth.uid() in (select user_id from friendships where friend_id = p.author_id))
++    )
++  );
++
++drop policy if exists "likes insert own" on likes;
++create policy "likes insert own" on likes for insert with check (user_id = auth.uid());
++
++drop policy if exists "likes delete own" on likes;
++create policy "likes delete own" on likes for delete using (user_id = auth.uid());
++
++-- Comments: same visibility as the post they're on; you can only comment as yourself.
++drop policy if exists "comments select visible" on comments;
++create policy "comments select visible" on comments for select
++  using (
++    exists (
++      select 1 from posts p
++      where p.id = comments.post_id
++        and (p.author_id = auth.uid() or auth.uid() in (select user_id from friendships where friend_id = p.author_id))
++    )
++  );
++
++drop policy if exists "comments insert own" on comments;
++create policy "comments insert own" on comments for insert with check (author_id = auth.uid());
++
++-- ---------- Storage (post photos) ----------
++
++insert into storage.buckets (id, name, public)
++values ('post-photos', 'post-photos', true)
++on conflict (id) do nothing;
++
++drop policy if exists "post photos public read" on storage.objects;
++create policy "post photos public read" on storage.objects for select
++  using (bucket_id = 'post-photos');
++
++drop policy if exists "post photos authenticated upload" on storage.objects;
++create policy "post photos authenticated upload" on storage.objects for insert
++  with check (bucket_id = 'post-photos' and auth.role() = 'authenticated');
