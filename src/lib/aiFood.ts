@@ -1,4 +1,6 @@
+import { getInstallId } from '../storage/db';
 import { NutrientEstimate } from '../types';
+import { AI_PROXY_KEY, BUILT_IN_SUPABASE_ANON_KEY, BUILT_IN_SUPABASE_URL } from './config';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
@@ -129,33 +131,35 @@ function extractJsonArray(text: string): MealSuggestion[] {
   }));
 }
 
+// Without a personal key, the request goes to the app's `ai-proxy` Edge
+// Function, which adds the real key server-side and enforces daily limits.
+function proxyRequest(systemPrompt: string, content: Array<Record<string, unknown>>, installId: string) {
+  return fetch(`${BUILT_IN_SUPABASE_URL}/functions/v1/ai-proxy`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      apikey: BUILT_IN_SUPABASE_ANON_KEY,
+      authorization: `Bearer ${BUILT_IN_SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ system: systemPrompt, content, installId }),
+  });
+}
+
 async function callClaude(
   apiKey: string,
   systemPrompt: string,
   content: Array<Record<string, unknown>>
 ): Promise<string> {
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': ANTHROPIC_VERSION,
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    // Sonnet 5 thinks before answering when a request is harder (e.g. a meal
-    // with several foods). Low effort keeps that quick, and the token limit
-    // leaves room for the thinking plus the JSON answer.
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 4000,
-      output_config: { effort: 'low' },
-      system: systemPrompt,
-      messages: [{ role: 'user', content }],
-    }),
-  });
+  const response =
+    apiKey === AI_PROXY_KEY
+      ? await proxyRequest(systemPrompt, content, await getInstallId())
+      : await directRequest(apiKey, systemPrompt, content);
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
+    if (response.status === 429) {
+      throw new AiFoodError("You've reached today's AI limit. Try again tomorrow.");
+    }
     throw new AiFoodError(
       `Claude API error ${response.status}: ${body || response.statusText}`
     );
@@ -176,6 +180,32 @@ async function callClaude(
     throw new AiFoodError("Couldn't read the AI's answer. Please try again.");
   }
   return text;
+}
+
+function directRequest(
+  apiKey: string,
+  systemPrompt: string,
+  content: Array<Record<string, unknown>>
+) {
+  return fetch(ANTHROPIC_API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    // Sonnet 5 thinks before answering when a request is harder (e.g. a meal
+    // with several foods). Low effort keeps that quick, and the token limit
+    // leaves room for the thinking plus the JSON answer.
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 4000,
+      output_config: { effort: 'low' },
+      system: systemPrompt,
+      messages: [{ role: 'user', content }],
+    }),
+  });
 }
 
 export type PhotoScanMode = 'auto' | 'meal' | 'label' | 'drink';

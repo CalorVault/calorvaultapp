@@ -15,6 +15,8 @@ interface Props {
 }
 
 const BADGE_SIZE = 46;
+// The three small cards use a slightly smaller badge so the row stays compact.
+const QUICK_BADGE_SIZE = 40;
 
 export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
   const { t } = useApp();
@@ -38,17 +40,17 @@ export function QuickLogSheet({ visible, onClose, onSelect }: Props) {
 
           <View style={styles.quickRow}>
             <QuickButton
-              badge={<IconBadge Icon={SearchIcon} size={BADGE_SIZE} background={QUICK_BADGE_BG} />}
+              badge={<IconBadge Icon={SearchIcon} size={QUICK_BADGE_SIZE} background={QUICK_BADGE_BG} />}
               label={t.quickLog.search}
               onPress={() => onSelect('manual')}
             />
             <QuickButton
-              badge={<IconBadge Icon={PlanDayIcon} size={BADGE_SIZE} background={QUICK_BADGE_BG} />}
+              badge={<IconBadge Icon={PlanDayIcon} size={QUICK_BADGE_SIZE} background={QUICK_BADGE_BG} />}
               label={t.quickLog.previousMeal}
               onPress={() => onSelect('recent')}
             />
             <QuickButton
-              badge={<LogoScanFrame size={BADGE_SIZE} glyphScale={0.38} background={QUICK_BADGE_BG} />}
+              badge={<LogoScanFrame size={QUICK_BADGE_SIZE} glyphScale={0.38} background={QUICK_BADGE_BG} />}
               label={t.quickLog.scan}
               onPress={() => onSelect('camera')}
             />
@@ -75,7 +77,13 @@ function QuickButton({
     >
       <GradientCard style={styles.quickButton} stops={SHADED_GRADIENT}>
         {badge}
-        <Text style={styles.quickLabel} numberOfLines={2}>
+        <Text
+          style={styles.quickLabel}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+          maxFontSizeMultiplier={1.2}
+        >
           {label}
         </Text>
       </GradientCard>
@@ -138,10 +146,10 @@ const styles = StyleSheet.create({
   quickButton: {
     flexGrow: 1,
     borderRadius: radius.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 12,
     paddingHorizontal: spacing.xs,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 6,
   },
   quickLabel: { color: colors.white, fontSize: 13, fontWeight: '700', textAlign: 'center' },
 });

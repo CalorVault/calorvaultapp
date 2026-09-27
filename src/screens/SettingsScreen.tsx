@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AI_PROXY_KEY, hasBuiltInBackend } from '../lib/config';
 import { useApp } from '../context/AppContext';
 import { RECIPES } from '../data/recipes';
 import { allPhotoCredits } from '../data/recipePhotos';
@@ -52,7 +53,7 @@ export function SettingsScreen() {
     setSupabaseAnonKey,
   } = useApp();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [keyInput, setKeyInput] = useState(apiKey ?? '');
+  const [keyInput, setKeyInput] = useState(apiKey && apiKey !== AI_PROXY_KEY ? apiKey : '');
   const [recipeKeyInput, setRecipeKeyInput] = useState(recipeApiKey ?? '');
   const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrl ?? '');
   const [supabaseAnonKeyInput, setSupabaseAnonKeyInput] = useState(supabaseAnonKey ?? '');
@@ -89,7 +90,8 @@ export function SettingsScreen() {
   const p = profile;
 
   async function handleSaveKey() {
-    await setApiKey(keyInput.trim());
+    // Clearing your own key goes back to the built-in AI, if the app has one.
+    await setApiKey(keyInput.trim() || (hasBuiltInBackend() ? AI_PROXY_KEY : ''));
     Alert.alert(t.settings.savedTitle, t.settings.savedApiKeyMsg);
   }
 

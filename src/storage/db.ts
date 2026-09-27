@@ -1,6 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_LANGUAGE, isLanguageCode, LanguageCode } from '../i18n/languages';
 import {
+  AI_PROXY_KEY,
+  BUILT_IN_SUPABASE_ANON_KEY,
+  BUILT_IN_SUPABASE_URL,
+  hasBuiltInBackend,
+} from '../lib/config';
+import {
   DailyPlan,
   DayLog,
   DayMealPlan,
@@ -29,6 +35,7 @@ const KEYS = {
   supabaseAnonKey: 'kailo:supabaseAnonKey',
   mealPlan: 'kailo:mealPlan',
   hiddenPosts: 'kailo:hiddenPosts',
+  installId: 'kailo:installId',
 };
 
 export const DEFAULT_WATER_TARGET_ML = 2000;
@@ -94,12 +101,25 @@ export async function savePlan(plan: DailyPlan): Promise<void> {
   await safeSetItem(KEYS.plan, JSON.stringify(plan));
 }
 
+// With no personal key saved, AI features use the built-in proxy when the
+// app has a built-in backend.
 export async function getApiKey(): Promise<string | null> {
-  return safeGetItem(KEYS.apiKey);
+  const stored = await safeGetItem(KEYS.apiKey);
+  if (stored) return stored;
+  return hasBuiltInBackend() ? AI_PROXY_KEY : null;
 }
 
 export async function saveApiKey(key: string): Promise<void> {
   await safeSetItem(KEYS.apiKey, key);
+}
+
+/** A random id for this install, used by the AI proxy's per-phone daily limit. */
+export async function getInstallId(): Promise<string> {
+  const existing = await safeGetItem(KEYS.installId);
+  if (existing) return existing;
+  const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
+  await safeSetItem(KEYS.installId, id);
+  return id;
 }
 
 export async function getRecipeApiKey(): Promise<string | null> {
@@ -280,7 +300,7 @@ export async function saveReminderSettings(settings: ReminderSettings): Promise<
 }
 
 export async function getSupabaseUrl(): Promise<string | null> {
-  return safeGetItem(KEYS.supabaseUrl);
+  return (await safeGetItem(KEYS.supabaseUrl)) || BUILT_IN_SUPABASE_URL || null;
 }
 
 export async function saveSupabaseUrl(url: string): Promise<void> {
@@ -288,7 +308,7 @@ export async function saveSupabaseUrl(url: string): Promise<void> {
 }
 
 export async function getSupabaseAnonKey(): Promise<string | null> {
-  return safeGetItem(KEYS.supabaseAnonKey);
+  return (await safeGetItem(KEYS.supabaseAnonKey)) || BUILT_IN_SUPABASE_ANON_KEY || null;
 }
 
 export async function saveSupabaseAnonKey(key: string): Promise<void> {

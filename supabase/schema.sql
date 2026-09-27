@@ -145,3 +145,40 @@ create policy "post photos public read" on storage.objects for select
 drop policy if exists "post photos authenticated upload" on storage.objects;
 create policy "post photos authenticated upload" on storage.objects for insert
   with check (bucket_id = 'post-photos' and auth.role() = 'authenticated');
+
+-- ---------- AI proxy usage limits ----------
+-- Counts AI requests per phone per day for the ai-proxy Edge Function. Only
+-- the function (server key) can touch it: RLS on with no policies, and the
+-- counter function isn't callable by app users.
+
+create table if not exists ai_usage (
+  day date not null default current_date,
+  install_id text not null,
+  count integer not null default 0,
+  primary key (day, install_id)
+);
+alter table ai_usage enable row level security;
+
+create or replace function bump_ai_usage(p_install text, p_install_limit int, p_global_limit int)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  mine int;
+  total int;
+begin
+  select coalesce(sum(count), 0) into total from ai_usage where day = current_date;
+  if total >= p_global_limit then
+    return false;
+  end if;
+  insert into ai_usage (day, install_id, count) values (current_date, p_install, 1)
+  on conflict (day, install_id) do update set count = ai_usage.count + 1
+  returning count into mine;
+  return mine <= p_install_limit;
+end;
+$$;
+
+revoke all on function bump_ai_usage(text, int, int) from public, anon, authenticated;
+grant execute on function bump_ai_usage(text, int, int) to service_role;
