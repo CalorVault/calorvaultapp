@@ -27,6 +27,7 @@ import {
   HeartIcon,
   PlusIcon,
 } from '../components/CommunityIcons';
+import { AuthForm } from '../components/AuthForm';
 import { GradientCard, SHADED_GRADIENT } from '../components/GradientCard';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
@@ -37,6 +38,7 @@ import {
   CommunityError,
   createMyProfile,
   createPost,
+  deleteMyAccount,
   deletePost,
   getMyProfile,
   hasSession,
@@ -44,9 +46,7 @@ import {
   listFeed,
   listFriends,
   saveMyWeekStats,
-  signIn,
   signOut,
-  signUp,
   toggleLike,
 } from '../lib/community';
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
@@ -231,7 +231,7 @@ function CommunityConfigured({
     return (
       <SafeAreaView style={styles.flex} edges={['top']}>
         <CommunityTopBar t={t} navigation={navigation} />
-        <AuthGate url={url} anonKey={anonKey} t={t} onSignedIn={() => setSignedIn(true)} />
+        <AuthForm url={url} anonKey={anonKey} t={t} onSignedIn={() => setSignedIn(true)} />
       </SafeAreaView>
     );
   }
@@ -248,113 +248,6 @@ function CommunityConfigured({
         onConsumedPendingFriend={onConsumedPendingFriend}
       />
     </SafeAreaView>
-  );
-}
-
-function AuthGate({
-  url,
-  anonKey,
-  t,
-  onSignedIn,
-}: {
-  url: string;
-  anonKey: string;
-  t: any;
-  onSignedIn: () => void;
-}) {
-  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  async function handleSubmit() {
-    setBusy(true);
-    try {
-      if (mode === 'signUp') {
-        await signUp(url, anonKey, email, password, username);
-      } else {
-        await signIn(url, anonKey, email, password);
-      }
-      onSignedIn();
-    } catch (err) {
-      Alert.alert(
-        t.community.authErrorTitle,
-        err instanceof CommunityError || err instanceof Error ? err.message : String(err)
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.authContainer} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>
-          {mode === 'signUp' ? t.community.signUpTitle : t.community.signInTitle}
-        </Text>
-        <View style={styles.card}>
-          <TextInput
-            style={styles.keyInput}
-            placeholder={t.community.emailPlaceholder}
-            placeholderTextColor={colors.textMuted}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.keyInput}
-            placeholder={t.community.passwordPlaceholder}
-            placeholderTextColor={colors.textMuted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {mode === 'signUp' && (
-            <>
-              <TextInput
-                style={styles.keyInput}
-                placeholder={t.community.usernamePlaceholder}
-                placeholderTextColor={colors.textMuted}
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <Text style={styles.hint}>{t.community.usernameHint}</Text>
-            </>
-          )}
-          <Pressable
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedDim]}
-            onPress={handleSubmit}
-            disabled={busy}
-          >
-            {busy ? (
-              <ActivityIndicator color={colors.background} />
-            ) : (
-              <Text style={styles.primaryButtonText}>
-                {mode === 'signUp' ? t.community.signUpButton : t.community.signInButton}
-              </Text>
-            )}
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.linkButton, pressed && styles.pressedDim]}
-            onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}
-          >
-            <Text style={styles.linkButtonText}>
-              {mode === 'signUp' ? t.community.switchToSignIn : t.community.switchToSignUp}
-            </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -468,6 +361,28 @@ function Feed({
         onPress: async () => {
           await signOut(url, anonKey);
           onSignedOut();
+        },
+      },
+    ]);
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(t.community.deleteAccountTitle, t.community.deleteAccountMsg, [
+      { text: t.common.cancel, style: 'cancel' },
+      {
+        text: t.community.deleteAccount,
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMyAccount(url, anonKey);
+            Alert.alert(t.community.deleteAccountDone);
+            onSignedOut();
+          } catch (err) {
+            Alert.alert(
+              t.community.deleteAccountFailedTitle,
+              err instanceof CommunityError || err instanceof Error ? err.message : String(err)
+            );
+          }
         },
       },
     ]);
@@ -905,6 +820,9 @@ function Feed({
           <Pressable onPress={handleSignOut} hitSlop={8}>
             <Text style={styles.linkButtonText}>{t.community.signOutButton}</Text>
           </Pressable>
+          <Pressable onPress={handleDeleteAccount} hitSlop={8}>
+            <Text style={styles.deleteAccountText}>{t.community.deleteAccount}</Text>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -1275,10 +1193,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  authContainer: {
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -1313,6 +1227,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: { color: colors.text, fontWeight: '700' },
   linkButton: { alignItems: 'center', paddingTop: spacing.xs },
   linkButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
+  deleteAccountText: { color: colors.danger, fontWeight: '600', fontSize: 13 },
   feedContainer: { padding: spacing.lg, paddingBottom: spacing.xl * 3, gap: spacing.md },
   flexSpacer: { flex: 1 },
   retryButton: { alignSelf: 'flex-start' },
@@ -1582,7 +1497,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
   },
-  footer: { alignItems: 'center', gap: 6, paddingTop: spacing.lg },
+  footer: { alignItems: 'center', gap: 10, paddingTop: spacing.lg },
   footerText: { color: colors.textMuted, fontSize: 12 },
   postMenuButton: { paddingHorizontal: spacing.xs, paddingVertical: 2 },
   postMenuDots: { color: colors.textMuted, fontSize: 14, fontWeight: '700', letterSpacing: 1 },

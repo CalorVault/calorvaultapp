@@ -146,6 +146,32 @@ drop policy if exists "post photos authenticated upload" on storage.objects;
 create policy "post photos authenticated upload" on storage.objects for insert
   with check (bucket_id = 'post-photos' and auth.role() = 'authenticated');
 
+-- ---------- Account deletion ----------
+-- Lets the app remove your own post photos (stored in a folder named after
+-- your user id) and delete your account. Deleting the auth user cascades to
+-- your profile, friendships, posts, likes and comments.
+
+drop policy if exists "post photos delete own" on storage.objects;
+create policy "post photos delete own" on storage.objects for delete
+  using (bucket_id = 'post-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create or replace function delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not signed in';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function delete_my_account() from public, anon;
+grant execute on function delete_my_account() to authenticated;
+
 -- ---------- AI proxy usage limits ----------
 -- Counts AI requests per phone per day for the ai-proxy Edge Function. Only
 -- the function (server key) can touch it: RLS on with no policies, and the

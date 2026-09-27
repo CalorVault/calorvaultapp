@@ -1,7 +1,7 @@
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DefaultTheme, LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { QuickLogSheet } from '../components/QuickLogSheet';
@@ -27,6 +27,7 @@ import { RecipeDetailScreen } from '../screens/RecipeDetailScreen';
 import { RecipesScreen } from '../screens/RecipesScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ShareDayScreen } from '../screens/ShareDayScreen';
+import { WelcomeScreen } from '../screens/WelcomeScreen';
 import { colors, radius, spacing } from '../theme';
 import { LogFoodTab, MainTabParamList, RootStackParamList } from './types';
 
@@ -189,6 +190,8 @@ const linking: LinkingOptions<RootStackParamList> = {
 export function RootNavigator() {
   const { loading, profile, t } = useApp();
   const [showIntro, setShowIntro] = useState(true);
+  const [accountStepDone, setAccountStepDone] = useState(false);
+  const finishAccountStep = useCallback(() => setAccountStepDone(true), []);
 
   if (showIntro) {
     return <IntroScreen onFinish={() => setShowIntro(false)} />;
@@ -197,6 +200,7 @@ export function RootNavigator() {
   if (loading) return null;
 
   if (!profile) {
+    if (!accountStepDone) return <WelcomeScreen onDone={finishAccountStep} />;
     return <OnboardingScreen />;
   }
 

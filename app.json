@@ -22,7 +22,8 @@
         "NSSpeechRecognitionUsageDescription": "CalorVault converts your speech to text so it can identify the food you describe.",
         "NSPhotoLibraryUsageDescription": "CalorVault lets you pick an existing photo of food to scan.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -65,7 +66,8 @@
         {
           "color": "#D8652C"
         }
-      ]
+      ],
+      "expo-apple-authentication"
     ],
     "extra": {
       "eas": {

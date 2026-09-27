@@ -78,6 +78,58 @@ export async function signIn(
   if (error) throw new CommunityError(error.message);
 }
 
+// Uses the identity token from Sign in with Apple on the phone. A first-time
+// Apple account has no username yet, so the feed asks for one afterwards.
+export async function signInWithApple(url: string, anonKey: string, identityToken: string): Promise<void> {
+  const { error } = await client(url, anonKey).auth.signInWithIdToken({
+    provider: 'apple',
+    token: identityToken,
+  });
+  if (error) throw new CommunityError(error.message);
+}
+
+// Emails a one-time code (the Reset Password email template must include
+// {{ .Token }}), so the password can be reset inside the app.
+export async function sendPasswordResetCode(url: string, anonKey: string, email: string): Promise<void> {
+  const { error } = await client(url, anonKey).auth.resetPasswordForEmail(email.trim());
+  if (error) throw new CommunityError(error.message);
+}
+
+// Checking the code signs you in, then the new password is saved.
+export async function resetPasswordWithCode(
+  url: string,
+  anonKey: string,
+  email: string,
+  code: string,
+  newPassword: string
+): Promise<void> {
+  const supabase = client(url, anonKey);
+  const { error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: code.trim(),
+    type: 'recovery',
+  });
+  if (error) throw new CommunityError(error.message);
+  const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+  if (updateError) throw new CommunityError(updateError.message);
+}
+
+// Deletes the account and, through the database's cascades, the profile,
+// friendships, posts, likes and comments. Photos live in Storage, which the
+// cascade doesn't reach, so they're removed first; a failure there doesn't
+// stop the account itself from being deleted.
+export async function deleteMyAccount(url: string, anonKey: string): Promise<void> {
+  const supabase = client(url, anonKey);
+  const myId = await requireUserId(url, anonKey);
+  const photos = supabase.storage.from('post-photos');
+  const { data: files } = await photos.list(myId, { limit: 1000 });
+  if (files?.length) await photos.remove(files.map((f) => `${myId}/${f.name}`));
+
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) throw new CommunityError(error.message);
+  await supabase.auth.signOut({ scope: 'local' });
+}
+
 export async function signOut(url: string, anonKey: string): Promise<void> {
   await client(url, anonKey).auth.signOut();
 }
