@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'flex-end',
     paddingHorizontal: spacing.lg,
-    paddingBottom: 110,
+    // Keeps the menu clear of the round + button in the tab bar.
+    paddingBottom: 132,
   },
   sheet: {
     gap: spacing.sm,

@@ -1,8 +1,8 @@
 // Built-in Community backend, so testers don't have to type anything into
 // Settings. The anon key is meant to be public (it ships inside every
 // Supabase app); the database's row level security protects the data.
-export const BUILT_IN_SUPABASE_URL = '';
-export const BUILT_IN_SUPABASE_ANON_KEY = '';
+export const BUILT_IN_SUPABASE_URL = 'https://swchqmwrhwcpgznjkhjv.supabase.co';
+export const BUILT_IN_SUPABASE_ANON_KEY = 'sb_publishable_VvfazVSLyU1UxSiuO_o8_Q_1OvFxpQP';
 
 /**
  * Stands in for a personal Claude API key when none has been entered: AI
