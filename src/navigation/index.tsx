@@ -1,7 +1,7 @@
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DefaultTheme, LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { QuickLogSheet } from '../components/QuickLogSheet';
@@ -28,6 +28,7 @@ import { RecipesScreen } from '../screens/RecipesScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ShareDayScreen } from '../screens/ShareDayScreen';
 import { WelcomeScreen } from '../screens/WelcomeScreen';
+import { hasSeenAccountPrompt, markAccountPromptSeen } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
 import { LogFoodTab, MainTabParamList, RootStackParamList } from './types';
 
@@ -190,18 +191,31 @@ const linking: LinkingOptions<RootStackParamList> = {
 export function RootNavigator() {
   const { loading, profile, t } = useApp();
   const [showIntro, setShowIntro] = useState(true);
-  const [accountStepDone, setAccountStepDone] = useState(false);
-  const finishAccountStep = useCallback(() => setAccountStepDone(true), []);
+  const [accountPromptSeen, setAccountPromptSeen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    hasSeenAccountPrompt()
+      .then(setAccountPromptSeen)
+      .catch(() => setAccountPromptSeen(true));
+  }, []);
+
+  const finishAccountStep = useCallback(() => {
+    setAccountPromptSeen(true);
+    markAccountPromptSeen().catch(() => {});
+  }, []);
 
   if (showIntro) {
     return <IntroScreen onFinish={() => setShowIntro(false)} />;
   }
 
-  if (loading) return null;
+  if (loading || accountPromptSeen === null) return null;
 
+  // Setup first, then the create-account screen once.
   if (!profile) {
-    if (!accountStepDone) return <WelcomeScreen onDone={finishAccountStep} />;
     return <OnboardingScreen />;
+  }
+  if (!accountPromptSeen) {
+    return <WelcomeScreen onDone={finishAccountStep} />;
   }
 
   return (

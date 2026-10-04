@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_LANGUAGE, isLanguageCode, LanguageCode } from '../i18n/languages';
+import { isLanguageCode, LanguageCode } from '../i18n/languages';
 import {
   AI_PROXY_KEY,
   BUILT_IN_SUPABASE_ANON_KEY,
   BUILT_IN_SUPABASE_URL,
   hasBuiltInBackend,
 } from '../lib/config';
+import { deviceLanguage } from '../lib/deviceLanguage';
 import {
   DailyPlan,
   DayLog,
@@ -36,6 +37,7 @@ const KEYS = {
   mealPlan: 'kailo:mealPlan',
   hiddenPosts: 'kailo:hiddenPosts',
   installId: 'kailo:installId',
+  accountPromptSeen: 'kailo:accountPromptSeen',
 };
 
 export const DEFAULT_WATER_TARGET_ML = 2000;
@@ -246,9 +248,32 @@ export async function saveSavedRecipes(recipes: Recipe[]): Promise<void> {
   await safeSetItem(KEYS.savedRecipes, JSON.stringify(recipes));
 }
 
+// Stored instead of a language code when the app should follow the phone.
+const AUTO_LANGUAGE = 'auto';
+
+// Follows the phone's language (read fresh on every launch, so changing the
+// phone's language changes the app too) unless a language was picked.
 export async function getLanguage(): Promise<LanguageCode> {
   const raw = await safeGetItem(KEYS.language);
-  return raw && isLanguageCode(raw) ? raw : DEFAULT_LANGUAGE;
+  return raw && isLanguageCode(raw) ? raw : deviceLanguage();
+}
+
+// The create-account screen shows once, right after setup.
+export async function hasSeenAccountPrompt(): Promise<boolean> {
+  return (await safeGetItem(KEYS.accountPromptSeen)) === '1';
+}
+
+export async function markAccountPromptSeen(): Promise<void> {
+  await safeSetItem(KEYS.accountPromptSeen, '1');
+}
+
+export async function isLanguageAutomatic(): Promise<boolean> {
+  const raw = await safeGetItem(KEYS.language);
+  return !raw || !isLanguageCode(raw);
+}
+
+export async function saveLanguageAutomatic(): Promise<void> {
+  await safeSetItem(KEYS.language, AUTO_LANGUAGE);
 }
 
 export async function saveLanguage(language: LanguageCode): Promise<void> {

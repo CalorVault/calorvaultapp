@@ -275,3 +275,22 @@ export function MicIcon({ size = 20, color, fill }: IconProps & { fill?: string 
     </Svg>
   );
 }
+
+// Lightbulb -- "Suggest a feature". White bulb (`fill`) with an accent base and rays.
+export function IdeaIcon({ size = 20, color, fill }: IconProps & { fill?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 5.5a5.5 5.5 0 0 0-3.2 10c.5.4.7.9.7 1.5h5c0-.6.2-1.1.7-1.5A5.5 5.5 0 0 0 12 5.5Z"
+        fill={fill ?? color}
+      />
+      <Path d="M9.8 19h4.4M10.5 21.2h3" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Path
+        d="M12 1.6v1.4M4.6 4.8l1 1M19.4 4.8l-1 1M2.6 11.4H4M20 11.4h1.4"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}

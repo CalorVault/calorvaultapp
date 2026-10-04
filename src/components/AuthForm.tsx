@@ -198,6 +198,7 @@ export function AuthForm({
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
+                <Text style={styles.hint}>{t.community.passwordHint}</Text>
                 {submitButton(t.community.resetButton, handleResetPassword)}
               </>
             ) : (
@@ -255,6 +256,7 @@ export function AuthForm({
             autoCapitalize="none"
             autoCorrect={false}
           />
+          {mode === 'signUp' && <Text style={styles.hint}>{t.community.passwordHint}</Text>}
           {mode === 'signIn' && (
             <Pressable
               style={({ pressed }) => [styles.forgotLink, pressed && styles.pressedDim]}
@@ -272,6 +274,7 @@ export function AuthForm({
                 placeholderTextColor={colors.textMuted}
                 value={username}
                 onChangeText={setUsername}
+                maxLength={20}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -291,6 +294,7 @@ export function AuthForm({
             </Text>
           </Pressable>
         </View>
+        {mode === 'signUp' && <Text style={styles.terms}>{t.community.termsNotice}</Text>}
         {footer}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -332,6 +336,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   hint: { color: colors.textMuted, fontSize: 12 },
+  terms: { color: colors.textMuted, fontSize: 11, lineHeight: 15, textAlign: 'center', paddingHorizontal: spacing.md },
   primaryButton: {
     backgroundColor: colors.ink,
     borderRadius: radius.md,

@@ -67,7 +67,9 @@
           "color": "#D8652C"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "expo-localization",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

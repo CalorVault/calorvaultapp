@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -35,6 +36,7 @@ import { useWeekDays } from '../hooks/useWeekDays';
 import {
   addComment,
   addFriendByUsername,
+  blockUser,
   CommunityError,
   createMyProfile,
   createPost,
@@ -44,10 +46,14 @@ import {
   hasSession,
   listComments,
   listFeed,
+  listBlockedUsers,
   listFriends,
+  reportComment,
+  reportPost,
   saveMyWeekStats,
   signOut,
   toggleLike,
+  unblockUser,
 } from '../lib/community';
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
 import { currentWeekDates, HIT_SCORE, WeekDayScore, weekSummary } from '../lib/weekScore';
@@ -71,6 +77,49 @@ function avatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+type SheetOption = { text: string; destructive?: boolean; onPress: () => void };
+
+// iOS action sheet (Cancel first), or a plain alert elsewhere.
+function showOptions(t: any, options: SheetOption[], message?: string) {
+  if (Platform.OS === 'ios') {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: [t.common.cancel, ...options.map((o) => o.text)],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: options.flatMap((o, i) => (o.destructive ? [i + 1] : [])),
+        message,
+      },
+      (index) => {
+        if (index > 0) options[index - 1].onPress();
+      }
+    );
+    return;
+  }
+  Alert.alert('', message, [
+    { text: t.common.cancel, style: 'cancel' },
+    ...options.map((o) => ({
+      text: o.text,
+      style: o.destructive ? ('destructive' as const) : ('default' as const),
+      onPress: o.onPress,
+    })),
+  ]);
+}
+
+const MAX_PHOTO_SIDE = 1280;
+
+// Shrinks a picked photo so its longest side is at most 1280px and saves it
+// as a compressed JPEG: a few hundred KB instead of several MB per post.
+async function shrinkPhoto(asset: ImagePicker.ImagePickerAsset): Promise<{ uri: string; base64: string }> {
+  const context = ImageManipulator.manipulate(asset.uri);
+  if (Math.max(asset.width, asset.height) > MAX_PHOTO_SIDE) {
+    context.resize(asset.width >= asset.height ? { width: MAX_PHOTO_SIDE } : { height: MAX_PHOTO_SIDE });
+  }
+  const rendered = await context.renderAsync();
+  const result = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.7, base64: true });
+  if (!result.base64) throw new Error('Could not read photo');
+  return { uri: result.uri, base64: result.base64 };
 }
 
 function Avatar({ name, size }: { name: string; size: number }) {
@@ -285,6 +334,7 @@ function Feed({
   const [composing, setComposing] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [weekLogs, setWeekLogs] = useState<DayLog[]>([]);
+  const [blocked, setBlocked] = useState<{ id: string; username: string }[]>([]);
   const { today, plan } = useApp();
   const { days: weekDays } = useWeekDays(plan?.calorieTarget ?? 0, today.entries.length);
 
@@ -296,15 +346,17 @@ function Feed({
   // card, rather than looking like you have no username.
   const load = useCallback(async () => {
     try {
-      const [myProfile, myFriends, feed, hiddenIds] = await Promise.all([
+      const [myProfile, myFriends, feed, hiddenIds, blockedUsers] = await Promise.all([
         getMyProfile(url, anonKey),
         listFriends(url, anonKey),
         listFeed(url, anonKey),
         getHiddenPostIds(),
+        listBlockedUsers(url, anonKey),
       ]);
       const hidden = new Set(hiddenIds);
       setProfile(myProfile);
       setFriends(myFriends);
+      setBlocked(blockedUsers);
       setPosts(feed.filter((p) => !hidden.has(p.id)));
       setLoadFailed(false);
     } catch {
@@ -431,14 +483,15 @@ function Feed({
   async function handlePickPhoto() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      base64: true,
-      quality: 0.5,
-    });
-    if (result.canceled || !result.assets[0]?.base64) return;
-    setPhotoBase64(result.assets[0].base64);
-    setPhotoPreviewUri(result.assets[0].uri);
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images' });
+    if (result.canceled || !result.assets[0]) return;
+    try {
+      const photo = await shrinkPhoto(result.assets[0]);
+      setPhotoBase64(photo.base64);
+      setPhotoPreviewUri(photo.uri);
+    } catch (err) {
+      Alert.alert('', err instanceof Error ? err.message : String(err));
+    }
   }
 
   async function handlePost() {
@@ -478,44 +531,77 @@ function Feed({
     }
   }
 
-  // Your own posts are deleted for everyone. Other people's posts can't be
-  // (the database only lets authors delete), so "Delete" hides them from
-  // your feed on this device instead.
-  function handleDeletePost(post: CommunityPost) {
-    const isMine = post.authorId === profile?.id;
-    const message = isMine
-      ? t.community.deletePostConfirmMsg
-      : `${t.community.hidePostMsgPrefix} @${post.authorUsername}.`;
-    async function remove() {
+  async function hidePostOnThisPhone(postId: string) {
+    const hidden = await getHiddenPostIds();
+    await saveHiddenPostIds([...hidden, postId]);
+  }
+
+  // Blocking removes the friendship both ways and hides each other's posts
+  // and comments; they can be unblocked from the Friends sheet.
+  function confirmBlock(userId: string, username: string) {
+    Alert.alert(`${t.community.blockUserPrefix} @${username}?`, t.community.blockConfirmMsg, [
+      { text: t.common.cancel, style: 'cancel' },
+      {
+        text: t.community.blockUserPrefix,
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await blockUser(url, anonKey, userId);
+            await load();
+          } catch (err) {
+            Alert.alert('', err instanceof Error ? err.message : String(err));
+          }
+        },
+      },
+    ]);
+  }
+
+  async function handleUnblock(userId: string) {
+    try {
+      await unblockUser(url, anonKey, userId);
+      await load();
+    } catch (err) {
+      Alert.alert('', err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  // Your own posts can be deleted for everyone. Other people's posts can be
+  // reported (and are then hidden), their author blocked, or just hidden
+  // from your feed on this phone.
+  function handlePostMenu(post: CommunityPost) {
+    async function run(action: () => Promise<void>) {
       try {
-        if (isMine) {
-          await deletePost(url, anonKey, post.id);
-        } else {
-          const hidden = await getHiddenPostIds();
-          await saveHiddenPostIds([...hidden, post.id]);
-        }
+        await action();
         await load();
       } catch (err) {
         Alert.alert('', err instanceof Error ? err.message : String(err));
       }
     }
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [t.common.cancel, t.community.delete],
-          destructiveButtonIndex: 1,
-          cancelButtonIndex: 0,
-          message,
-        },
-        (index) => {
-          if (index === 1) remove();
-        }
+    if (post.authorId === profile?.id) {
+      showOptions(
+        t,
+        [{ text: t.community.delete, destructive: true, onPress: () => run(() => deletePost(url, anonKey, post.id)) }],
+        t.community.deletePostConfirmMsg
       );
       return;
     }
-    Alert.alert(t.community.deletePostConfirmTitle, message, [
-      { text: t.common.cancel, style: 'cancel' },
-      { text: t.community.delete, style: 'destructive', onPress: remove },
+    showOptions(t, [
+      {
+        text: t.community.reportPost,
+        destructive: true,
+        onPress: () =>
+          run(async () => {
+            await reportPost(url, anonKey, post.id);
+            await hidePostOnThisPhone(post.id);
+            Alert.alert(t.community.reportDoneTitle, t.community.reportDoneMsg);
+          }),
+      },
+      {
+        text: `${t.community.blockUserPrefix} @${post.authorUsername}`,
+        destructive: true,
+        onPress: () => confirmBlock(post.authorId, post.authorUsername),
+      },
+      { text: t.community.hidePost, onPress: () => run(() => hidePostOnThisPhone(post.id)) },
     ]);
   }
 
@@ -594,6 +680,7 @@ function Feed({
                 placeholderTextColor={colors.textMuted}
                 value={newUsername}
                 onChangeText={setNewUsername}
+                maxLength={20}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -713,6 +800,7 @@ function Feed({
               onChangeText={setCaption}
               onFocus={() => setComposing(true)}
               multiline
+              maxLength={1000}
             />
             <Pressable
               style={({ pressed }) => [styles.cameraButton, pressed && styles.pressedDim]}
@@ -802,7 +890,9 @@ function Feed({
                   open={expandedPostId === item.id}
                   onToggle={() => setExpandedPostId(expandedPostId === item.id ? null : item.id)}
                   onToggleLike={() => handleToggleLike(item)}
-                  onDelete={() => handleDeletePost(item)}
+                  onMenu={() => handlePostMenu(item)}
+                  myId={profile?.id}
+                  onBlockUser={confirmBlock}
                   url={url}
                   anonKey={anonKey}
                 />
@@ -847,6 +937,7 @@ function Feed({
                 placeholderTextColor={colors.textMuted}
                 value={friendInput}
                 onChangeText={setFriendInput}
+                maxLength={20}
                 autoCapitalize="none"
                 autoCorrect={false}
                 onSubmitEditing={handleAddFriend}
@@ -900,6 +991,29 @@ function Feed({
               <PlusIcon size={16} color={colors.white} />
               <Text style={styles.inviteWideText}>{t.community.inviteFriendButton}</Text>
             </Pressable>
+
+            {blocked.length > 0 && (
+              <>
+                <Text style={styles.blockedTitle}>{t.community.blockedSection}</Text>
+                <View style={styles.rankCard}>
+                  {blocked.map((b, i) => (
+                    <View key={b.id} style={[styles.rankRow, i > 0 && styles.rankRowBorder]}>
+                      <Avatar name={b.username} size={38} />
+                      <Text style={[styles.rankName, styles.rankText]} numberOfLines={1}>
+                        {b.username}
+                      </Text>
+                      <Pressable
+                        style={({ pressed }) => [styles.unblockButton, pressed && styles.pressedDim]}
+                        onPress={() => handleUnblock(b.id)}
+                        hitSlop={6}
+                      >
+                        <Text style={styles.unblockText}>{t.community.unblock}</Text>
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
           </ScrollView>
         </View>
       </Modal>
@@ -991,7 +1105,9 @@ function ActivityRow({
   open,
   onToggle,
   onToggleLike,
-  onDelete,
+  onMenu,
+  myId,
+  onBlockUser,
   url,
   anonKey,
 }: {
@@ -1001,7 +1117,9 @@ function ActivityRow({
   open: boolean;
   onToggle: () => void;
   onToggleLike: () => void;
-  onDelete: () => void;
+  onMenu: () => void;
+  myId?: string;
+  onBlockUser: (userId: string, username: string) => void;
   url: string;
   anonKey: string;
 }) {
@@ -1031,6 +1149,31 @@ function ActivityRow({
     } finally {
       setSendingComment(false);
     }
+  }
+
+  // Long-pressing someone else's comment lets you report it or block them.
+  function handleCommentMenu(comment: CommunityComment) {
+    if (comment.authorId === myId) return;
+    showOptions(t, [
+      {
+        text: t.community.reportComment,
+        destructive: true,
+        onPress: async () => {
+          try {
+            await reportComment(url, anonKey, comment.id);
+            setComments((prev) => prev.filter((c) => c.id !== comment.id));
+            Alert.alert(t.community.reportDoneTitle, t.community.reportDoneMsg);
+          } catch (err) {
+            Alert.alert('', err instanceof Error ? err.message : String(err));
+          }
+        },
+      },
+      {
+        text: `${t.community.blockUserPrefix} @${comment.authorUsername}`,
+        destructive: true,
+        onPress: () => onBlockUser(comment.authorId, comment.authorUsername),
+      },
+    ]);
   }
 
   const action = post.photoUrl || post.nutrition ? t.community.sharedAMeal : t.community.posted;
@@ -1086,10 +1229,10 @@ function ActivityRow({
             <View style={styles.flexSpacer} />
             <Pressable
               style={({ pressed }) => [styles.postMenuButton, pressed && styles.pressedDim]}
-              onPress={onDelete}
+              onPress={onMenu}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel={t.community.delete}
+              accessibilityLabel={isMine ? t.community.delete : t.community.reportPost}
             >
               <Text style={styles.postMenuDots}>•••</Text>
             </Pressable>
@@ -1099,7 +1242,11 @@ function ActivityRow({
               <ActivityIndicator color={colors.accent} size="small" />
             ) : (
               comments.map((c) => (
-                <Text key={c.id} style={styles.commentBody}>
+                <Text
+                  key={c.id}
+                  style={styles.commentBody}
+                  onLongPress={c.authorId === myId ? undefined : () => handleCommentMenu(c)}
+                >
                   <Text style={styles.commentAuthor}>{c.authorUsername} </Text>
                   {c.body}
                 </Text>
@@ -1112,6 +1259,7 @@ function ActivityRow({
                 placeholderTextColor={colors.textMuted}
                 value={commentInput}
                 onChangeText={setCommentInput}
+                maxLength={500}
               />
               <Pressable
                 style={({ pressed }) => [styles.pillButton, pressed && styles.pressedDim]}
@@ -1376,6 +1524,15 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   inviteWideText: { color: colors.white, fontSize: 15, fontWeight: '800' },
+  blockedTitle: { color: colors.textMuted, fontSize: 13, fontWeight: '700', marginTop: spacing.sm },
+  unblockButton: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  unblockText: { color: colors.text, fontSize: 13, fontWeight: '700' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chipRowOverlay: { position: 'absolute', left: 10, bottom: 10, right: 10 },
   chip: { borderRadius: radius.full, paddingHorizontal: 9, paddingVertical: 4 },

@@ -194,6 +194,8 @@ export async function addFriendByUsername(
     .insert({ user_id: myId, friend_id: friendProfile.id });
   if (error) {
     if (error.code === '23505') throw new CommunityError("You're already friends with them.");
+    // Row-level security refuses the insert when one of you has blocked the other.
+    if (error.code === '42501') throw new CommunityError("You can't add this person.");
     throw new CommunityError(error.message);
   }
 }
@@ -449,4 +451,48 @@ export async function addComment(
     .from('comments')
     .insert({ post_id: postId, author_id: myId, body: body.trim() });
   if (error) throw new CommunityError(error.message);
+}
+
+// Reports go to the reports table for the app owner to review; the server
+// saves a copy of what was reported. Reporting the same thing twice is a no-op.
+export async function reportPost(url: string, anonKey: string, postId: string): Promise<void> {
+  const { error } = await client(url, anonKey).rpc('report_content', { p_post: postId });
+  if (error) throw new CommunityError(error.message);
+}
+
+export async function reportComment(url: string, anonKey: string, commentId: string): Promise<void> {
+  const { error } = await client(url, anonKey).rpc('report_content', { p_comment: commentId });
+  if (error) throw new CommunityError(error.message);
+}
+
+// Removes the friendship both ways and hides each other's posts and comments
+// until you unblock them.
+export async function blockUser(url: string, anonKey: string, userId: string): Promise<void> {
+  const { error } = await client(url, anonKey).rpc('block_user', { p_user: userId });
+  if (error) throw new CommunityError(error.message);
+}
+
+export async function unblockUser(url: string, anonKey: string, userId: string): Promise<void> {
+  const myId = await requireUserId(url, anonKey);
+  const { error } = await client(url, anonKey)
+    .from('blocks')
+    .delete()
+    .eq('blocker_id', myId)
+    .eq('blocked_id', userId);
+  if (error) throw new CommunityError(error.message);
+}
+
+export async function listBlockedUsers(
+  url: string,
+  anonKey: string
+): Promise<{ id: string; username: string }[]> {
+  const supabase = client(url, anonKey);
+  const myId = await requireUserId(url, anonKey);
+  const { data: rows, error } = await supabase.from('blocks').select('blocked_id').eq('blocker_id', myId);
+  // Before the report-and-block update has been run there's no blocks table.
+  if (error) return [];
+  const ids = (rows ?? []).map((r) => r.blocked_id as string);
+  if (ids.length === 0) return [];
+  const { data: profiles } = await supabase.from('profiles').select('id, username').in('id', ids);
+  return (profiles ?? []).map((p) => ({ id: p.id as string, username: p.username as string }));
 }

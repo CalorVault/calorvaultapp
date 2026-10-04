@@ -208,3 +208,260 @@ $$;
 
 revoke all on function bump_ai_usage(text, int, int) from public, anon, authenticated;
 grant execute on function bump_ai_usage(text, int, int) to service_role;
+
+-- ---------- Security update 1 (run after the sections above) ----------
+
+-- 1. Post photos: images only, at most 10 MB, and only into your own folder.
+update storage.buckets
+set file_size_limit = 10485760,
+    allowed_mime_types = array['image/jpeg', 'image/png', 'image/heic']
+where id = 'post-photos';
+
+drop policy if exists "post photos authenticated upload" on storage.objects;
+drop policy if exists "post photos upload own folder" on storage.objects;
+create policy "post photos upload own folder" on storage.objects for insert to authenticated
+  with check (bucket_id = 'post-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 2. Sensible limits on what can be saved.
+alter table posts drop constraint if exists posts_caption_length;
+alter table posts add constraint posts_caption_length
+  check (char_length(caption) <= 1000) not valid;
+
+alter table posts drop constraint if exists posts_photo_url_ours;
+alter table posts add constraint posts_photo_url_ours
+  check (photo_url is null or photo_url like '%/storage/v1/object/public/post-photos/%') not valid;
+
+alter table posts drop constraint if exists posts_nutrition_range;
+alter table posts add constraint posts_nutrition_range
+  check (
+    coalesce(calories, 0) between 0 and 20000
+    and coalesce(protein_g, 0) between 0 and 2000
+    and coalesce(carbs_g, 0) between 0 and 2000
+    and coalesce(fat_g, 0) between 0 and 2000
+  ) not valid;
+
+alter table comments drop constraint if exists comments_body_length;
+alter table comments add constraint comments_body_length
+  check (char_length(btrim(body)) between 1 and 500) not valid;
+
+alter table profiles drop constraint if exists profiles_username_format;
+alter table profiles add constraint profiles_username_format
+  check (username ~ '^[a-z0-9_]{3,20}$') not valid;
+
+alter table profiles drop constraint if exists profiles_week_stats_range;
+alter table profiles add constraint profiles_week_stats_range
+  check (
+    (week_score is null or week_score between 0 and 100)
+    and (streak is null or streak between 0 and 3660)
+  ) not valid;
+
+-- 3. Only signed-in users can look up usernames (stops anyone scraping the user list).
+drop policy if exists "profiles select all" on profiles;
+drop policy if exists "profiles select signed in" on profiles;
+create policy "profiles select signed in" on profiles for select to authenticated using (true);
+
+-- 4. You can only like or comment on posts you're allowed to see.
+drop policy if exists "likes insert own" on likes;
+create policy "likes insert own" on likes for insert
+  with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from posts p
+      where p.id = likes.post_id
+        and (p.author_id = auth.uid() or auth.uid() in (select user_id from friendships where friend_id = p.author_id))
+    )
+  );
+
+drop policy if exists "comments insert own" on comments;
+create policy "comments insert own" on comments for insert
+  with check (
+    author_id = auth.uid()
+    and exists (
+      select 1 from posts p
+      where p.id = comments.post_id
+        and (p.author_id = auth.uid() or auth.uid() in (select user_id from friendships where friend_id = p.author_id))
+    )
+  );
+
+
+-- Photos are viewed through their public links, so nobody needs to list the
+-- whole bucket; you can only list (and so delete) files in your own folder.
+drop policy if exists "post photos public read" on storage.objects;
+drop policy if exists "post photos read own folder" on storage.objects;
+create policy "post photos read own folder" on storage.objects for select to authenticated
+  using (bucket_id = 'post-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ---------- Security update 2: report and block ----------
+
+-- ---------- Blocking ----------
+-- Blocking someone removes the friendship both ways, stops either of you
+-- adding the other again, and hides each other's posts and comments.
+
+create table if not exists blocks (
+  blocker_id uuid not null references profiles(id) on delete cascade,
+  blocked_id uuid not null references profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (blocker_id, blocked_id),
+  check (blocker_id <> blocked_id)
+);
+alter table blocks enable row level security;
+
+drop policy if exists "blocks select own" on blocks;
+create policy "blocks select own" on blocks for select to authenticated using (blocker_id = auth.uid());
+
+drop policy if exists "blocks delete own" on blocks;
+create policy "blocks delete own" on blocks for delete to authenticated using (blocker_id = auth.uid());
+
+-- True when you've blocked this person or they've blocked you. Runs with
+-- owner rights so it can see blocks made by the other person.
+create or replace function is_blocked_with(other uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from blocks
+    where (blocker_id = auth.uid() and blocked_id = other)
+       or (blocker_id = other and blocked_id = auth.uid())
+  );
+$$;
+revoke all on function is_blocked_with(uuid) from public, anon;
+grant execute on function is_blocked_with(uuid) to authenticated;
+
+create or replace function block_user(p_user uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not signed in';
+  end if;
+  if p_user is null or p_user = auth.uid() then
+    raise exception 'You can''t block yourself';
+  end if;
+  insert into blocks (blocker_id, blocked_id) values (auth.uid(), p_user)
+  on conflict do nothing;
+  delete from friendships
+  where (user_id = auth.uid() and friend_id = p_user)
+     or (user_id = p_user and friend_id = auth.uid());
+end;
+$$;
+revoke all on function block_user(uuid) from public, anon;
+grant execute on function block_user(uuid) to authenticated;
+
+drop policy if exists "friendships insert own" on friendships;
+create policy "friendships insert own" on friendships for insert
+  with check (user_id = auth.uid() and friend_id != auth.uid() and not is_blocked_with(friend_id));
+
+drop policy if exists "posts select visible" on posts;
+create policy "posts select visible" on posts for select
+  using (
+    author_id = auth.uid()
+    or (
+      auth.uid() in (select user_id from friendships where friend_id = posts.author_id)
+      and not is_blocked_with(posts.author_id)
+    )
+  );
+
+drop policy if exists "comments select visible" on comments;
+create policy "comments select visible" on comments for select
+  using (
+    exists (
+      select 1 from posts p
+      where p.id = comments.post_id
+        and (p.author_id = auth.uid() or auth.uid() in (select user_id from friendships where friend_id = p.author_id))
+    )
+    and (comments.author_id = auth.uid() or not is_blocked_with(comments.author_id))
+  );
+
+-- ---------- Reports ----------
+-- Reports land in this table for you to review in the Supabase Table Editor.
+-- App users can't read it (RLS on, no policies); they can only add to it
+-- through report_content(), which saves a copy of what was reported so the
+-- evidence stays even if the post is deleted.
+
+create table if not exists reports (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  reporter_id uuid references auth.users(id) on delete set null,
+  reported_user_id uuid references auth.users(id) on delete set null,
+  reported_username text,
+  post_id uuid references posts(id) on delete set null,
+  comment_id uuid references comments(id) on delete set null,
+  content text,
+  photo_url text,
+  status text not null default 'open'
+);
+alter table reports enable row level security;
+
+create or replace function report_content(p_post uuid default null, p_comment uuid default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  v_author uuid;
+  v_post uuid := p_post;
+  v_post_author uuid;
+  v_content text;
+  v_photo text;
+begin
+  if me is null then
+    raise exception 'Not signed in';
+  end if;
+
+  if p_comment is not null then
+    select c.author_id, c.body, c.post_id into v_author, v_content, v_post
+    from comments c where c.id = p_comment;
+    select p.author_id into v_post_author from posts p where p.id = v_post;
+  elsif p_post is not null then
+    select p.author_id, p.caption, p.photo_url into v_author, v_content, v_photo
+    from posts p where p.id = p_post;
+    v_post_author := v_author;
+  end if;
+
+  if v_author is null then
+    raise exception 'Nothing to report';
+  end if;
+  if v_author = me then
+    return;
+  end if;
+  -- Only things you can actually see: your own posts or posts of people you follow.
+  if v_post_author is distinct from me
+     and not exists (select 1 from friendships where user_id = me and friend_id = v_post_author) then
+    raise exception 'Nothing to report';
+  end if;
+  -- One report per thing per person, and at most 20 reports a day.
+  if exists (
+    select 1 from reports
+    where reporter_id = me
+      and post_id is not distinct from v_post
+      and comment_id is not distinct from p_comment
+  ) then
+    return;
+  end if;
+  if (select count(*) from reports where reporter_id = me and created_at > now() - interval '1 day') >= 20 then
+    raise exception 'Too many reports today, try again tomorrow';
+  end if;
+
+  insert into reports (reporter_id, reported_user_id, reported_username, post_id, comment_id, content, photo_url)
+  values (
+    me,
+    v_author,
+    (select username from profiles where id = v_author),
+    v_post,
+    p_comment,
+    v_content,
+    v_photo
+  );
+end;
+$$;
+revoke all on function report_content(uuid, uuid) from public, anon;
+grant execute on function report_content(uuid, uuid) to authenticated;
+

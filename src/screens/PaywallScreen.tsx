@@ -119,7 +119,15 @@ export function PaywallScreen() {
           onPress={() => setSelected('monthly')}
         >
           <Text style={styles.planLabel}>{t.paywall.monthly}</Text>
-          <Text style={styles.planPrice}>{displayPrice('monthly')}</Text>
+          <Text
+            style={styles.planPrice}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+            maxFontSizeMultiplier={1.2}
+          >
+            {displayPrice('monthly')}
+          </Text>
           <Text style={styles.planUnit}>{t.paywall.perMonth}</Text>
         </Pressable>
         <Pressable
@@ -136,7 +144,15 @@ export function PaywallScreen() {
             </View>
           )}
           <Text style={styles.planLabel}>{t.paywall.yearly}</Text>
-          <Text style={styles.planPrice}>{displayPrice('yearly')}</Text>
+          <Text
+            style={styles.planPrice}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+            maxFontSizeMultiplier={1.2}
+          >
+            {displayPrice('yearly')}
+          </Text>
           <Text style={styles.planUnit}>{t.paywall.perYear}</Text>
         </Pressable>
       </View>
@@ -227,7 +243,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 2,
     borderColor: colors.border,
-    padding: spacing.lg,
+    // Narrow side padding leaves room for the full price on smaller iPhones.
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     gap: 2,
   },
@@ -249,7 +267,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   planLabel: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
-  planPrice: { color: colors.text, fontSize: 24, fontWeight: '800', marginTop: spacing.xs },
+  planPrice: { color: colors.text, fontSize: 22, fontWeight: '800', marginTop: spacing.xs },
   planUnit: { color: colors.textMuted, fontSize: 12 },
   subscribeButton: {
     backgroundColor: colors.ink,

@@ -46,6 +46,7 @@ import {
   suggestMeals,
 } from '../lib/aiFood';
 import { LogFoodTab, RootStackParamList } from '../navigation/types';
+import { speechLocale } from '../lib/deviceLanguage';
 import { keepMealPhoto, mealImage } from '../lib/mealPhotos';
 import { getRecentUniqueFoodEntries, todayIso } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
@@ -697,7 +698,7 @@ const VOICE_EXAMPLES = [
 
 function VoiceTab() {
   const route = useRoute<RouteProp<RootStackParamList, 'LogFood'>>();
-  const { t } = useApp();
+  const { t, language } = useApp();
   const [recognizing, setRecognizing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -744,7 +745,7 @@ function VoiceTab() {
     }
     setTranscript('');
     setEstimate(null);
-    ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, continuous: false });
+    ExpoSpeechRecognitionModule.start({ lang: speechLocale(language), interimResults: true, continuous: false });
   }
 
   useEffect(() => {

@@ -1,4 +1,5 @@
-import { getInstallId } from '../storage/db';
+import { LANGUAGES } from '../i18n/languages';
+import { getInstallId, getLanguage } from '../storage/db';
 import { NutrientEstimate } from '../types';
 import { AI_PROXY_KEY, BUILT_IN_SUPABASE_ANON_KEY, BUILT_IN_SUPABASE_URL } from './config';
 
@@ -145,11 +146,24 @@ function proxyRequest(systemPrompt: string, content: Array<Record<string, unknow
   });
 }
 
+// Food and meal names come back in the app's language; the JSON shape and
+// numbers stay the same.
+async function withAppLanguage(systemPrompt: string): Promise<string> {
+  const language = await getLanguage();
+  if (language === 'en') return systemPrompt;
+  const name = LANGUAGES.find((l) => l.code === language)?.englishName;
+  return (
+    `${systemPrompt}\n\nWrite every text value (food and meal names, serving sizes) in ${name}. ` +
+    'Keep the JSON keys and numbers exactly as specified.'
+  );
+}
+
 async function callClaude(
   apiKey: string,
-  systemPrompt: string,
+  basePrompt: string,
   content: Array<Record<string, unknown>>
 ): Promise<string> {
+  const systemPrompt = await withAppLanguage(basePrompt);
   const response =
     apiKey === AI_PROXY_KEY
       ? await proxyRequest(systemPrompt, content, await getInstallId())

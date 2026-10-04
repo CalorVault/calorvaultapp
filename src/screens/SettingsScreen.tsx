@@ -15,11 +15,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AI_PROXY_KEY, hasBuiltInBackend } from '../lib/config';
+import { ChevronIcon } from '../components/CommunityIcons';
+import { BadgeIcon, IconBadge } from '../components/IconBadge';
+import { IdeaIcon, SparkleIcon } from '../components/NavIcons';
+import { useLanguageMode } from '../hooks/useLanguageMode';
 import { useApp } from '../context/AppContext';
 import { RECIPES } from '../data/recipes';
 import { allPhotoCredits } from '../data/recipePhotos';
 import { LANGUAGES } from '../i18n';
 import { exportBackup } from '../lib/dataExport';
+import { openFeedbackBoard } from '../lib/feedback';
 import { formatPrice } from '../lib/pricing';
 import { openManageSubscriptions } from '../lib/purchases';
 import { applyReminderSettings } from '../lib/reminders';
@@ -37,7 +42,6 @@ export function SettingsScreen() {
     apiKey,
     recipeApiKey,
     language,
-    setLanguage,
     t,
     subscription,
     isPremium,
@@ -53,6 +57,7 @@ export function SettingsScreen() {
     setSupabaseAnonKey,
   } = useApp();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const languageMode = useLanguageMode();
   const [keyInput, setKeyInput] = useState(apiKey && apiKey !== AI_PROXY_KEY ? apiKey : '');
   const [recipeKeyInput, setRecipeKeyInput] = useState(recipeApiKey ?? '');
   const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrl ?? '');
@@ -339,8 +344,20 @@ export function SettingsScreen() {
         <View style={styles.card}>
           <Text style={styles.hint}>{t.settings.languageHint}</Text>
           <View style={styles.languageGrid}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.languageChip,
+                languageMode.automatic && styles.languageChipActive,
+                pressed && styles.pressedDim,
+              ]}
+              onPress={languageMode.chooseAutomatic}
+            >
+              <Text style={[styles.languageChipText, languageMode.automatic && styles.languageChipTextActive]}>
+                {t.settings.languageAutomatic}
+              </Text>
+            </Pressable>
             {LANGUAGES.map((l) => {
-              const active = l.code === language;
+              const active = !languageMode.automatic && l.code === language;
               return (
                 <Pressable
                   key={l.code}
@@ -349,7 +366,7 @@ export function SettingsScreen() {
                     active && styles.languageChipActive,
                     pressed && styles.pressedDim,
                   ]}
-                  onPress={() => setLanguage(l.code)}
+                  onPress={() => languageMode.chooseLanguage(l.code)}
                 >
                   <Text style={[styles.languageChipText, active && styles.languageChipTextActive]}>
                     {l.nativeName}
@@ -472,6 +489,23 @@ export function SettingsScreen() {
           )}
         </View>
 
+        <Text style={styles.sectionLabel}>{t.settings.feedbackSection}</Text>
+        <View style={[styles.card, styles.feedbackCard]}>
+          <FeedbackRow
+            Icon={IdeaIcon}
+            title={t.settings.suggestFeature}
+            subtitle={t.settings.suggestFeatureHint}
+            onPress={() => openFeedbackBoard()}
+          />
+          <View style={styles.feedbackDivider} />
+          <FeedbackRow
+            Icon={SparkleIcon}
+            title={t.settings.whatsNew}
+            subtitle={t.settings.whatsNewHint}
+            onPress={() => openFeedbackBoard('/changelog')}
+          />
+        </View>
+
         <Text style={styles.sectionLabel}>{t.settings.exportSection}</Text>
         <View style={styles.card}>
           <Text style={styles.hint}>{t.settings.exportHint}</Text>
@@ -498,6 +532,33 @@ export function SettingsScreen() {
         <PhotoCredits title={t.settings.photoCredits} />
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function FeedbackRow({
+  Icon,
+  title,
+  subtitle,
+  onPress,
+}: {
+  Icon: BadgeIcon;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.feedbackRow, pressed && styles.pressedDim]}
+      onPress={onPress}
+      accessibilityRole="button"
+    >
+      <IconBadge Icon={Icon} size={36} />
+      <View style={styles.feedbackText}>
+        <Text style={styles.feedbackTitle}>{title}</Text>
+        <Text style={styles.feedbackSubtitle}>{subtitle}</Text>
+      </View>
+      <ChevronIcon color={colors.textMuted} />
+    </Pressable>
   );
 }
 
@@ -594,6 +655,12 @@ const styles = StyleSheet.create({
   rowValue: { color: colors.text, fontWeight: '600', fontSize: 14 },
   rowValueLink: { color: colors.primary, fontWeight: '600', fontSize: 14 },
   hint: { color: colors.textMuted, fontSize: 12 },
+  feedbackCard: { paddingVertical: spacing.xs, gap: 0 },
+  feedbackRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  feedbackText: { flex: 1, gap: 2 },
+  feedbackTitle: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  feedbackSubtitle: { color: colors.textMuted, fontSize: 12 },
+  feedbackDivider: { height: 1, backgroundColor: colors.border, marginLeft: 36 + spacing.sm },
   keyInput: {
     backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
