@@ -400,6 +400,9 @@ const ro: Translations = {
     suggestFeatureHint: "Votează idei și spune-ne ce să construim",
     whatsNew: "Noutăți",
     whatsNewHint: "Vezi cele mai noi actualizări CalorVault",
+    privacySection: "Confidențialitate",
+    usageStats: "Trimite statistici de utilizare anonime",
+    usageStatsHint: "Ajută la îmbunătățirea CalorVault numărând ce ecrane sunt folosite. Nu se trimit niciodată date despre mâncare, greutate sau sănătate.",
     exportSection: 'Datele tale',
     exportHint:
       'Exportă o copie de siguranță a datelor tale (profil, jurnale, greutate, rețete salvate) ca fișier pe care îl poți păstra sau distribui. Cheile tale API nu sunt niciodată incluse.',

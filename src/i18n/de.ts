@@ -400,6 +400,9 @@ const de: Translations = {
     suggestFeatureHint: "Stimme über Ideen ab und sag uns, was wir als Nächstes bauen",
     whatsNew: "Neuigkeiten",
     whatsNewHint: "Sieh dir die neuesten Updates von CalorVault an",
+    privacySection: "Datenschutz",
+    usageStats: "Anonyme Nutzungsstatistiken teilen",
+    usageStatsHint: "Hilft, CalorVault zu verbessern, indem gezählt wird, welche Bildschirme genutzt werden. Es werden nie Ernährungs-, Gewichts- oder Gesundheitsdaten gesendet.",
     exportSection: 'Deine Daten',
     exportHint:
       'Exportiere ein Backup deiner Daten (Profil, Protokolle, Gewicht, gespeicherte Rezepte) als Datei, die du behalten oder teilen kannst. Deine API-Schlüssel werden nie einbezogen.',

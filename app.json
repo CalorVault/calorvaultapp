@@ -69,7 +69,9 @@
       ],
       "expo-apple-authentication",
       "expo-localization",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@sentry/react-native",
+      "expo-image"
     ],
     "extra": {
       "eas": {

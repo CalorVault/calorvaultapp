@@ -20,6 +20,7 @@ import { BadgeIcon, IconBadge } from '../components/IconBadge';
 import { IdeaIcon, SparkleIcon } from '../components/NavIcons';
 import { useLanguageMode } from '../hooks/useLanguageMode';
 import { useApp } from '../context/AppContext';
+import { isUsageStatsOn, setUsageStats } from '../lib/analytics';
 import { RECIPES } from '../data/recipes';
 import { allPhotoCredits } from '../data/recipePhotos';
 import { LANGUAGES } from '../i18n';
@@ -66,6 +67,7 @@ export function SettingsScreen() {
   const [exporting, setExporting] = useState(false);
   const [restoringPurchases, setRestoringPurchases] = useState(false);
   const [reminder, setReminder] = useState<ReminderSettings>({ enabled: false, time: '18:00' });
+  const [usageStats, setUsageStatsState] = useState(isUsageStatsOn());
   const [savingReminder, setSavingReminder] = useState(false);
 
   useEffect(() => {
@@ -504,6 +506,24 @@ export function SettingsScreen() {
             subtitle={t.settings.whatsNewHint}
             onPress={() => openFeedbackBoard('/changelog')}
           />
+        </View>
+
+        <Text style={styles.sectionLabel}>{t.settings.privacySection}</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.reminderTextWrap}>
+              <Text style={styles.rowLabel}>{t.settings.usageStats}</Text>
+              <Text style={styles.hint}>{t.settings.usageStatsHint}</Text>
+            </View>
+            <Switch
+              value={usageStats}
+              onValueChange={(on) => {
+                setUsageStatsState(on);
+                setUsageStats(on).catch(() => {});
+              }}
+              trackColor={{ true: colors.primary, false: colors.border }}
+            />
+          </View>
         </View>
 
         <Text style={styles.sectionLabel}>{t.settings.exportSection}</Text>

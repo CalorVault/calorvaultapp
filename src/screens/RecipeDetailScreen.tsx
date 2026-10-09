@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
 import { MealIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { track } from '../lib/analytics';
 import { recipeImage } from '../data/recipePhotos';
 import { servingsText } from '../lib/mealPlan';
 import { getRecipeMethod, RecipeMethod } from '../lib/recipeApi';
@@ -125,6 +126,7 @@ export function RecipeDetailScreen() {
       recipeId: recipe.id,
       imageUrl: recipe.imageUrl,
     });
+    track('food_logged', { method: 'recipe' });
     setSaving(false);
     navigation.goBack();
   }

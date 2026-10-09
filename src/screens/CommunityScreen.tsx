@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { Image } from 'expo-image';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -6,7 +7,6 @@ import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -32,6 +32,7 @@ import { AuthForm } from '../components/AuthForm';
 import { GradientCard, SHADED_GRADIENT } from '../components/GradientCard';
 import { CommunityIcon, SettingsIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { track } from '../lib/analytics';
 import { useWeekDays } from '../hooks/useWeekDays';
 import {
   addComment,
@@ -43,6 +44,7 @@ import {
   deleteMyAccount,
   deletePost,
   getMyProfile,
+  getSignedInUserId,
   hasSession,
   listComments,
   listFeed,
@@ -57,7 +59,15 @@ import {
 } from '../lib/community';
 import { CommunityScreenNavigationProp, MainTabParamList } from '../navigation/types';
 import { currentWeekDates, HIT_SCORE, WeekDayScore, weekSummary } from '../lib/weekScore';
-import { getDayLogs, getHiddenPostIds, saveHiddenPostIds, todayIso } from '../storage/db';
+import {
+  clearCache,
+  getCached,
+  getDayLogs,
+  getHiddenPostIds,
+  saveHiddenPostIds,
+  setCached,
+  todayIso,
+} from '../storage/db';
 import { colors, radius, spacing } from '../theme';
 import { CommunityComment, CommunityPost, CommunityProfile, DayLog, FoodEntry, PostNutrition } from '../types';
 
@@ -106,6 +116,16 @@ function showOptions(t: any, options: SheetOption[], message?: string) {
     })),
   ]);
 }
+
+// The last loaded feed, shown instantly next time while it refreshes.
+const FEED_CACHE = 'feed';
+const FEED_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
+type FeedSnapshot = {
+  profile: CommunityProfile;
+  friends: CommunityProfile[];
+  posts: CommunityPost[];
+  blocked: { id: string; username: string }[];
+};
 
 const MAX_PHOTO_SIDE = 1280;
 
@@ -343,7 +363,8 @@ function Feed({
   }, [today.entries.length]);
 
   // A failed load (e.g. no signal) keeps what was on screen and shows a retry
-  // card, rather than looking like you have no username.
+  // card, rather than looking like you have no username. Each good load is
+  // saved, so next time the feed shows instantly while it refreshes.
   const load = useCallback(async () => {
     try {
       const [myProfile, myFriends, feed, hiddenIds, blockedUsers] = await Promise.all([
@@ -354,20 +375,41 @@ function Feed({
         listBlockedUsers(url, anonKey),
       ]);
       const hidden = new Set(hiddenIds);
+      const visiblePosts = feed.filter((p) => !hidden.has(p.id));
       setProfile(myProfile);
       setFriends(myFriends);
       setBlocked(blockedUsers);
-      setPosts(feed.filter((p) => !hidden.has(p.id)));
+      setPosts(visiblePosts);
       setLoadFailed(false);
+      if (myProfile) {
+        const snapshot: FeedSnapshot = { profile: myProfile, friends: myFriends, posts: visiblePosts, blocked: blockedUsers };
+        setCached(FEED_CACHE, myProfile.id, snapshot, 1).catch(() => {});
+      }
     } catch {
       setLoadFailed(true);
     }
   }, [url, anonKey]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    load().finally(() => setLoading(false));
-  }, [load]);
+    (async () => {
+      const userId = await getSignedInUserId(url, anonKey).catch(() => null);
+      const snapshot = userId ? await getCached<FeedSnapshot>(FEED_CACHE, userId, FEED_CACHE_MS) : null;
+      if (snapshot && !cancelled) {
+        setProfile(snapshot.profile);
+        setFriends(snapshot.friends);
+        setPosts(snapshot.posts);
+        setBlocked(snapshot.blocked);
+        setLoading(false);
+      }
+      await load();
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [load, url, anonKey]);
 
   const consumingFriendRef = useRef<string | null>(null);
 
@@ -412,6 +454,7 @@ function Feed({
         style: 'destructive',
         onPress: async () => {
           await signOut(url, anonKey);
+          await clearCache(FEED_CACHE);
           onSignedOut();
         },
       },
@@ -427,6 +470,7 @@ function Feed({
         onPress: async () => {
           try {
             await deleteMyAccount(url, anonKey);
+            await clearCache(FEED_CACHE);
             Alert.alert(t.community.deleteAccountDone);
             onSignedOut();
           } catch (err) {
@@ -445,6 +489,7 @@ function Feed({
     setAddingFriend(true);
     try {
       await addFriendByUsername(url, anonKey, friendInput.trim());
+      track('friend_added');
       setFriendInput('');
       await load();
     } catch (err) {
@@ -500,6 +545,7 @@ function Feed({
     try {
       const attached = today.entries.find((e) => e.id === attachedEntryId);
       await createPost(url, anonKey, caption, photoBase64, attached && entryNutrition(attached));
+      track('post_created', { photo: !!photoBase64, meal: !!attached });
       setCaption('');
       setAttachedEntryId(null);
       setPhotoBase64(undefined);
@@ -547,6 +593,7 @@ function Feed({
         onPress: async () => {
           try {
             await blockUser(url, anonKey, userId);
+            track('user_blocked');
             await load();
           } catch (err) {
             Alert.alert('', err instanceof Error ? err.message : String(err));
@@ -592,6 +639,7 @@ function Feed({
         onPress: () =>
           run(async () => {
             await reportPost(url, anonKey, post.id);
+            track('content_reported', { type: 'post' });
             await hidePostOnThisPhone(post.id);
             Alert.alert(t.community.reportDoneTitle, t.community.reportDoneMsg);
           }),

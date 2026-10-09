@@ -34,6 +34,10 @@ async function requireUserId(url: string, anonKey: string): Promise<string> {
   return id;
 }
 
+export async function getSignedInUserId(url: string, anonKey: string): Promise<string | null> {
+  return currentUserId(url, anonKey);
+}
+
 export async function hasSession(url: string, anonKey: string): Promise<boolean> {
   const { data } = await client(url, anonKey).auth.getSession();
   return !!data.session;

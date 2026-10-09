@@ -1,10 +1,16 @@
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DefaultTheme, LinkingOptions, NavigationContainer } from '@react-navigation/native';
+import {
+  DefaultTheme,
+  LinkingOptions,
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { QuickLogSheet } from '../components/QuickLogSheet';
+import { trackScreen } from '../lib/analytics';
 import {
   BowlIcon,
   ChartIcon,
@@ -193,6 +199,17 @@ export function RootNavigator() {
   const [showIntro, setShowIntro] = useState(true);
   const [accountPromptSeen, setAccountPromptSeen] = useState<boolean | null>(null);
 
+  // Counts which screens are opened (screen names only) for usage analytics.
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
+  const lastScreen = useRef<string | undefined>(undefined);
+  const trackCurrentScreen = useCallback(() => {
+    const name = navigationRef.getCurrentRoute()?.name;
+    if (name && name !== lastScreen.current) {
+      lastScreen.current = name;
+      trackScreen(name);
+    }
+  }, [navigationRef]);
+
   useEffect(() => {
     hasSeenAccountPrompt()
       .then(setAccountPromptSeen)
@@ -219,7 +236,13 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navTheme} linking={linking}>
+    <NavigationContainer
+      ref={navigationRef}
+      theme={navTheme}
+      linking={linking}
+      onReady={trackCurrentScreen}
+      onStateChange={trackCurrentScreen}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen

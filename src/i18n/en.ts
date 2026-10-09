@@ -403,6 +403,9 @@ const en = {
     suggestFeatureHint: "Vote on ideas and tell us what to build next",
     whatsNew: "What's new",
     whatsNewHint: "See the latest updates to CalorVault",
+    privacySection: "Privacy",
+    usageStats: "Share anonymous usage stats",
+    usageStatsHint: "Helps improve CalorVault by counting which screens are used. No food, weight or other health data is ever sent.",
     exportSection: 'Your data',
     exportHint:
       'Export a backup of your data (profile, logs, weight, saved recipes) as a file you can keep or share. Your API keys are never included.',

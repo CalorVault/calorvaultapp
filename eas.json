@@ -8,6 +8,9 @@
       "autoIncrement": true,
       "ios": {
         "distribution": "store"
+      },
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },

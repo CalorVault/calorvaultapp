@@ -1,3 +1,4 @@
+import { getCached, setCached } from '../storage/db';
 import { NutrientEstimate } from '../types';
 
 // Open Food Facts is a free, open product database -- no API key needed.
@@ -16,7 +17,19 @@ interface OffNutriments {
   fat_100g?: number;
 }
 
+// Products rarely change, so a scanned barcode is remembered for 30 days and
+// scanning it again works instantly, even offline.
+const BARCODE_CACHE_MS = 30 * 24 * 60 * 60 * 1000;
+
 export async function lookupBarcode(barcode: string): Promise<NutrientEstimate> {
+  const cached = await getCached<NutrientEstimate>('barcode', barcode, BARCODE_CACHE_MS);
+  if (cached) return cached;
+  const estimate = await fetchBarcode(barcode);
+  await setCached('barcode', barcode, estimate);
+  return estimate;
+}
+
+async function fetchBarcode(barcode: string): Promise<NutrientEstimate> {
   let res: Response;
   try {
     res = await fetch(`${BASE}/${encodeURIComponent(barcode)}.json`);

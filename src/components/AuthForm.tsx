@@ -20,6 +20,7 @@ import {
   signInWithApple,
   signUp,
 } from '../lib/community';
+import { track } from '../lib/analytics';
 import { colors, radius, spacing } from '../theme';
 
 // Sign in / sign up for a CalorVault account: Sign in with Apple, email and
@@ -68,8 +69,10 @@ export function AuthForm({
     try {
       if (mode === 'signUp') {
         await signUp(url, anonKey, email, password, username);
+        track('signed_up', { method: 'email' });
       } else {
         await signIn(url, anonKey, email, password);
+        track('signed_in', { method: 'email' });
       }
       onSignedIn();
     } catch (err) {
@@ -87,6 +90,7 @@ export function AuthForm({
       if (!credential.identityToken) throw new CommunityError(t.community.appleFailed);
       setBusy(true);
       await signInWithApple(url, anonKey, credential.identityToken);
+      track('signed_in', { method: 'apple' });
       onSignedIn();
     } catch (err) {
       if ((err as { code?: string }).code === 'ERR_REQUEST_CANCELED') return;

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
+import { track } from '../lib/analytics';
 import { Translations } from '../i18n';
 import { goalLabels } from '../lib/goalLabels';
 import { recipeImage } from '../data/recipePhotos';
@@ -96,6 +97,7 @@ export function MealPlanScreen() {
       recipeId: meal.recipe.id,
       imageUrl: meal.recipe.imageUrl,
     });
+    track('food_logged', { method: 'recipe' });
     await persist({ ...mealPlan, loggedSlots: [...(mealPlan.loggedSlots ?? []), meal.slot] });
   }
 

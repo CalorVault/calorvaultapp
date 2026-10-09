@@ -1,10 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
+import { Sentry } from './src/lib/sentry';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider } from './src/context/AppContext';
 import { RootNavigator } from './src/navigation';
 
-export default function App() {
+function App() {
   return (
     <SafeAreaProvider>
       <AppProvider>
@@ -14,3 +15,5 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(App);

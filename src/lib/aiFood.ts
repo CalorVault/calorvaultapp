@@ -1,5 +1,5 @@
 import { LANGUAGES } from '../i18n/languages';
-import { getInstallId, getLanguage } from '../storage/db';
+import { getCached, getInstallId, getLanguage, setCached } from '../storage/db';
 import { NutrientEstimate } from '../types';
 import { AI_PROXY_KEY, BUILT_IN_SUPABASE_ANON_KEY, BUILT_IN_SUPABASE_URL } from './config';
 
@@ -134,7 +134,12 @@ function extractJsonArray(text: string): MealSuggestion[] {
 
 // Without a personal key, the request goes to the app's `ai-proxy` Edge
 // Function, which adds the real key server-side and enforces daily limits.
-function proxyRequest(systemPrompt: string, content: Array<Record<string, unknown>>, installId: string) {
+function proxyRequest(
+  systemPrompt: string,
+  content: Array<Record<string, unknown>>,
+  installId: string,
+  cache: boolean
+) {
   return fetch(`${BUILT_IN_SUPABASE_URL}/functions/v1/ai-proxy`, {
     method: 'POST',
     headers: {
@@ -142,7 +147,7 @@ function proxyRequest(systemPrompt: string, content: Array<Record<string, unknow
       apikey: BUILT_IN_SUPABASE_ANON_KEY,
       authorization: `Bearer ${BUILT_IN_SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ system: systemPrompt, content, installId }),
+    body: JSON.stringify({ system: systemPrompt, content, installId, cache }),
   });
 }
 
@@ -158,15 +163,18 @@ async function withAppLanguage(systemPrompt: string): Promise<string> {
   );
 }
 
+// `cache` lets the server answer a repeat of the exact same request (e.g.
+// "a banana" in English) from a saved answer instead of asking Claude again.
 async function callClaude(
   apiKey: string,
   basePrompt: string,
-  content: Array<Record<string, unknown>>
+  content: Array<Record<string, unknown>>,
+  cache = false
 ): Promise<string> {
   const systemPrompt = await withAppLanguage(basePrompt);
   const response =
     apiKey === AI_PROXY_KEY
-      ? await proxyRequest(systemPrompt, content, await getInstallId())
+      ? await proxyRequest(systemPrompt, content, await getInstallId(), cache)
       : await directRequest(apiKey, systemPrompt, content);
 
   if (!response.ok) {
@@ -257,20 +265,36 @@ export async function estimateNutritionFromPhoto(
   return extractJson(text);
 }
 
+const TEXT_ESTIMATE_CACHE_MS = 30 * 24 * 60 * 60 * 1000;
+
+// The same description in the same language gives the same answer, so it's
+// remembered on the phone for 30 days (instant, and no AI use counted).
 export async function estimateNutritionFromText(
   apiKey: string,
   description: string
 ): Promise<NutrientEstimate> {
-  const text = await callClaude(apiKey, ESTIMATE_SYSTEM_PROMPT, [
-    {
-      type: 'text',
-      text:
-        `The user said: "${description}". Identify everything they ate and estimate its nutrition. ` +
-        'If they mention more than one food or drink, add them all together into one combined estimate ' +
-        'and name it after all the items, e.g. "2 eggs + toast". Respond with only the JSON object.',
-    },
-  ]);
-  return extractJson(text);
+  const normalized = description.trim().toLowerCase().replace(/\s+/g, ' ');
+  const cacheKey = `${await getLanguage()}|${normalized}`;
+  const cached = await getCached<NutrientEstimate>('aiText', cacheKey, TEXT_ESTIMATE_CACHE_MS);
+  if (cached) return cached;
+
+  const text = await callClaude(
+    apiKey,
+    ESTIMATE_SYSTEM_PROMPT,
+    [
+      {
+        type: 'text',
+        text:
+          `The user said: "${normalized}". Identify everything they ate and estimate its nutrition. ` +
+          'If they mention more than one food or drink, add them all together into one combined estimate ' +
+          'and name it after all the items, e.g. "2 eggs + toast". Respond with only the JSON object.',
+      },
+    ],
+    true
+  );
+  const estimate = extractJson(text);
+  await setCached('aiText', cacheKey, estimate);
+  return estimate;
 }
 
 export interface SuggestMealsParams {

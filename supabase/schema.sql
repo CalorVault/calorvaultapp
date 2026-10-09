@@ -465,3 +465,13 @@ $$;
 revoke all on function report_content(uuid, uuid) from public, anon;
 grant execute on function report_content(uuid, uuid) to authenticated;
 
+
+-- ---------- AI answer cache ----------
+-- Repeat text questions are answered from here by the ai-proxy function (server
+-- key only: RLS on, no policies).
+create table if not exists ai_cache (
+  key text primary key,
+  response jsonb not null,
+  created_at timestamptz not null default now()
+);
+alter table ai_cache enable row level security;

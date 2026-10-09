@@ -38,6 +38,7 @@ const KEYS = {
   hiddenPosts: 'kailo:hiddenPosts',
   installId: 'kailo:installId',
   accountPromptSeen: 'kailo:accountPromptSeen',
+  cachePrefix: 'kailo:cache:',
 };
 
 export const DEFAULT_WATER_TARGET_ML = 2000;
@@ -344,4 +345,39 @@ export async function clearAllData(): Promise<void> {
   const allKeys = await withFallback(AsyncStorage.getAllKeys(), [] as string[]);
   const kailoKeys = allKeys.filter((k) => k.startsWith('kailo:'));
   await withFallback(AsyncStorage.removeMany(kailoKeys), undefined);
+}
+
+// ---------- Small on-phone caches ----------
+// Each cache is one JSON map of key -> { value, saved time }. Old entries
+// expire after `maxAgeMs`, and only the newest `maxEntries` are kept.
+
+type CacheBucket = Record<string, { v: unknown; t: number }>;
+
+async function readBucket(bucket: string): Promise<CacheBucket> {
+  const raw = await safeGetItem(KEYS.cachePrefix + bucket);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as CacheBucket;
+  } catch {
+    return {};
+  }
+}
+
+export async function getCached<T>(bucket: string, key: string, maxAgeMs: number): Promise<T | null> {
+  const entry = (await readBucket(bucket))[key];
+  if (!entry || Date.now() - entry.t > maxAgeMs) return null;
+  return entry.v as T;
+}
+
+export async function setCached(bucket: string, key: string, value: unknown, maxEntries = 200): Promise<void> {
+  const entries = await readBucket(bucket);
+  entries[key] = { v: value, t: Date.now() };
+  const newest = Object.entries(entries)
+    .sort((a, b) => b[1].t - a[1].t)
+    .slice(0, maxEntries);
+  await safeSetItem(KEYS.cachePrefix + bucket, JSON.stringify(Object.fromEntries(newest)));
+}
+
+export async function clearCache(bucket: string): Promise<void> {
+  await withFallback(AsyncStorage.removeItem(KEYS.cachePrefix + bucket), undefined);
 }

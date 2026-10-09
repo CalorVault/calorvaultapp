@@ -11,6 +11,8 @@ const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 // Requests allowed per phone per day, and for everyone combined per day.
 const PER_PHONE_DAILY_LIMIT = 60;
 const ALL_PHONES_DAILY_LIMIT = 500;
+// Text-only answers the app marks as cacheable are reused for 30 days.
+const CACHE_DAYS = 30;
 
 function serverKey(): string {
   const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -43,6 +45,12 @@ function isValidContent(content: any): boolean {
   );
 }
 
+async function cacheKey(system: string, content: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify([MODEL, system, content]));
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
@@ -51,7 +59,7 @@ Deno.serve(async (req) => {
   const apiKey = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").trim();
   if (!apiKey) return reply({ error: "AI isn't set up: the ANTHROPIC_API_KEY secret is missing" }, 500);
 
-  let body: { system?: unknown; content?: unknown; installId?: unknown };
+  let body: { system?: unknown; content?: unknown; installId?: unknown; cache?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -64,6 +72,21 @@ Deno.serve(async (req) => {
     !isValidContent(content)
   ) {
     return reply({ error: "Invalid request" }, 400);
+  }
+
+  // A repeat of the same text question is answered from the cache: instant,
+  // free, and not counted against the daily limits. Photos are never cached.
+  const cacheable = body.cache === true && (content as Array<{ type: string }>).every((b) => b.type === "text");
+  const key = cacheable ? await cacheKey(system, content) : null;
+  if (key) {
+    const since = new Date(Date.now() - CACHE_DAYS * 86400_000).toISOString();
+    const { data: hit } = await db
+      .from("ai_cache")
+      .select("response")
+      .eq("key", key)
+      .gte("created_at", since)
+      .maybeSingle();
+    if (hit?.response) return reply(hit.response);
   }
 
   const { data: allowed, error: usageError } = await db.rpc("bump_ai_usage", {
@@ -101,6 +124,12 @@ Deno.serve(async (req) => {
   if (!res.ok) {
     console.error("Claude error", res.status, data);
     return reply({ error: data?.error?.message ?? `AI error ${res.status}` }, res.status);
+  }
+  if (key && data?.stop_reason === "end_turn") {
+    const { error: cacheError } = await db
+      .from("ai_cache")
+      .upsert({ key, response: data, created_at: new Date().toISOString() });
+    if (cacheError) console.error("Cache save failed", cacheError.message);
   }
   return reply(data);
 });

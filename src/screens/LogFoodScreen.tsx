@@ -36,6 +36,7 @@ import {
 import { LogoScanFrame } from '../components/FlameLogo';
 import { IconBadge } from '../components/IconBadge';
 import { useApp } from '../context/AppContext';
+import { track } from '../lib/analytics';
 import { Translations } from '../i18n';
 import { BarcodeLookupError, lookupBarcode } from '../lib/barcodeApi';
 import {
@@ -403,6 +404,7 @@ function useSaveEntry() {
       photoUri: await keepMealPhoto(photoUri, id),
     };
     await logFood(entry);
+    track('food_logged', { method });
     navigation.goBack();
   }
 
