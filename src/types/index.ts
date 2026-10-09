@@ -33,7 +33,23 @@ export interface DailyPlan {
 
 export type LogMethod = 'camera' | 'voice' | 'manual' | 'suggested' | 'repeat' | 'recipe' | 'barcode';
 
+/** Extra nutrients beyond calories and macros. All optional: older entries and
+ * hand-typed foods may not have them. */
+export interface Micros {
+  fiberG?: number;
+  sugarG?: number;
+  satFatG?: number;
+  saltG?: number;
+  ironMg?: number;
+  calciumMg?: number;
+  potassiumMg?: number;
+  vitaminCMg?: number;
+  vitaminDMcg?: number;
+  vitaminB12Mcg?: number;
+}
+
 export interface NutrientEstimate {
+  micros?: Micros;
   foodName: string;
   quantity: string;
   calories: number;
@@ -87,6 +103,7 @@ export interface ReminderSettings {
 export type RecipeCategory = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export interface Recipe {
+  micros?: Micros;
   id: string;
   name: string;
   category?: RecipeCategory;

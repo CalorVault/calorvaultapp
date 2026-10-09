@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CarbsIcon, FatIcon, ProteinIcon } from '../components/NutritionIcons';
 import { MealIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { RECIPES } from '../data/recipes';
 import { track } from '../lib/analytics';
 import { recipeImage } from '../data/recipePhotos';
 import { servingsText } from '../lib/mealPlan';
@@ -120,6 +121,8 @@ export function RecipeDetailScreen() {
       proteinG: recipe.proteinG,
       carbsG: recipe.carbsG,
       fatG: recipe.fatG,
+      // Recipes saved before nutrients were added get them from the built-in list.
+      micros: recipe.micros ?? RECIPES.find((r) => r.id === recipe.id)?.micros,
       date: todayIso(),
       loggedAt: new Date().toISOString(),
       method: 'recipe',

@@ -2,6 +2,7 @@ import { LANGUAGES } from '../i18n/languages';
 import Purchases from 'react-native-purchases';
 import { getCached, getInstallId, getLanguage, setCached } from '../storage/db';
 import { NutrientEstimate } from '../types';
+import { parseMicros } from './nutrients';
 import { AI_PROXY_KEY, BUILT_IN_SUPABASE_ANON_KEY, BUILT_IN_SUPABASE_URL } from './config';
 import { isPurchasesSupported } from './purchases';
 
@@ -21,7 +22,12 @@ a reasonable serving size and its nutrition. Always respond with ONLY a single J
   "proteinG": number,       // grams, integer
   "carbsG": number,         // grams, integer
   "fatG": number,           // grams, integer
-  "confidence": "low" | "medium" | "high"
+  "confidence": "low" | "medium" | "high",
+  "micros": {               // your best estimate for the same serving
+    "fiberG": number, "sugarG": number, "satFatG": number, "saltG": number,
+    "ironMg": number, "calciumMg": number, "potassiumMg": number,
+    "vitaminCMg": number, "vitaminDMcg": number, "vitaminB12Mcg": number
+  }
 }
 
 If multiple foods are present, combine them into one aggregate estimate for the whole
@@ -40,7 +46,12 @@ with ONLY a single JSON object (no markdown fences, no extra text) matching exac
   "proteinG": number,       // grams per serving, integer
   "carbsG": number,         // grams per serving, integer
   "fatG": number,           // grams per serving, integer
-  "confidence": "low" | "medium" | "high"
+  "confidence": "low" | "medium" | "high",
+  "micros": {               // values printed on the label; estimate any that are not shown
+    "fiberG": number, "sugarG": number, "satFatG": number, "saltG": number,
+    "ironMg": number, "calciumMg": number, "potassiumMg": number,
+    "vitaminCMg": number, "vitaminDMcg": number, "vitaminB12Mcg": number
+  }
 }
 
 If you can clearly read the label, use "confidence": "high". If part of it is blurry or cut off,
@@ -58,7 +69,12 @@ single JSON object (no markdown fences, no extra text) matching exactly this sha
   "proteinG": number,
   "carbsG": number,
   "fatG": number,
-  "confidence": "low" | "medium" | "high"
+  "confidence": "low" | "medium" | "high",
+  "micros": {               // your best estimate for the same serving
+    "fiberG": number, "sugarG": number, "satFatG": number, "saltG": number,
+    "ironMg": number, "calciumMg": number, "potassiumMg": number,
+    "vitaminCMg": number, "vitaminDMcg": number, "vitaminB12Mcg": number
+  }
 }`;
 
 const SUGGEST_SYSTEM_PROMPT = `You are a friendly nutrition coach inside a fitness app. Given a
@@ -103,6 +119,7 @@ function extractJson(text: string): NutrientEstimate {
     carbsG: Math.round(Number(parsed.carbsG)),
     fatG: Math.round(Number(parsed.fatG)),
     confidence: parsed.confidence ?? 'medium',
+    micros: parseMicros(parsed.micros),
   };
 }
 
@@ -292,7 +309,7 @@ export async function estimateNutritionFromText(
 ): Promise<NutrientEstimate> {
   const normalized = description.trim().toLowerCase().replace(/\s+/g, ' ');
   const cacheKey = `${await getLanguage()}|${normalized}`;
-  const cached = await getCached<NutrientEstimate>('aiText', cacheKey, TEXT_ESTIMATE_CACHE_MS);
+  const cached = await getCached<NutrientEstimate>('aiText2', cacheKey, TEXT_ESTIMATE_CACHE_MS);
   if (cached) return cached;
 
   const text = await callClaude(
@@ -310,7 +327,7 @@ export async function estimateNutritionFromText(
     true
   );
   const estimate = extractJson(text);
-  await setCached('aiText', cacheKey, estimate);
+  await setCached('aiText2', cacheKey, estimate);
   return estimate;
 }
 

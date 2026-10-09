@@ -51,7 +51,7 @@ import { speechLocale } from '../lib/deviceLanguage';
 import { keepMealPhoto, mealImage } from '../lib/mealPhotos';
 import { getRecentUniqueFoodEntries, todayIso } from '../storage/db';
 import { colors, radius, spacing } from '../theme';
-import { FoodEntry, LogMethod, NutrientEstimate } from '../types';
+import { FoodEntry, LogMethod, Micros, NutrientEstimate } from '../types';
 
 type ScanMode = PhotoScanMode | 'barcode';
 const SCAN_MODES: ScanMode[] = ['auto', 'meal', 'barcode', 'label', 'drink'];
@@ -871,6 +871,7 @@ function ManualTab() {
   const [fat, setFat] = useState('');
   const [saving, setSaving] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
+  const [micros, setMicros] = useState<Micros | undefined>();
   const { save, apiKey, isPremium } = useSaveEntry();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -887,6 +888,7 @@ function ManualTab() {
       setProtein(String(result.proteinG));
       setCarbs(String(result.carbsG));
       setFat(String(result.fatG));
+      setMicros(result.micros);
     } catch (err) {
       Alert.alert(t.logFood.lookUpFailedTitle, err instanceof Error ? err.message : String(err));
     } finally {
@@ -906,9 +908,11 @@ function ManualTab() {
         carbsG: parseInt(carbs, 10) || 0,
         fatG: parseInt(fat, 10) || 0,
         confidence: 'high',
+        micros,
       },
       'manual'
     );
+    setMicros(undefined);
     setSaving(false);
     setFoodName('');
     setQuantity('');
@@ -1146,6 +1150,7 @@ function RecentTab() {
         proteinG: entry.proteinG,
         carbsG: entry.carbsG,
         fatG: entry.fatG,
+        micros: entry.micros,
       },
       'repeat',
       entry.photoUri,

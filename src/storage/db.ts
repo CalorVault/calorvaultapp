@@ -167,6 +167,14 @@ export async function addFoodEntry(entry: FoodEntry): Promise<DayLog> {
   return dayLog;
 }
 
+// Replaces a logged food (same id) with an edited version, keeping its place in the day.
+export async function updateFoodEntry(entry: FoodEntry): Promise<DayLog> {
+  const dayLog = await getDayLog(entry.date);
+  dayLog.entries = dayLog.entries.map((e) => (e.id === entry.id ? entry : e));
+  await saveDayLog(dayLog);
+  return dayLog;
+}
+
 export async function removeFoodEntry(
   date: string,
   entryId: string

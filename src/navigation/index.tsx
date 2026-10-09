@@ -25,6 +25,7 @@ import { DayDetailScreen } from '../screens/DayDetailScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { IntroScreen } from '../screens/IntroScreen';
+import { EditEntryScreen } from '../screens/EditEntryScreen';
 import { LogFoodScreen } from '../screens/LogFoodScreen';
 import { MealPlanScreen } from '../screens/MealPlanScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
@@ -256,6 +257,20 @@ export function RootNavigator() {
           options={({ navigation }) => ({
             headerShown: true,
             title: t.nav.logFood,
+            presentation: 'modal',
+            headerStyle: { backgroundColor: colors.surface },
+            headerTintColor: colors.text,
+            headerLeft: () => (
+              <ModalCloseButton onPress={() => navigation.goBack()} />
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="EditEntry"
+          component={EditEntryScreen}
+          options={({ navigation }) => ({
+            headerShown: true,
+            title: t.editEntry.title,
             presentation: 'modal',
             headerStyle: { backgroundColor: colors.surface },
             headerTintColor: colors.text,

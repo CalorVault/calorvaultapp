@@ -1,5 +1,6 @@
-import { RouteProp, useRoute } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalorieSummary } from '../components/CalorieSummary';
@@ -20,9 +21,13 @@ export function DayDetailScreen() {
   const [dayLog, setDayLog] = useState<DayLog>({ date, entries: [] });
   const [showEaten, setShowEaten] = useState(false);
 
-  useEffect(() => {
-    getDayLog(date).then(setDayLog);
-  }, [date]);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  // Reloads after a food is edited.
+  useFocusEffect(
+    useCallback(() => {
+      getDayLog(date).then(setDayLog);
+    }, [date])
+  );
 
   const totals = useMemo(() => {
     return dayLog.entries.reduce(
@@ -69,7 +74,9 @@ export function DayDetailScreen() {
             <Text style={styles.sectionTitle}>{t.dayDetail.foodLogged}</Text>
           </View>
         }
-        renderItem={({ item }) => <FoodEntryRow entry={item} />}
+        renderItem={({ item }) => (
+          <FoodEntryRow entry={item} onPress={(entry) => navigation.navigate('EditEntry', { entry })} />
+        )}
         ListEmptyComponent={
           <Text style={styles.emptyText}>{t.dayDetail.emptyState}</Text>
         }

@@ -1,5 +1,6 @@
 import { getCached, setCached } from '../storage/db';
-import { NutrientEstimate } from '../types';
+import { Micros, NutrientEstimate } from '../types';
+import { parseMicros } from './nutrients';
 
 // Open Food Facts is a free, open product database -- no API key needed.
 const BASE = 'https://world.openfoodfacts.org/api/v0/product';
@@ -22,10 +23,10 @@ interface OffNutriments {
 const BARCODE_CACHE_MS = 30 * 24 * 60 * 60 * 1000;
 
 export async function lookupBarcode(barcode: string): Promise<NutrientEstimate> {
-  const cached = await getCached<NutrientEstimate>('barcode', barcode, BARCODE_CACHE_MS);
+  const cached = await getCached<NutrientEstimate>('barcode2', barcode, BARCODE_CACHE_MS);
   if (cached) return cached;
   const estimate = await fetchBarcode(barcode);
-  await setCached('barcode', barcode, estimate);
+  await setCached('barcode2', barcode, estimate);
   return estimate;
 }
 
@@ -57,5 +58,27 @@ async function fetchBarcode(barcode: string): Promise<NutrientEstimate> {
     carbsG: Math.round((hasServing ? n.carbohydrates_serving : n.carbohydrates_100g) ?? 0),
     fatG: Math.round((hasServing ? n.fat_serving : n.fat_100g) ?? 0),
     confidence: 'high',
+    micros: labelMicros(product.nutriments ?? {}, hasServing),
   };
+}
+
+// Open Food Facts gives every nutrient in grams, per serving and per 100 g.
+// Only values the product actually lists are used.
+function labelMicros(n: Record<string, unknown>, perServing: boolean): Micros | undefined {
+  const get = (name: string, factor: number) => {
+    const v = n[`${name}_${perServing ? 'serving' : '100g'}`];
+    return typeof v === 'number' ? v * factor : undefined;
+  };
+  return parseMicros({
+    fiberG: get('fiber', 1),
+    sugarG: get('sugars', 1),
+    satFatG: get('saturated-fat', 1),
+    saltG: get('salt', 1),
+    ironMg: get('iron', 1000),
+    calciumMg: get('calcium', 1000),
+    potassiumMg: get('potassium', 1000),
+    vitaminCMg: get('vitamin-c', 1000),
+    vitaminDMcg: get('vitamin-d', 1_000_000),
+    vitaminB12Mcg: get('vitamin-b12', 1_000_000),
+  });
 }

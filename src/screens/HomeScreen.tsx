@@ -1,10 +1,11 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalorieSummary } from '../components/CalorieSummary';
 import { FoodEntryRow } from '../components/FoodEntryRow';
 import { MacroBars } from '../components/MacroBars';
+import { NutrientsCard } from '../components/NutrientsCard';
 import { SettingsIcon, ShareIcon } from '../components/NavIcons';
 import { WaterCard } from '../components/WaterCard';
 import { WeekStrip } from '../components/WeekStrip';
@@ -32,6 +33,13 @@ export function HomeScreen() {
     }
     getDayLog(selectedDate).then(setPastDayLog);
   }, [selectedDate, isToday]);
+
+  // Reload a past day when coming back from editing one of its foods.
+  useFocusEffect(
+    useCallback(() => {
+      if (!isToday) getDayLog(selectedDate).then(setPastDayLog);
+    }, [isToday, selectedDate])
+  );
 
   const displayLog = isToday ? today : pastDayLog ?? { date: selectedDate, entries: [] };
 
@@ -139,6 +147,11 @@ export function HomeScreen() {
               showEaten={showEaten}
               onToggle={() => setShowEaten((v) => !v)}
             />
+            <View style={styles.spacerLg} />
+            <NutrientsCard
+              entries={displayLog.entries}
+              onUnlock={() => navigation.getParent()?.navigate('Paywall')}
+            />
             {isToday && (
               <>
                 <View style={styles.spacerLg} />
@@ -167,10 +180,15 @@ export function HomeScreen() {
             <Text style={styles.sectionTitle}>
               {isToday ? t.home.recentUploads : t.dayDetail.foodLogged}
             </Text>
+            {displayLog.entries.length > 0 && <Text style={styles.editHint}>{t.editEntry.tapToEdit}</Text>}
           </View>
         }
         renderItem={({ item }) => (
-          <FoodEntryRow entry={item} onDelete={isToday ? deleteFood : undefined} />
+          <FoodEntryRow
+            entry={item}
+            onDelete={isToday ? deleteFood : undefined}
+            onPress={(entry) => navigation.getParent()?.navigate('EditEntry', { entry })}
+          />
         )}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
@@ -183,6 +201,7 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  editHint: { color: colors.textMuted, fontSize: 12, marginTop: -4, marginBottom: spacing.sm },
   pressedDim: { opacity: 0.6 },
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: spacing.lg, paddingBottom: spacing.xl * 3 },

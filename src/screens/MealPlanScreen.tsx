@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
+import { scaleMicros } from '../lib/nutrients';
 import { track } from '../lib/analytics';
 import { Translations } from '../i18n';
 import { goalLabels } from '../lib/goalLabels';
@@ -93,6 +94,7 @@ export function MealPlanScreen() {
       proteinG: meal.proteinG,
       carbsG: meal.carbsG,
       fatG: meal.fatG,
+      micros: scaleMicros(meal.recipe.micros, meal.servings),
       date: todayIso(),
       loggedAt: new Date().toISOString(),
       method: 'recipe',

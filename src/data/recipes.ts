@@ -15,6 +15,7 @@ export const RECIPES: Recipe[] = [
     fatG: 22,
     emoji: "🍳",
     tint: "#FDECC8",
+    micros: { fiberG: 5, sugarG: 5, satFatG: 8, saltG: 1.4, ironMg: 4.7, calciumMg: 208, potassiumMg: 453, vitaminCMg: 0, vitaminDMcg: 3.1, vitaminB12Mcg: 1.5 },
     ingredients: [
       { amount: 3, unit: "", name: "eggs", metric: { amount: 150, unit: "g" } },
       { amount: 2, unit: "tbsp", name: "milk", metric: { amount: 30, unit: "ml" } },
@@ -39,6 +40,7 @@ export const RECIPES: Recipe[] = [
     fatG: 23,
     emoji: "🐟",
     tint: "#FDECC8",
+    micros: { fiberG: 2, sugarG: 3, satFatG: 8, saltG: 2.8, ironMg: 4.2, calciumMg: 153, potassiumMg: 436, vitaminCMg: 0, vitaminDMcg: 13.3, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 3, unit: "", name: "eggs", metric: { amount: 150, unit: "g" } },
       { amount: 60, unit: "g", name: "smoked salmon" },
@@ -63,6 +65,7 @@ export const RECIPES: Recipe[] = [
     fatG: 9,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 9, sugarG: 33, satFatG: 4, saltG: 0.2, ironMg: 2.9, calciumMg: 348, potassiumMg: 996, vitaminCMg: 9, vitaminDMcg: 0.2, vitaminB12Mcg: 1.0 },
     ingredients: [
       { amount: 60, unit: "g", name: "porridge oats" },
       { amount: 250, unit: "ml", name: "semi-skimmed milk" },
@@ -86,6 +89,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 11, sugarG: 28, satFatG: 7, saltG: 0.6, ironMg: 4.0, calciumMg: 495, potassiumMg: 1297, vitaminCMg: 9, vitaminDMcg: 0.2, vitaminB12Mcg: 1.3 },
     ingredients: [
       { amount: 70, unit: "g", name: "porridge oats" },
       { amount: 250, unit: "ml", name: "milk" },
@@ -110,6 +114,7 @@ export const RECIPES: Recipe[] = [
     fatG: 8,
     emoji: "🍓",
     tint: "#FDECC8",
+    micros: { fiberG: 4, sugarG: 25, satFatG: 1, saltG: 0.4, ironMg: 1.5, calciumMg: 256, potassiumMg: 565, vitaminCMg: 24, vitaminDMcg: 0.0, vitaminB12Mcg: 1.5 },
     ingredients: [
       { amount: 200, unit: "g", name: "fat-free Greek yogurt" },
       { amount: 40, unit: "g", name: "granola" },
@@ -133,6 +138,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🥞",
     tint: "#FDECC8",
+    micros: { fiberG: 9, sugarG: 21, satFatG: 6, saltG: 0.6, ironMg: 5.0, calciumMg: 294, potassiumMg: 1056, vitaminCMg: 27, vitaminDMcg: 2.0, vitaminB12Mcg: 1.4 },
     ingredients: [
       { amount: 50, unit: "g", name: "oats" },
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
@@ -159,6 +165,7 @@ export const RECIPES: Recipe[] = [
     fatG: 30,
     emoji: "🥚",
     tint: "#FDECC8",
+    micros: { fiberG: 2, sugarG: 3, satFatG: 13, saltG: 2.5, ironMg: 4.0, calciumMg: 312, potassiumMg: 478, vitaminCMg: 0, vitaminDMcg: 3.5, vitaminB12Mcg: 1.8 },
     ingredients: [
       { amount: 3, unit: "", name: "eggs", metric: { amount: 150, unit: "g" } },
       { amount: 50, unit: "g", name: "sliced ham, chopped" },
@@ -184,6 +191,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🍳",
     tint: "#FDECC8",
+    micros: { fiberG: 4, sugarG: 5, satFatG: 5, saltG: 1.8, ironMg: 3.7, calciumMg: 248, potassiumMg: 931, vitaminCMg: 22, vitaminDMcg: 1.1, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 200, unit: "g", name: "egg whites (about 6)" },
       { amount: 1, unit: "", name: "whole egg", metric: { amount: 50, unit: "g" } },
@@ -209,6 +217,7 @@ export const RECIPES: Recipe[] = [
     fatG: 23,
     emoji: "🥑",
     tint: "#FDECC8",
+    micros: { fiberG: 10, sugarG: 6, satFatG: 5, saltG: 1.2, ironMg: 4.4, calciumMg: 156, potassiumMg: 820, vitaminCMg: 15, vitaminDMcg: 2.0, vitaminB12Mcg: 0.9 },
     ingredients: [
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
       { amount: 0.5, unit: "", name: "avocado", metric: { amount: 70, unit: "g" } },
@@ -232,6 +241,7 @@ export const RECIPES: Recipe[] = [
     fatG: 22,
     emoji: "🧁",
     tint: "#FDECC8",
+    micros: { fiberG: 2, sugarG: 4, satFatG: 8, saltG: 2.4, ironMg: 4.4, calciumMg: 245, potassiumMg: 838, vitaminCMg: 62, vitaminDMcg: 3.3, vitaminB12Mcg: 1.8 },
     ingredients: [
       { amount: 3, unit: "", name: "eggs", metric: { amount: 150, unit: "g" } },
       { amount: 100, unit: "g", name: "egg whites" },
@@ -257,6 +267,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🥞",
     tint: "#FDECC8",
+    micros: { fiberG: 4, sugarG: 23, satFatG: 6, saltG: 0.4, ironMg: 2.0, calciumMg: 288, potassiumMg: 552, vitaminCMg: 24, vitaminDMcg: 1.2, vitaminB12Mcg: 1.5 },
     ingredients: [
       { amount: 60, unit: "g", name: "plain flour" },
       { amount: 1, unit: "", name: "egg", metric: { amount: 50, unit: "g" } },
@@ -284,6 +295,7 @@ export const RECIPES: Recipe[] = [
     fatG: 21,
     emoji: "🌯",
     tint: "#FDECC8",
+    micros: { fiberG: 7, sugarG: 4, satFatG: 8, saltG: 2.9, ironMg: 5.7, calciumMg: 286, potassiumMg: 791, vitaminCMg: 6, vitaminDMcg: 2.3, vitaminB12Mcg: 1.3 },
     ingredients: [
       { amount: 1, unit: "large", name: "tortilla wrap", metric: { amount: 64, unit: "g" } },
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
@@ -310,6 +322,7 @@ export const RECIPES: Recipe[] = [
     fatG: 11,
     emoji: "🍞",
     tint: "#FDECC8",
+    micros: { fiberG: 5, sugarG: 15, satFatG: 6, saltG: 0.8, ironMg: 2.0, calciumMg: 96, potassiumMg: 210, vitaminCMg: 1, vitaminDMcg: 0.1, vitaminB12Mcg: 0.0 },
     ingredients: [
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
       { amount: 2, unit: "tsp", name: "butter", metric: { amount: 10, unit: "g" } },
@@ -331,6 +344,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 8, sugarG: 20, satFatG: 4, saltG: 0.5, ironMg: 3.3, calciumMg: 534, potassiumMg: 968, vitaminCMg: 18, vitaminDMcg: 0.2, vitaminB12Mcg: 1.9 },
     ingredients: [
       { amount: 60, unit: "g", name: "rolled oats" },
       { amount: 200, unit: "ml", name: "milk" },
@@ -355,6 +369,7 @@ export const RECIPES: Recipe[] = [
     fatG: 7,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 21, satFatG: 3, saltG: 0.2, ironMg: 2.4, calciumMg: 305, potassiumMg: 601, vitaminCMg: 6, vitaminDMcg: 0.1, vitaminB12Mcg: 1.2 },
     ingredients: [
       { amount: 50, unit: "g", name: "rolled oats" },
       { amount: 150, unit: "ml", name: "milk" },
@@ -379,6 +394,7 @@ export const RECIPES: Recipe[] = [
     fatG: 25,
     emoji: "🥓",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 6, satFatG: 7, saltG: 2.7, ironMg: 4.6, calciumMg: 154, potassiumMg: 798, vitaminCMg: 11, vitaminDMcg: 2.3, vitaminB12Mcg: 1.4 },
     ingredients: [
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
       { amount: 2, unit: "rashers", name: "lean back bacon", metric: { amount: 60, unit: "g" } },
@@ -403,6 +419,7 @@ export const RECIPES: Recipe[] = [
     fatG: 13,
     emoji: "🫘",
     tint: "#FDECC8",
+    micros: { fiberG: 12, sugarG: 13, satFatG: 5, saltG: 2.5, ironMg: 5.7, calciumMg: 312, potassiumMg: 744, vitaminCMg: 2, vitaminDMcg: 1.1, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 0.5, unit: "tin", name: "baked beans", metric: { amount: 200, unit: "g" } },
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
@@ -426,6 +443,7 @@ export const RECIPES: Recipe[] = [
     fatG: 18,
     emoji: "🍞",
     tint: "#FDECC8",
+    micros: { fiberG: 7, sugarG: 19, satFatG: 7, saltG: 1.3, ironMg: 4.1, calciumMg: 318, potassiumMg: 665, vitaminCMg: 24, vitaminDMcg: 2.1, vitaminB12Mcg: 1.8 },
     ingredients: [
       { amount: 2, unit: "slices", name: "bread", metric: { amount: 80, unit: "g" } },
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
@@ -453,6 +471,7 @@ export const RECIPES: Recipe[] = [
     fatG: 8,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 27, satFatG: 3, saltG: 0.3, ironMg: 2.9, calciumMg: 293, potassiumMg: 660, vitaminCMg: 18, vitaminDMcg: 0.2, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 60, unit: "g", name: "muesli" },
       { amount: 200, unit: "ml", name: "semi-skimmed milk" },
@@ -474,6 +493,7 @@ export const RECIPES: Recipe[] = [
     fatG: 16,
     emoji: "🥚",
     tint: "#FDECC8",
+    micros: { fiberG: 5, sugarG: 4, satFatG: 6, saltG: 1.2, ironMg: 3.8, calciumMg: 143, potassiumMg: 339, vitaminCMg: 0, vitaminDMcg: 2.1, vitaminB12Mcg: 0.9 },
     ingredients: [
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
@@ -496,6 +516,7 @@ export const RECIPES: Recipe[] = [
     fatG: 16,
     emoji: "🍳",
     tint: "#FDECC8",
+    micros: { fiberG: 5, sugarG: 4, satFatG: 6, saltG: 1.2, ironMg: 3.8, calciumMg: 143, potassiumMg: 339, vitaminCMg: 0, vitaminDMcg: 2.1, vitaminB12Mcg: 0.9 },
     ingredients: [
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
@@ -518,6 +539,7 @@ export const RECIPES: Recipe[] = [
     fatG: 11,
     emoji: "🍄",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 6, satFatG: 6, saltG: 0.8, ironMg: 2.8, calciumMg: 92, potassiumMg: 679, vitaminCMg: 3, vitaminDMcg: 0.4, vitaminB12Mcg: 0.0 },
     ingredients: [
       { amount: 150, unit: "g", name: "mushrooms, sliced" },
       { amount: 2, unit: "tsp", name: "butter", metric: { amount: 10, unit: "g" } },
@@ -539,6 +561,7 @@ export const RECIPES: Recipe[] = [
     fatG: 28,
     emoji: "🧀",
     tint: "#FDECC8",
+    micros: { fiberG: 0, sugarG: 1, satFatG: 14, saltG: 1.1, ironMg: 2.8, calciumMg: 301, potassiumMg: 238, vitaminCMg: 0, vitaminDMcg: 3.3, vitaminB12Mcg: 1.7 },
     ingredients: [
       { amount: 3, unit: "", name: "eggs", metric: { amount: 150, unit: "g" } },
       { amount: 30, unit: "g", name: "cheddar, grated" },
@@ -561,6 +584,7 @@ export const RECIPES: Recipe[] = [
     fatG: 5,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 23, satFatG: 3, saltG: 0.3, ironMg: 4.8, calciumMg: 266, potassiumMg: 787, vitaminCMg: 9, vitaminDMcg: 0.2, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 2, unit: "", name: "Weetabix", metric: { amount: 38, unit: "g" } },
       { amount: 200, unit: "ml", name: "semi-skimmed milk" },
@@ -582,6 +606,7 @@ export const RECIPES: Recipe[] = [
     fatG: 4,
     emoji: "🥣",
     tint: "#FDECC8",
+    micros: { fiberG: 1, sugarG: 13, satFatG: 3, saltG: 0.9, ironMg: 3.2, calciumMg: 250, potassiumMg: 336, vitaminCMg: 0, vitaminDMcg: 1.9, vitaminB12Mcg: 1.2 },
     ingredients: [
       { amount: 40, unit: "g", name: "cornflakes" },
       { amount: 200, unit: "ml", name: "semi-skimmed milk" },
@@ -601,6 +626,7 @@ export const RECIPES: Recipe[] = [
     fatG: 9,
     emoji: "🥯",
     tint: "#FDECC8",
+    micros: { fiberG: 2, sugarG: 7, satFatG: 4, saltG: 1.2, ironMg: 3.3, calciumMg: 48, potassiumMg: 129, vitaminCMg: 0, vitaminDMcg: 0.1, vitaminB12Mcg: 0.1 },
     ingredients: [
       { amount: 1, unit: "", name: "bagel", metric: { amount: 90, unit: "g" } },
       { amount: 2, unit: "tbsp", name: "light cream cheese", metric: { amount: 30, unit: "g" } },
@@ -621,6 +647,7 @@ export const RECIPES: Recipe[] = [
     fatG: 21,
     emoji: "🍳",
     tint: "#FDECC8",
+    micros: { fiberG: 6, sugarG: 8, satFatG: 7, saltG: 2.8, ironMg: 4.1, calciumMg: 133, potassiumMg: 644, vitaminCMg: 1, vitaminDMcg: 1.4, vitaminB12Mcg: 1.0 },
     ingredients: [
       { amount: 1, unit: "", name: "egg", metric: { amount: 50, unit: "g" } },
       { amount: 1, unit: "", name: "back rasher", metric: { amount: 30, unit: "g" } },
@@ -646,6 +673,7 @@ export const RECIPES: Recipe[] = [
     fatG: 7,
     emoji: "🥔",
     tint: "#DCE9FB",
+    micros: { fiberG: 8, sugarG: 5, satFatG: 1, saltG: 1.3, ironMg: 4.3, calciumMg: 65, potassiumMg: 1726, vitaminCMg: 68, vitaminDMcg: 1.0, vitaminB12Mcg: 2.5 },
     ingredients: [
       { amount: 1, unit: "large", name: "baking potato", metric: { amount: 300, unit: "g" } },
       { amount: 100, unit: "g", name: "tuna, drained" },
@@ -670,6 +698,7 @@ export const RECIPES: Recipe[] = [
     fatG: 20,
     emoji: "🥗",
     tint: "#DCE9FB",
+    micros: { fiberG: 3, sugarG: 2, satFatG: 6, saltG: 1.6, ironMg: 2.6, calciumMg: 250, potassiumMg: 853, vitaminCMg: 15, vitaminDMcg: 0.2, vitaminB12Mcg: 0.7 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast" },
       { amount: 100, unit: "g", name: "romaine lettuce, chopped" },
@@ -694,6 +723,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🧀",
     tint: "#DCE9FB",
+    micros: { fiberG: 5, sugarG: 4, satFatG: 10, saltG: 2.7, ironMg: 2.4, calciumMg: 308, potassiumMg: 405, vitaminCMg: 0, vitaminDMcg: 0.6, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 2, unit: "slices", name: "bread", metric: { amount: 80, unit: "g" } },
       { amount: 60, unit: "g", name: "sliced ham" },
@@ -717,6 +747,7 @@ export const RECIPES: Recipe[] = [
     fatG: 11,
     emoji: "🥪",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 5, satFatG: 1, saltG: 2.3, ironMg: 4.0, calciumMg: 109, potassiumMg: 623, vitaminCMg: 5, vitaminDMcg: 1.2, vitaminB12Mcg: 3.0 },
     ingredients: [
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
       { amount: 1, unit: "tin", name: "tuna, drained", metric: { amount: 120, unit: "g" } },
@@ -740,6 +771,7 @@ export const RECIPES: Recipe[] = [
     fatG: 18,
     emoji: "🍅",
     tint: "#DCE9FB",
+    micros: { fiberG: 10, sugarG: 20, satFatG: 6, saltG: 2.9, ironMg: 6.5, calciumMg: 395, potassiumMg: 1142, vitaminCMg: 54, vitaminDMcg: 0.1, vitaminB12Mcg: 0.2 },
     ingredients: [
       { amount: 1, unit: "tin", name: "chopped tomatoes", metric: { amount: 400, unit: "g" } },
       { amount: 60, unit: "g", name: "onion, chopped" },
@@ -767,6 +799,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🌯",
     tint: "#DCE9FB",
+    micros: { fiberG: 3, sugarG: 4, satFatG: 7, saltG: 1.6, ironMg: 3.1, calciumMg: 258, potassiumMg: 750, vitaminCMg: 12, vitaminDMcg: 0.2, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 1, unit: "large", name: "tortilla wrap", metric: { amount: 64, unit: "g" } },
       { amount: 120, unit: "g", name: "chicken breast" },
@@ -792,6 +825,7 @@ export const RECIPES: Recipe[] = [
     fatG: 15,
     emoji: "🥪",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 6, satFatG: 4, saltG: 2.6, ironMg: 3.0, calciumMg: 105, potassiumMg: 665, vitaminCMg: 11, vitaminDMcg: 0.3, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 2, unit: "slices", name: "bread", metric: { amount: 80, unit: "g" } },
       { amount: 2, unit: "rashers", name: "lean back bacon", metric: { amount: 60, unit: "g" } },
@@ -816,6 +850,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🍚",
     tint: "#DCE9FB",
+    micros: { fiberG: 4, sugarG: 2, satFatG: 2, saltG: 1.7, ironMg: 2.0, calciumMg: 87, potassiumMg: 1048, vitaminCMg: 107, vitaminDMcg: 0.1, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast" },
       { amount: 200, unit: "g", name: "cooked rice" },
@@ -840,6 +875,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🥚",
     tint: "#DCE9FB",
+    micros: { fiberG: 5, sugarG: 5, satFatG: 4, saltG: 1.5, ironMg: 4.0, calciumMg: 150, potassiumMg: 380, vitaminCMg: 2, vitaminDMcg: 2.0, vitaminB12Mcg: 0.9 },
     ingredients: [
       { amount: 2, unit: "", name: "eggs", metric: { amount: 100, unit: "g" } },
       { amount: 1, unit: "tbsp", name: "light mayonnaise", metric: { amount: 20, unit: "g" } },
@@ -863,6 +899,7 @@ export const RECIPES: Recipe[] = [
     fatG: 24,
     emoji: "🥗",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 9, satFatG: 9, saltG: 2.7, ironMg: 2.7, calciumMg: 293, potassiumMg: 1083, vitaminCMg: 22, vitaminDMcg: 0.3, vitaminB12Mcg: 1.1 },
     ingredients: [
       { amount: 130, unit: "g", name: "chicken breast" },
       { amount: 120, unit: "g", name: "tomatoes" },
@@ -891,6 +928,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🥗",
     tint: "#DCE9FB",
+    micros: { fiberG: 4, sugarG: 7, satFatG: 2, saltG: 0.6, ironMg: 3.5, calciumMg: 41, potassiumMg: 990, vitaminCMg: 16, vitaminDMcg: 0.1, vitaminB12Mcg: 0.4 },
     ingredients: [
       { amount: 70, unit: "g", name: "pasta (dry weight)" },
       { amount: 120, unit: "g", name: "cooked chicken breast" },
@@ -916,6 +954,7 @@ export const RECIPES: Recipe[] = [
     fatG: 6,
     emoji: "🍜",
     tint: "#DCE9FB",
+    micros: { fiberG: 4, sugarG: 6, satFatG: 2, saltG: 3.6, ironMg: 3.1, calciumMg: 62, potassiumMg: 909, vitaminCMg: 7, vitaminDMcg: 0.1, vitaminB12Mcg: 0.4 },
     ingredients: [
       { amount: 120, unit: "g", name: "chicken breast" },
       { amount: 50, unit: "g", name: "egg noodles" },
@@ -940,6 +979,7 @@ export const RECIPES: Recipe[] = [
     fatG: 22,
     emoji: "🌮",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 8, satFatG: 9, saltG: 2.4, ironMg: 5.1, calciumMg: 410, potassiumMg: 827, vitaminCMg: 72, vitaminDMcg: 0.3, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 2, unit: "", name: "tortilla wraps", metric: { amount: 128, unit: "g" } },
       { amount: 100, unit: "g", name: "cooked chicken, shredded" },
@@ -964,6 +1004,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🍚",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 3, satFatG: 2, saltG: 3.7, ironMg: 3.3, calciumMg: 58, potassiumMg: 961, vitaminCMg: 10, vitaminDMcg: 1.5, vitaminB12Mcg: 3.8 },
     ingredients: [
       { amount: 1, unit: "tin", name: "tuna, drained", metric: { amount: 150, unit: "g" } },
       { amount: 200, unit: "g", name: "cooked rice" },
@@ -989,6 +1030,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🍲",
     tint: "#DCE9FB",
+    micros: { fiberG: 18, sugarG: 18, satFatG: 4, saltG: 4.8, ironMg: 7.5, calciumMg: 352, potassiumMg: 1895, vitaminCMg: 58, vitaminDMcg: 0.1, vitaminB12Mcg: 0.1 },
     ingredients: [
       { amount: 80, unit: "g", name: "carrots" },
       { amount: 120, unit: "g", name: "potato" },
@@ -1018,6 +1060,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🌯",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 6, satFatG: 2, saltG: 3.0, ironMg: 4.4, calciumMg: 131, potassiumMg: 721, vitaminCMg: 68, vitaminDMcg: 0.1, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 1, unit: "large", name: "tortilla wrap", metric: { amount: 64, unit: "g" } },
       { amount: 120, unit: "g", name: "sliced turkey breast" },
@@ -1042,6 +1085,7 @@ export const RECIPES: Recipe[] = [
     fatG: 13,
     emoji: "🥪",
     tint: "#DCE9FB",
+    micros: { fiberG: 8, sugarG: 6, satFatG: 3, saltG: 2.2, ironMg: 3.9, calciumMg: 147, potassiumMg: 841, vitaminCMg: 9, vitaminDMcg: 0.2, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 3, unit: "slices", name: "bread, toasted", metric: { amount: 120, unit: "g" } },
       { amount: 70, unit: "g", name: "cooked chicken breast, sliced" },
@@ -1067,6 +1111,7 @@ export const RECIPES: Recipe[] = [
     fatG: 8,
     emoji: "🥙",
     tint: "#DCE9FB",
+    micros: { fiberG: 8, sugarG: 5, satFatG: 2, saltG: 0.9, ironMg: 3.4, calciumMg: 92, potassiumMg: 1318, vitaminCMg: 17, vitaminDMcg: 0.2, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast" },
       { amount: 180, unit: "g", name: "cooked rice" },
@@ -1094,6 +1139,7 @@ export const RECIPES: Recipe[] = [
     fatG: 20,
     emoji: "🧀",
     tint: "#DCE9FB",
+    micros: { fiberG: 5, sugarG: 5, satFatG: 12, saltG: 1.5, ironMg: 2.2, calciumMg: 380, potassiumMg: 360, vitaminCMg: 7, vitaminDMcg: 0.3, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 2, unit: "slices", name: "bread", metric: { amount: 80, unit: "g" } },
       { amount: 40, unit: "g", name: "cheddar, sliced" },
@@ -1116,6 +1162,7 @@ export const RECIPES: Recipe[] = [
     fatG: 21,
     emoji: "🍣",
     tint: "#DCE9FB",
+    micros: { fiberG: 4, sugarG: 3, satFatG: 5, saltG: 2.4, ironMg: 2.5, calciumMg: 82, potassiumMg: 1115, vitaminCMg: 5, vitaminDMcg: 14.3, vitaminB12Mcg: 4.2 },
     ingredients: [
       { amount: 130, unit: "g", name: "salmon fillet" },
       { amount: 180, unit: "g", name: "cooked rice" },
@@ -1140,6 +1187,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🥣",
     tint: "#DCE9FB",
+    micros: { fiberG: 11, sugarG: 15, satFatG: 6, saltG: 3.7, ironMg: 6.3, calciumMg: 246, potassiumMg: 1485, vitaminCMg: 62, vitaminDMcg: 0.2, vitaminB12Mcg: 0.2 },
     ingredients: [
       { amount: 1, unit: "", name: "leek, sliced", metric: { amount: 150, unit: "g" } },
       { amount: 200, unit: "g", name: "potatoes, diced" },
@@ -1166,6 +1214,7 @@ export const RECIPES: Recipe[] = [
     fatG: 7,
     emoji: "🍝",
     tint: "#DCE9FB",
+    micros: { fiberG: 3, sugarG: 6, satFatG: 1, saltG: 1.5, ironMg: 4.5, calciumMg: 87, potassiumMg: 674, vitaminCMg: 3, vitaminDMcg: 1.2, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 80, unit: "g", name: "pasta (dry weight)" },
       { amount: 1, unit: "tin", name: "tuna, drained", metric: { amount: 120, unit: "g" } },
@@ -1190,6 +1239,7 @@ export const RECIPES: Recipe[] = [
     fatG: 28,
     emoji: "🥐",
     tint: "#DCE9FB",
+    micros: { fiberG: 4, sugarG: 5, satFatG: 12, saltG: 1.9, ironMg: 2.7, calciumMg: 98, potassiumMg: 582, vitaminCMg: 19, vitaminDMcg: 0.4, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 1, unit: "", name: "large sausage roll", metric: { amount: 120, unit: "g" } },
       { amount: 60, unit: "g", name: "salad leaves" },
@@ -1212,6 +1262,7 @@ export const RECIPES: Recipe[] = [
     fatG: 8,
     emoji: "🥪",
     tint: "#DCE9FB",
+    micros: { fiberG: 6, sugarG: 5, satFatG: 1, saltG: 1.1, ironMg: 2.7, calciumMg: 103, potassiumMg: 643, vitaminCMg: 9, vitaminDMcg: 0.1, vitaminB12Mcg: 0.2 },
     ingredients: [
       { amount: 2, unit: "slices", name: "wholegrain bread", metric: { amount: 80, unit: "g" } },
       { amount: 80, unit: "g", name: "cooked chicken breast, sliced" },
@@ -1235,6 +1286,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🥣",
     tint: "#DCE9FB",
+    micros: { fiberG: 2, sugarG: 4, satFatG: 3, saltG: 5.4, ironMg: 2.4, calciumMg: 50, potassiumMg: 852, vitaminCMg: 7, vitaminDMcg: 1.1, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 100, unit: "g", name: "chicken breast, shredded" },
       { amount: 100, unit: "g", name: "sweetcorn" },
@@ -1258,6 +1310,7 @@ export const RECIPES: Recipe[] = [
     fatG: 17,
     emoji: "🥗",
     tint: "#DCE9FB",
+    micros: { fiberG: 3, sugarG: 6, satFatG: 3, saltG: 1.5, ironMg: 3.8, calciumMg: 84, potassiumMg: 920, vitaminCMg: 25, vitaminDMcg: 2.2, vitaminB12Mcg: 3.5 },
     ingredients: [
       { amount: 1, unit: "tin", name: "tuna, drained", metric: { amount: 120, unit: "g" } },
       { amount: 60, unit: "g", name: "mixed salad leaves" },
@@ -1283,6 +1336,7 @@ export const RECIPES: Recipe[] = [
     fatG: 13,
     emoji: "🍗",
     tint: "#DCE9FB",
+    micros: { fiberG: 3, sugarG: 4, satFatG: 3, saltG: 0.9, ironMg: 3.3, calciumMg: 106, potassiumMg: 942, vitaminCMg: 17, vitaminDMcg: 0.7, vitaminB12Mcg: 0.7 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast, cut into strips" },
       { amount: 30, unit: "g", name: "breadcrumbs" },
@@ -1308,6 +1362,7 @@ export const RECIPES: Recipe[] = [
     fatG: 17,
     emoji: "🍝",
     tint: "#DDF0E4",
+    micros: { fiberG: 7, sugarG: 14, satFatG: 6, saltG: 0.5, ironMg: 8.4, calciumMg: 250, potassiumMg: 1226, vitaminCMg: 32, vitaminDMcg: 0.2, vitaminB12Mcg: 2.9 },
     ingredients: [
       { amount: 90, unit: "g", name: "spaghetti (dry)" },
       { amount: 125, unit: "g", name: "lean beef mince" },
@@ -1336,6 +1391,7 @@ export const RECIPES: Recipe[] = [
     fatG: 12,
     emoji: "🍛",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 10, satFatG: 2, saltG: 0.3, ironMg: 2.7, calciumMg: 154, potassiumMg: 1083, vitaminCMg: 24, vitaminDMcg: 0.1, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast, diced" },
       { amount: 60, unit: "g", name: "onion, chopped" },
@@ -1364,6 +1420,7 @@ export const RECIPES: Recipe[] = [
     fatG: 25,
     emoji: "🍝",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 3, satFatG: 10, saltG: 2.2, ironMg: 5.5, calciumMg: 316, potassiumMg: 627, vitaminCMg: 0, vitaminDMcg: 2.4, vitaminB12Mcg: 1.6 },
     ingredients: [
       { amount: 90, unit: "g", name: "spaghetti (dry)" },
       { amount: 60, unit: "g", name: "bacon or pancetta, chopped" },
@@ -1388,6 +1445,7 @@ export const RECIPES: Recipe[] = [
     fatG: 15,
     emoji: "🥡",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 7, satFatG: 5, saltG: 2.4, ironMg: 5.6, calciumMg: 105, potassiumMg: 1133, vitaminCMg: 177, vitaminDMcg: 0.1, vitaminB12Mcg: 3.9 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean beef, sliced into strips" },
       { amount: 80, unit: "g", name: "peppers, sliced" },
@@ -1415,6 +1473,7 @@ export const RECIPES: Recipe[] = [
     fatG: 23,
     emoji: "🍅",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 10, satFatG: 10, saltG: 0.9, ironMg: 5.4, calciumMg: 450, potassiumMg: 656, vitaminCMg: 26, vitaminDMcg: 0.3, vitaminB12Mcg: 1.6 },
     ingredients: [
       { amount: 90, unit: "g", name: "penne (dry)" },
       { amount: 200, unit: "g", name: "chopped tomatoes" },
@@ -1440,6 +1499,7 @@ export const RECIPES: Recipe[] = [
     fatG: 9,
     emoji: "🐟",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 7, satFatG: 1, saltG: 0.3, ironMg: 4.0, calciumMg: 80, potassiumMg: 1917, vitaminCMg: 85, vitaminDMcg: 1.6, vitaminB12Mcg: 1.6 },
     ingredients: [
       { amount: 180, unit: "g", name: "cod fillet" },
       { amount: 220, unit: "g", name: "potatoes" },
@@ -1464,6 +1524,7 @@ export const RECIPES: Recipe[] = [
     fatG: 27,
     emoji: "🍝",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 15, satFatG: 15, saltG: 0.8, ironMg: 6.9, calciumMg: 418, potassiumMg: 1115, vitaminCMg: 21, vitaminDMcg: 0.5, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 70, unit: "g", name: "lasagne sheets" },
       { amount: 120, unit: "g", name: "lean beef mince" },
@@ -1492,6 +1553,7 @@ export const RECIPES: Recipe[] = [
     fatG: 21,
     emoji: "🥩",
     tint: "#DDF0E4",
+    micros: { fiberG: 7, sugarG: 4, satFatG: 6, saltG: 0.3, ironMg: 7.7, calciumMg: 96, potassiumMg: 1985, vitaminCMg: 67, vitaminDMcg: 0.2, vitaminB12Mcg: 4.7 },
     ingredients: [
       { amount: 180, unit: "g", name: "sirloin steak" },
       { amount: 250, unit: "g", name: "potatoes, cut into wedges" },
@@ -1517,6 +1579,7 @@ export const RECIPES: Recipe[] = [
     fatG: 13,
     emoji: "🌶️",
     tint: "#DDF0E4",
+    micros: { fiberG: 11, sugarG: 12, satFatG: 4, saltG: 0.8, ironMg: 7.9, calciumMg: 148, potassiumMg: 1457, vitaminCMg: 106, vitaminDMcg: 0.1, vitaminB12Mcg: 2.8 },
     ingredients: [
       { amount: 125, unit: "g", name: "lean beef mince" },
       { amount: 100, unit: "g", name: "kidney beans, drained" },
@@ -1545,6 +1608,7 @@ export const RECIPES: Recipe[] = [
     fatG: 15,
     emoji: "🍗",
     tint: "#DDF0E4",
+    micros: { fiberG: 9, sugarG: 7, satFatG: 2, saltG: 0.4, ironMg: 3.3, calciumMg: 100, potassiumMg: 2110, vitaminCMg: 119, vitaminDMcg: 0.2, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 180, unit: "g", name: "chicken breast" },
       { amount: 220, unit: "g", name: "potatoes, chopped" },
@@ -1570,6 +1634,7 @@ export const RECIPES: Recipe[] = [
     fatG: 25,
     emoji: "🐟",
     tint: "#DDF0E4",
+    micros: { fiberG: 8, sugarG: 5, satFatG: 7, saltG: 0.2, ironMg: 3.2, calciumMg: 78, potassiumMg: 1882, vitaminCMg: 55, vitaminDMcg: 16.6, vitaminB12Mcg: 4.8 },
     ingredients: [
       { amount: 150, unit: "g", name: "salmon fillet" },
       { amount: 220, unit: "g", name: "new potatoes" },
@@ -1594,6 +1659,7 @@ export const RECIPES: Recipe[] = [
     fatG: 20,
     emoji: "🥩",
     tint: "#DDF0E4",
+    micros: { fiberG: 8, sugarG: 5, satFatG: 7, saltG: 0.3, ironMg: 4.2, calciumMg: 77, potassiumMg: 1849, vitaminCMg: 55, vitaminDMcg: 1.2, vitaminB12Mcg: 1.1 },
     ingredients: [
       { amount: 180, unit: "g", name: "pork loin chop" },
       { amount: 220, unit: "g", name: "potatoes" },
@@ -1618,6 +1684,7 @@ export const RECIPES: Recipe[] = [
     fatG: 25,
     emoji: "🍔",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 5, satFatG: 11, saltG: 1.5, ironMg: 6.5, calciumMg: 300, potassiumMg: 849, vitaminCMg: 18, vitaminDMcg: 0.3, vitaminB12Mcg: 4.0 },
     ingredients: [
       { amount: 150, unit: "g", name: "beef burger patty" },
       { amount: 1, unit: "", name: "burger bun", metric: { amount: 70, unit: "g" } },
@@ -1644,6 +1711,7 @@ export const RECIPES: Recipe[] = [
     fatG: 15,
     emoji: "🍚",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 5, satFatG: 5, saltG: 4.5, ironMg: 2.5, calciumMg: 222, potassiumMg: 1154, vitaminCMg: 6, vitaminDMcg: 0.4, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 80, unit: "g", name: "risotto rice" },
       { amount: 150, unit: "g", name: "chicken breast, diced" },
@@ -1671,6 +1739,7 @@ export const RECIPES: Recipe[] = [
     fatG: 18,
     emoji: "🥧",
     tint: "#DDF0E4",
+    micros: { fiberG: 11, sugarG: 12, satFatG: 10, saltG: 1.8, ironMg: 6.8, calciumMg: 238, potassiumMg: 2043, vitaminCMg: 77, vitaminDMcg: 0.3, vitaminB12Mcg: 3.6 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean beef mince" },
       { amount: 50, unit: "g", name: "onion" },
@@ -1700,6 +1769,7 @@ export const RECIPES: Recipe[] = [
     fatG: 16,
     emoji: "🍠",
     tint: "#DDF0E4",
+    micros: { fiberG: 11, sugarG: 13, satFatG: 3, saltG: 0.6, ironMg: 3.2, calciumMg: 142, potassiumMg: 1962, vitaminCMg: 113, vitaminDMcg: 0.2, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 200, unit: "g", name: "chicken breast" },
       { amount: 250, unit: "g", name: "sweet potato, cubed" },
@@ -1725,6 +1795,7 @@ export const RECIPES: Recipe[] = [
     fatG: 18,
     emoji: "🍝",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 12, satFatG: 6, saltG: 0.4, ironMg: 8.8, calciumMg: 237, potassiumMg: 1165, vitaminCMg: 29, vitaminDMcg: 0.2, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean beef mince" },
       { amount: 90, unit: "g", name: "spaghetti (dry weight)" },
@@ -1752,6 +1823,7 @@ export const RECIPES: Recipe[] = [
     fatG: 11,
     emoji: "🍗",
     tint: "#DDF0E4",
+    micros: { fiberG: 4, sugarG: 10, satFatG: 2, saltG: 4.6, ironMg: 2.4, calciumMg: 92, potassiumMg: 1200, vitaminCMg: 90, vitaminDMcg: 0.2, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 180, unit: "g", name: "chicken breast, diced" },
       { amount: 200, unit: "g", name: "cooked rice" },
@@ -1778,6 +1850,7 @@ export const RECIPES: Recipe[] = [
     fatG: 16,
     emoji: "🐟",
     tint: "#DDF0E4",
+    micros: { fiberG: 13, sugarG: 10, satFatG: 3, saltG: 0.8, ironMg: 6.3, calciumMg: 149, potassiumMg: 2342, vitaminCMg: 101, vitaminDMcg: 2.1, vitaminB12Mcg: 1.8 },
     ingredients: [
       { amount: 180, unit: "g", name: "cod fillet" },
       { amount: 25, unit: "g", name: "breadcrumbs" },
@@ -1804,6 +1877,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🍚",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 8, satFatG: 4, saltG: 2.4, ironMg: 5.9, calciumMg: 85, potassiumMg: 1092, vitaminCMg: 115, vitaminDMcg: 0.2, vitaminB12Mcg: 3.7 },
     ingredients: [
       { amount: 170, unit: "g", name: "lean beef mince (5%)" },
       { amount: 200, unit: "g", name: "cooked rice" },
@@ -1829,6 +1903,7 @@ export const RECIPES: Recipe[] = [
     fatG: 31,
     emoji: "🌭",
     tint: "#DDF0E4",
+    micros: { fiberG: 12, sugarG: 12, satFatG: 13, saltG: 3.2, ironMg: 5.1, calciumMg: 141, potassiumMg: 1708, vitaminCMg: 89, vitaminDMcg: 0.9, vitaminB12Mcg: 1.0 },
     ingredients: [
       { amount: 3, unit: "", name: "pork sausages", metric: { amount: 150, unit: "g" } },
       { amount: 250, unit: "g", name: "potatoes" },
@@ -1855,6 +1930,7 @@ export const RECIPES: Recipe[] = [
     fatG: 27,
     emoji: "🐟",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 11, satFatG: 6, saltG: 0.6, ironMg: 3.9, calciumMg: 177, potassiumMg: 2120, vitaminCMg: 108, vitaminDMcg: 17.6, vitaminB12Mcg: 5.1 },
     ingredients: [
       { amount: 160, unit: "g", name: "salmon fillet" },
       { amount: 220, unit: "g", name: "sweet potato" },
@@ -1879,6 +1955,7 @@ export const RECIPES: Recipe[] = [
     fatG: 24,
     emoji: "🍗",
     tint: "#DDF0E4",
+    micros: { fiberG: 7, sugarG: 5, satFatG: 4, saltG: 1.1, ironMg: 4.8, calciumMg: 120, potassiumMg: 1687, vitaminCMg: 45, vitaminDMcg: 0.7, vitaminB12Mcg: 0.8 },
     ingredients: [
       { amount: 170, unit: "g", name: "chicken breast, flattened" },
       { amount: 30, unit: "g", name: "breadcrumbs" },
@@ -1907,6 +1984,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🍝",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 12, satFatG: 7, saltG: 0.8, ironMg: 5.5, calciumMg: 306, potassiumMg: 1219, vitaminCMg: 28, vitaminDMcg: 0.3, vitaminB12Mcg: 1.4 },
     ingredients: [
       { amount: 80, unit: "g", name: "penne" },
       { amount: 150, unit: "g", name: "chicken breast, diced" },
@@ -1932,6 +2010,7 @@ export const RECIPES: Recipe[] = [
     fatG: 22,
     emoji: "🌯",
     tint: "#DDF0E4",
+    micros: { fiberG: 8, sugarG: 13, satFatG: 6, saltG: 1.9, ironMg: 5.5, calciumMg: 240, potassiumMg: 1191, vitaminCMg: 158, vitaminDMcg: 0.2, vitaminB12Mcg: 0.6 },
     ingredients: [
       { amount: 170, unit: "g", name: "chicken breast, sliced" },
       { amount: 120, unit: "g", name: "peppers, sliced" },
@@ -1958,6 +2037,7 @@ export const RECIPES: Recipe[] = [
     fatG: 19,
     emoji: "🥩",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 9, satFatG: 5, saltG: 1.6, ironMg: 6.9, calciumMg: 82, potassiumMg: 1802, vitaminCMg: 68, vitaminDMcg: 0.1, vitaminB12Mcg: 3.8 },
     ingredients: [
       { amount: 150, unit: "g", name: "roast beef, sliced" },
       { amount: 200, unit: "g", name: "potatoes, roasted" },
@@ -1983,6 +2063,7 @@ export const RECIPES: Recipe[] = [
     fatG: 23,
     emoji: "🍕",
     tint: "#DDF0E4",
+    micros: { fiberG: 4, sugarG: 4, satFatG: 11, saltG: 1.9, ironMg: 2.8, calciumMg: 452, potassiumMg: 458, vitaminCMg: 10, vitaminDMcg: 0.5, vitaminB12Mcg: 2.0 },
     ingredients: [
       { amount: 120, unit: "g", name: "bread flour" },
       { amount: 1, unit: "tsp", name: "olive oil", metric: { amount: 5, unit: "g" } },
@@ -2009,6 +2090,7 @@ export const RECIPES: Recipe[] = [
     fatG: 16,
     emoji: "🍜",
     tint: "#DDF0E4",
+    micros: { fiberG: 6, sugarG: 6, satFatG: 3, saltG: 3.2, ironMg: 4.8, calciumMg: 80, potassiumMg: 1236, vitaminCMg: 174, vitaminDMcg: 0.1, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast, sliced" },
       { amount: 75, unit: "g", name: "dried egg noodles" },
@@ -2034,6 +2116,7 @@ export const RECIPES: Recipe[] = [
     fatG: 15,
     emoji: "🍲",
     tint: "#DDF0E4",
+    micros: { fiberG: 5, sugarG: 12, satFatG: 5, saltG: 0.3, ironMg: 6.5, calciumMg: 108, potassiumMg: 1196, vitaminCMg: 126, vitaminDMcg: 0.2, vitaminB12Mcg: 3.7 },
     ingredients: [
       { amount: 170, unit: "g", name: "lean stewing beef, diced" },
       { amount: 80, unit: "g", name: "onion" },
@@ -2061,6 +2144,7 @@ export const RECIPES: Recipe[] = [
     fatG: 14,
     emoji: "🍲",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 11, satFatG: 6, saltG: 2.8, ironMg: 5.2, calciumMg: 105, potassiumMg: 2024, vitaminCMg: 61, vitaminDMcg: 0.1, vitaminB12Mcg: 3.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean lamb, diced" },
       { amount: 250, unit: "g", name: "potatoes, chunks" },
@@ -2085,6 +2169,7 @@ export const RECIPES: Recipe[] = [
     fatG: 20,
     emoji: "🥬",
     tint: "#DDF0E4",
+    micros: { fiberG: 9, sugarG: 8, satFatG: 9, saltG: 3.6, ironMg: 4.0, calciumMg: 101, potassiumMg: 1815, vitaminCMg: 105, vitaminDMcg: 1.1, vitaminB12Mcg: 0.9 },
     ingredients: [
       { amount: 150, unit: "g", name: "bacon joint, sliced" },
       { amount: 150, unit: "g", name: "cabbage, shredded" },
@@ -2108,6 +2193,7 @@ export const RECIPES: Recipe[] = [
     fatG: 22,
     emoji: "🥧",
     tint: "#DDF0E4",
+    micros: { fiberG: 11, sugarG: 12, satFatG: 10, saltG: 1.6, ironMg: 5.6, calciumMg: 137, potassiumMg: 1968, vitaminCMg: 77, vitaminDMcg: 0.3, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean lamb mince" },
       { amount: 0.5, unit: "", name: "onion, chopped", metric: { amount: 60, unit: "g" } },
@@ -2135,6 +2221,7 @@ export const RECIPES: Recipe[] = [
     fatG: 13,
     emoji: "🍲",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 12, satFatG: 7, saltG: 2.9, ironMg: 6.4, calciumMg: 142, potassiumMg: 2116, vitaminCMg: 61, vitaminDMcg: 0.3, vitaminB12Mcg: 3.4 },
     ingredients: [
       { amount: 150, unit: "g", name: "lean stewing beef, diced" },
       { amount: 100, unit: "g", name: "carrots" },
@@ -2161,6 +2248,7 @@ export const RECIPES: Recipe[] = [
     fatG: 32,
     emoji: "🧀",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 15, satFatG: 19, saltG: 1.2, ironMg: 3.3, calciumMg: 694, potassiumMg: 644, vitaminCMg: 0, vitaminDMcg: 0.7, vitaminB12Mcg: 1.6 },
     ingredients: [
       { amount: 90, unit: "g", name: "macaroni" },
       { amount: 250, unit: "ml", name: "milk" },
@@ -2185,6 +2273,7 @@ export const RECIPES: Recipe[] = [
     fatG: 20,
     emoji: "🍛",
     tint: "#DDF0E4",
+    micros: { fiberG: 3, sugarG: 8, satFatG: 6, saltG: 2.0, ironMg: 2.0, calciumMg: 71, potassiumMg: 918, vitaminCMg: 4, vitaminDMcg: 0.1, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast, diced" },
       { amount: 150, unit: "g", name: "tikka masala sauce" },
@@ -2208,6 +2297,7 @@ export const RECIPES: Recipe[] = [
     fatG: 10,
     emoji: "🍗",
     tint: "#DDF0E4",
+    micros: { fiberG: 4, sugarG: 34, satFatG: 2, saltG: 1.4, ironMg: 1.9, calciumMg: 58, potassiumMg: 985, vitaminCMg: 137, vitaminDMcg: 0.1, vitaminB12Mcg: 0.5 },
     ingredients: [
       { amount: 150, unit: "g", name: "chicken breast, diced" },
       { amount: 80, unit: "g", name: "peppers, chopped" },
@@ -2234,6 +2324,7 @@ export const RECIPES: Recipe[] = [
     fatG: 28,
     emoji: "🐟",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 8, satFatG: 6, saltG: 0.7, ironMg: 4.9, calciumMg: 114, potassiumMg: 1718, vitaminCMg: 71, vitaminDMcg: 13.7, vitaminB12Mcg: 4.1 },
     ingredients: [
       { amount: 120, unit: "g", name: "cooked salmon, flaked" },
       { amount: 200, unit: "g", name: "potatoes, mashed" },
@@ -2259,6 +2350,7 @@ export const RECIPES: Recipe[] = [
     fatG: 23,
     emoji: "🍖",
     tint: "#DDF0E4",
+    micros: { fiberG: 10, sugarG: 8, satFatG: 10, saltG: 0.4, ironMg: 5.6, calciumMg: 108, potassiumMg: 1907, vitaminCMg: 64, vitaminDMcg: 0.1, vitaminB12Mcg: 3.3 },
     ingredients: [
       { amount: 2, unit: "", name: "lamb chops", metric: { amount: 150, unit: "g" } },
       { amount: 250, unit: "g", name: "baby potatoes" },

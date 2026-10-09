@@ -24,6 +24,8 @@ function MethodBadge({ method }: { method: FoodEntry['method'] }) {
 interface Props {
   entry: FoodEntry;
   onDelete?: (id: string) => void;
+  /** Tapping the row opens the food for editing. */
+  onPress?: (entry: FoodEntry) => void;
 }
 
 function formatTime(iso: string): string {
@@ -36,11 +38,16 @@ function formatTime(iso: string): string {
   return `${hours}:${minutes}${period}`;
 }
 
-export function FoodEntryRow({ entry, onDelete }: Props) {
+export function FoodEntryRow({ entry, onDelete, onPress }: Props) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const image = photoFailed ? null : mealImage(entry);
   return (
-    <View style={styles.row}>
+    <Pressable
+      style={({ pressed }) => [styles.row, pressed && onPress && styles.rowPressed]}
+      onPress={onPress ? () => onPress(entry) : undefined}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+    >
       {image ? (
         <Image source={image} style={styles.thumb} onError={() => setPhotoFailed(true)} />
       ) : (
@@ -85,11 +92,12 @@ export function FoodEntryRow({ entry, onDelete }: Props) {
           </Pressable>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  rowPressed: { opacity: 0.7 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

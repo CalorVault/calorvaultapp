@@ -1,7 +1,7 @@
 import { CompositeNavigationProp, NavigatorScreenParams } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Recipe } from '../types';
+import { FoodEntry, Recipe } from '../types';
 
 export type LogFoodTab = 'camera' | 'voice' | 'manual' | 'ask' | 'recent';
 
@@ -12,6 +12,7 @@ export type RootStackParamList = {
   Paywall: undefined;
   RecipeDetail: { recipe: Recipe; servings?: number };
   MealPlan: undefined;
+  EditEntry: { entry: FoodEntry };
   ShareDay: {
     calories: number;
     target: number;
