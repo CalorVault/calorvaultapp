@@ -249,6 +249,8 @@ const hi: Translations = {
     subscribe: "सब्सक्राइब करें",
     notNow: "अभी नहीं",
     restorePurchases: "खरीदारी वापस लाएं",
+    termsOfUse: "उपयोग की शर्तें",
+    privacyPolicy: "गोपनीयता नीति",
     restoring: "वापस ला रहे हैं…",
     notAvailableTitle: "अभी उपलब्ध नहीं",
     notAvailableMsg: "सब्सक्रिप्शन अभी सेट नहीं हुए हैं — जल्द ही फिर देखें।",

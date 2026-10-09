@@ -253,6 +253,8 @@ const ro: Translations = {
     subscribe: 'Abonează-te',
     notNow: 'Nu acum',
     restorePurchases: 'Restaurează achizițiile',
+    termsOfUse: "Termeni de utilizare",
+    privacyPolicy: "Politica de confidențialitate",
     restoring: 'Se restaurează…',
     notAvailableTitle: 'Indisponibil momentan',
     notAvailableMsg: 'Abonamentele nu sunt încă disponibile — revino în curând.',

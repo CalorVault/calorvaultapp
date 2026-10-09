@@ -249,6 +249,8 @@ const id: Translations = {
     subscribe: "Berlangganan",
     notNow: "Nanti saja",
     restorePurchases: "Pulihkan pembelian",
+    termsOfUse: "Ketentuan Penggunaan",
+    privacyPolicy: "Kebijakan Privasi",
     restoring: "Memulihkan…",
     notAvailableTitle: "Belum tersedia",
     notAvailableMsg: "Langganan belum disiapkan — cek lagi nanti.",

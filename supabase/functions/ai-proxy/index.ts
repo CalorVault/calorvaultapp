@@ -4,6 +4,8 @@
 // up a large bill. Deploy: Supabase Dashboard -> Edge Functions -> ai-proxy ->
 // Code, paste this file, Deploy.
 // Add the secret ANTHROPIC_API_KEY under Edge Functions -> Secrets.
+// Once REVENUECAT_SECRET_KEY is added there too, only phones with an active
+// CalorVault Premium subscription can use the AI.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const MODEL = "claude-sonnet-5";
@@ -13,6 +15,8 @@ const PER_PHONE_DAILY_LIMIT = 60;
 const ALL_PHONES_DAILY_LIMIT = 500;
 // Text-only answers the app marks as cacheable are reused for 30 days.
 const CACHE_DAYS = 30;
+// RevenueCat entitlement that unlocks the AI (same as in the app).
+const PREMIUM_ENTITLEMENT = "premium";
 
 function serverKey(): string {
   const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -51,6 +55,28 @@ async function cacheKey(system: string, content: unknown): Promise<string> {
   return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Asks RevenueCat whether this subscriber has Premium right now. Sandbox
+// (TestFlight) purchases count too. If RevenueCat itself can't be reached,
+// the request is allowed so paying users aren't locked out by an outage; the
+// daily limits still apply.
+async function hasPremium(secretKey: string, appUserId: string): Promise<boolean> {
+  let res: Response;
+  try {
+    res = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`, {
+      headers: { authorization: `Bearer ${secretKey}` },
+    });
+  } catch (err) {
+    console.error("RevenueCat unreachable", err);
+    return true;
+  }
+  if (res.status >= 500) return true;
+  if (!res.ok) return false;
+  const data = await res.json().catch(() => null);
+  const entitlement = data?.subscriber?.entitlements?.[PREMIUM_ENTITLEMENT];
+  if (!entitlement) return false;
+  return !entitlement.expires_date || new Date(entitlement.expires_date).getTime() > Date.now();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
@@ -59,7 +85,7 @@ Deno.serve(async (req) => {
   const apiKey = (Deno.env.get("ANTHROPIC_API_KEY") ?? "").trim();
   if (!apiKey) return reply({ error: "AI isn't set up: the ANTHROPIC_API_KEY secret is missing" }, 500);
 
-  let body: { system?: unknown; content?: unknown; installId?: unknown; cache?: unknown };
+  let body: { system?: unknown; content?: unknown; installId?: unknown; cache?: unknown; appUserId?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -72,6 +98,14 @@ Deno.serve(async (req) => {
     !isValidContent(content)
   ) {
     return reply({ error: "Invalid request" }, 400);
+  }
+
+  const revenueCatKey = (Deno.env.get("REVENUECAT_SECRET_KEY") ?? "").trim();
+  if (revenueCatKey) {
+    const appUserId = typeof body.appUserId === "string" ? body.appUserId.trim() : "";
+    if (!appUserId || appUserId.length > 200 || !(await hasPremium(revenueCatKey, appUserId))) {
+      return reply({ error: "Premium required" }, 403);
+    }
   }
 
   // A repeat of the same text question is answered from the cache: instant,

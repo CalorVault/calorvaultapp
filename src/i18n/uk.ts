@@ -249,6 +249,8 @@ const uk: Translations = {
     subscribe: "Підписатися",
     notNow: "Не зараз",
     restorePurchases: "Відновити покупки",
+    termsOfUse: "Умови використання",
+    privacyPolicy: "Політика конфіденційності",
     restoring: "Відновлюємо…",
     notAvailableTitle: "Поки недоступно",
     notAvailableMsg: "Підписки ще не налаштовані — загляньте згодом.",

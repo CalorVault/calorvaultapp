@@ -21,6 +21,7 @@ import { IdeaIcon, SparkleIcon } from '../components/NavIcons';
 import { useLanguageMode } from '../hooks/useLanguageMode';
 import { useApp } from '../context/AppContext';
 import { isUsageStatsOn, setUsageStats } from '../lib/analytics';
+import { openLegalPage, PRIVACY_POLICY_URL } from '../lib/legal';
 import { RECIPES } from '../data/recipes';
 import { allPhotoCredits } from '../data/recipePhotos';
 import { LANGUAGES } from '../i18n';
@@ -524,6 +525,9 @@ export function SettingsScreen() {
               trackColor={{ true: colors.primary, false: colors.border }}
             />
           </View>
+          <Pressable onPress={() => openLegalPage(PRIVACY_POLICY_URL)} hitSlop={8}>
+            <Text style={styles.privacyLink}>{t.paywall.privacyPolicy}</Text>
+          </Pressable>
         </View>
 
         <Text style={styles.sectionLabel}>{t.settings.exportSection}</Text>
@@ -623,6 +627,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  privacyLink: { color: colors.accent, fontSize: 13, fontWeight: '600', marginTop: spacing.sm },
   pressedDim: { opacity: 0.6 },
   creditsBlock: { marginTop: spacing.lg, gap: 4, alignItems: 'center' },
   creditsToggle: { color: colors.textMuted, fontSize: 12 },

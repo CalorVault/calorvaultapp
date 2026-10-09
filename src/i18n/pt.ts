@@ -249,6 +249,8 @@ const pt: Translations = {
     subscribe: "Assinar",
     notNow: "Agora não",
     restorePurchases: "Restaurar compras",
+    termsOfUse: "Termos de uso",
+    privacyPolicy: "Política de privacidade",
     restoring: "Restaurando…",
     notAvailableTitle: "Ainda não disponível",
     notAvailableMsg: "As assinaturas ainda não estão configuradas — volte em breve.",

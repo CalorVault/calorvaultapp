@@ -249,6 +249,8 @@ const ja: Translations = {
     subscribe: "登録する",
     notNow: "今はしない",
     restorePurchases: "購入を復元",
+    termsOfUse: "利用規約",
+    privacyPolicy: "プライバシーポリシー",
     restoring: "復元中…",
     notAvailableTitle: "まだ利用できません",
     notAvailableMsg: "サブスクリプションはまだ準備中です — またお試しください。",

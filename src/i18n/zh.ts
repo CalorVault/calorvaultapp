@@ -249,6 +249,8 @@ const zh: Translations = {
     subscribe: "订阅",
     notNow: "以后再说",
     restorePurchases: "恢复购买",
+    termsOfUse: "使用条款",
+    privacyPolicy: "隐私政策",
     restoring: "正在恢复…",
     notAvailableTitle: "暂不可用",
     notAvailableMsg: "订阅尚未设置好 — 请稍后再来。",

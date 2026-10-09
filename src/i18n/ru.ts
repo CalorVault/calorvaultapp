@@ -249,6 +249,8 @@ const ru: Translations = {
     subscribe: "Подписаться",
     notNow: "Не сейчас",
     restorePurchases: "Восстановить покупки",
+    termsOfUse: "Условия использования",
+    privacyPolicy: "Политика конфиденциальности",
     restoring: "Восстанавливаем…",
     notAvailableTitle: "Пока недоступно",
     notAvailableMsg: "Подписки ещё не настроены — загляните позже.",

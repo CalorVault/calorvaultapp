@@ -249,6 +249,8 @@ const nl: Translations = {
     subscribe: "Abonneren",
     notNow: "Niet nu",
     restorePurchases: "Aankopen herstellen",
+    termsOfUse: "Gebruiksvoorwaarden",
+    privacyPolicy: "Privacybeleid",
     restoring: "Herstellen…",
     notAvailableTitle: "Nog niet beschikbaar",
     notAvailableMsg: "Abonnementen zijn nog niet ingesteld — kom binnenkort terug.",

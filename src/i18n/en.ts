@@ -255,6 +255,8 @@ const en = {
     subscribe: 'Subscribe',
     notNow: 'Not now',
     restorePurchases: 'Restore purchases',
+    termsOfUse: "Terms of Use",
+    privacyPolicy: "Privacy Policy",
     restoring: 'Restoring…',
     notAvailableTitle: 'Not available yet',
     notAvailableMsg: "Subscriptions aren't set up yet — check back soon.",

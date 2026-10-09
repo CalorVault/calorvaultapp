@@ -1,7 +1,9 @@
 import { LANGUAGES } from '../i18n/languages';
+import Purchases from 'react-native-purchases';
 import { getCached, getInstallId, getLanguage, setCached } from '../storage/db';
 import { NutrientEstimate } from '../types';
 import { AI_PROXY_KEY, BUILT_IN_SUPABASE_ANON_KEY, BUILT_IN_SUPABASE_URL } from './config';
+import { isPurchasesSupported } from './purchases';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
@@ -134,12 +136,24 @@ function extractJsonArray(text: string): MealSuggestion[] {
 
 // Without a personal key, the request goes to the app's `ai-proxy` Edge
 // Function, which adds the real key server-side and enforces daily limits.
-function proxyRequest(
+// The RevenueCat subscriber id, so the server can check this phone really has
+// Premium before running the AI.
+async function revenueCatUserId(): Promise<string | undefined> {
+  if (!isPurchasesSupported()) return undefined;
+  try {
+    return await Purchases.getAppUserID();
+  } catch {
+    return undefined;
+  }
+}
+
+async function proxyRequest(
   systemPrompt: string,
   content: Array<Record<string, unknown>>,
   installId: string,
   cache: boolean
 ) {
+  const appUserId = await revenueCatUserId();
   return fetch(`${BUILT_IN_SUPABASE_URL}/functions/v1/ai-proxy`, {
     method: 'POST',
     headers: {
@@ -147,7 +161,7 @@ function proxyRequest(
       apikey: BUILT_IN_SUPABASE_ANON_KEY,
       authorization: `Bearer ${BUILT_IN_SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ system: systemPrompt, content, installId, cache }),
+    body: JSON.stringify({ system: systemPrompt, content, installId, cache, appUserId }),
   });
 }
 
@@ -181,6 +195,9 @@ async function callClaude(
     const body = await response.text().catch(() => '');
     if (response.status === 429) {
       throw new AiFoodError("You've reached today's AI limit. Try again tomorrow.");
+    }
+    if (response.status === 403) {
+      throw new AiFoodError('AI features need CalorVault Premium. If you just subscribed, try Restore purchases.');
     }
     throw new AiFoodError(
       `Claude API error ${response.status}: ${body || response.statusText}`

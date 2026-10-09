@@ -249,6 +249,8 @@ const pl: Translations = {
     subscribe: "Subskrybuj",
     notNow: "Nie teraz",
     restorePurchases: "Przywróć zakupy",
+    termsOfUse: "Warunki korzystania",
+    privacyPolicy: "Polityka prywatności",
     restoring: "Przywracanie…",
     notAvailableTitle: "Jeszcze niedostępne",
     notAvailableMsg: "Subskrypcje nie są jeszcze skonfigurowane — zajrzyj wkrótce.",

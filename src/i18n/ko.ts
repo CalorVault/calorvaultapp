@@ -249,6 +249,8 @@ const ko: Translations = {
     subscribe: "구독하기",
     notNow: "나중에",
     restorePurchases: "구매 복원",
+    termsOfUse: "이용약관",
+    privacyPolicy: "개인정보 처리방침",
     restoring: "복원 중…",
     notAvailableTitle: "아직 이용할 수 없어요",
     notAvailableMsg: "구독이 아직 준비되지 않았어요 — 곧 다시 확인해 주세요.",

@@ -253,6 +253,8 @@ const fr: Translations = {
     subscribe: 'S’abonner',
     notNow: 'Pas maintenant',
     restorePurchases: 'Restaurer les achats',
+    termsOfUse: "Conditions d'utilisation",
+    privacyPolicy: "Politique de confidentialité",
     restoring: 'Restauration…',
     notAvailableTitle: 'Pas encore disponible',
     notAvailableMsg: 'Les abonnements ne sont pas encore configurés — revenez bientôt.',

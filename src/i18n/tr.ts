@@ -249,6 +249,8 @@ const tr: Translations = {
     subscribe: "Abone ol",
     notNow: "Şimdi değil",
     restorePurchases: "Satın alımları geri yükle",
+    termsOfUse: "Kullanım Koşulları",
+    privacyPolicy: "Gizlilik Politikası",
     restoring: "Geri yükleniyor…",
     notAvailableTitle: "Henüz mevcut değil",
     notAvailableMsg: "Abonelikler henüz hazır değil — yakında tekrar bak.",

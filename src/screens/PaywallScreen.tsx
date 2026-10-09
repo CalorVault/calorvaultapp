@@ -15,6 +15,7 @@ import { LogoScanFrame } from '../components/FlameLogo';
 import { IconBadge } from '../components/IconBadge';
 import { MicIcon, PlanDayIcon, SearchIcon } from '../components/NavIcons';
 import { useApp } from '../context/AppContext';
+import { openLegalPage, PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../lib/legal';
 import { getCurrentOffering, PurchasesCancelledError } from '../lib/purchases';
 import { formatPrice, yearlySavingsPercent } from '../lib/pricing';
 import { RootStackParamList } from '../navigation/types';
@@ -194,6 +195,16 @@ export function PaywallScreen() {
       <Text style={styles.disclaimer}>
         {live ? t.paywall.disclaimerLive : t.paywall.disclaimerUnavailable}
       </Text>
+
+      <View style={styles.legalRow}>
+        <Pressable onPress={() => openLegalPage(TERMS_OF_USE_URL)} hitSlop={8}>
+          <Text style={styles.legalLink}>{t.paywall.termsOfUse}</Text>
+        </Pressable>
+        <Text style={styles.legalDot}>·</Text>
+        <Pressable onPress={() => openLegalPage(PRIVACY_POLICY_URL)} hitSlop={8}>
+          <Text style={styles.legalLink}>{t.paywall.privacyPolicy}</Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -279,6 +290,9 @@ const styles = StyleSheet.create({
   subscribeText: { color: colors.background, fontWeight: '700', fontSize: 16 },
   skipButton: { alignItems: 'center', padding: spacing.sm },
   skipText: { color: colors.textMuted, fontWeight: '600' },
+  legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.sm },
+  legalLink: { color: colors.textMuted, fontSize: 12, fontWeight: '600', textDecorationLine: 'underline' },
+  legalDot: { color: colors.textMuted, fontSize: 12 },
   disclaimer: {
     color: colors.textMuted,
     fontSize: 11,
