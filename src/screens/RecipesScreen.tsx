@@ -31,7 +31,6 @@ function categories(
     { value: 'breakfast', label: t.recipes.categories.breakfast, emoji: '🍳', tint: '#FDECC8' },
     { value: 'lunch', label: t.recipes.categories.lunch, emoji: '🥗', tint: '#DCE9FB' },
     { value: 'dinner', label: t.recipes.categories.dinner, emoji: '🍔', tint: '#DDF0E4' },
-    { value: 'snack', label: t.recipes.categories.snack, emoji: '🍎', tint: '#FBDFE0' },
   ];
 }
 
@@ -299,15 +298,6 @@ export function RecipesScreen() {
                   );
                 })}
               </View>
-            )}
-
-            {!recipeApiKey && subTab === 'discover' && (
-              <Pressable
-                style={styles.apiPrompt}
-                onPress={() => navigation.navigate('Settings')}
-              >
-                <Text style={styles.apiPromptText}>{t.recipes.apiPrompt}</Text>
-              </Pressable>
             )}
 
             {subTab === 'discover' && error && <Text style={styles.errorText}>{error}</Text>}

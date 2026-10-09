@@ -108,7 +108,8 @@ const ro: Translations = {
     addFriendPlaceholder: 'Numele de utilizator al prietenului',
     addFriendButton: 'Adaugă',
     addFriendFailedTitle: 'Nu am putut adăuga prietenul',
-    inviteFriendButton: 'Invită un prieten prin mesaj',
+    inviteFriendButton: "Invită un prieten",
+    inviteGetApp: "Descarcă CalorVault:",
     inviteMessagePrefix: 'Adaugă-mă pe CalorVault! Numele meu de utilizator este',
     inviteMessageSuffix:
       ' — descarcă aplicația, apoi deschide acest link ca să mă adaugi automat (funcționează după instalare):',

@@ -1,13 +1,14 @@
 import { RECIPES } from '../data/recipes';
 import { DailyPlan, DayMealPlan, PlannedMeal, Recipe, RecipeCategory } from '../types';
 
-export const MEAL_SLOTS: RecipeCategory[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+export const MEAL_SLOTS: RecipeCategory[] = ['breakfast', 'lunch', 'dinner'];
 
 const SLOT_SHARE: Record<RecipeCategory, number> = {
-  breakfast: 0.25,
-  lunch: 0.35,
-  dinner: 0.3,
-  snack: 0.1,
+  breakfast: 0.28,
+  lunch: 0.36,
+  dinner: 0.36,
+  // Old saved plans may still have a snack slot; new plans don't.
+  snack: 0,
 };
 
 const MIN_SERVINGS = 0.5;

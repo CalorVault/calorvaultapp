@@ -58,7 +58,9 @@ export function MealPlanScreen() {
       const saved = await getMealPlan();
       // Reuse today's plan so it doesn't reshuffle every time the screen
       // opens; rebuild on a new day or after the calorie target changes.
-      if (saved && saved.date === todayIso() && saved.calorieTarget === plan.calorieTarget) {
+      // Plans saved before snacks were removed are rebuilt as three meals.
+      const hasSnack = saved?.meals.some((m) => m.slot === 'snack');
+      if (saved && !hasSnack && saved.date === todayIso() && saved.calorieTarget === plan.calorieTarget) {
         setMealPlan(saved);
         setBuilding(false);
       } else {

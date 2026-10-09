@@ -110,7 +110,8 @@ const en = {
     addFriendPlaceholder: "Friend's username",
     addFriendButton: 'Add',
     addFriendFailedTitle: "Couldn't add friend",
-    inviteFriendButton: 'Invite a friend by message',
+    inviteFriendButton: "Invite a friend",
+    inviteGetApp: "Get CalorVault:",
     inviteMessagePrefix: "Add me on CalorVault! My username is",
     inviteMessageSuffix:
       " — get the app, then open this link to add me automatically (works once it's installed):",

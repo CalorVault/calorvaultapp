@@ -108,7 +108,8 @@ const fr: Translations = {
     addFriendPlaceholder: "Nom d'utilisateur de l'ami",
     addFriendButton: 'Ajouter',
     addFriendFailedTitle: "Impossible d'ajouter l'ami",
-    inviteFriendButton: 'Inviter un ami par message',
+    inviteFriendButton: "Inviter un ami",
+    inviteGetApp: "Télécharge CalorVault :",
     inviteMessagePrefix: 'Ajoute-moi sur CalorVault ! Mon nom d\'utilisateur est',
     inviteMessageSuffix:
       " — télécharge l'appli, puis ouvre ce lien pour m'ajouter automatiquement (fonctionne une fois installée) :",

@@ -8,12 +8,12 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Linking,
   Modal,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -126,6 +126,9 @@ type FeedSnapshot = {
   posts: CommunityPost[];
   blocked: { id: string; username: string }[];
 };
+
+// CalorVault's App Store page (works once the app is published).
+const APP_STORE_URL = 'https://apps.apple.com/app/id6809928172';
 
 const MAX_PHOTO_SIDE = 1280;
 
@@ -502,14 +505,22 @@ function Feed({
     }
   }
 
+  // Opens the iPhone share menu, so the invite can go by WhatsApp, Instagram,
+  // Snapchat, Messages, Mail or any other app.
   function handleInviteFriend() {
     const username = profile?.username;
     if (!username) return;
     const deepLink = `calorvault://add-friend/${encodeURIComponent(username)}`;
-    const message = `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}\n${deepLink}`;
-    const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
-    Linking.openURL(smsUrl).catch(() => {});
+    const message =
+      `${t.community.inviteMessagePrefix} @${username}${t.community.inviteMessageSuffix}\n${deepLink}\n\n` +
+      `${t.community.inviteGetApp} ${APP_STORE_URL}`;
+    Share.share({ message })
+      .then((result) => {
+        if (result.action === Share.sharedAction) track('friend_invited');
+      })
+      .catch(() => {});
   }
+
 
   async function handleSaveUsername() {
     if (!newUsername.trim()) return;
