@@ -269,6 +269,19 @@ const en = {
     disclaimerUnavailable:
       "Subscriptions aren't live yet -- no payment will be processed. This will use real Apple/Google in-app purchases once the store listing is set up.",
   },
+  foodSearch: {
+    placeholder: "Search any food",
+    recent: "Recent",
+    foods: "Foods",
+    products: "Products",
+    noResults: "No matches",
+    askAi: "Ask the AI about",
+    enterManually: "Can't find it? Enter it manually",
+    back: "Back",
+    amount: "Amount",
+    grams: "grams",
+    kcal: "kcal",
+  },
   nutrients: {
     title: "Nutrients",
     approx: "Approximate values",

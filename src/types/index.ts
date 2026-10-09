@@ -31,7 +31,7 @@ export interface DailyPlan {
   fatG: number;
 }
 
-export type LogMethod = 'camera' | 'voice' | 'manual' | 'suggested' | 'repeat' | 'recipe' | 'barcode';
+export type LogMethod = 'camera' | 'voice' | 'manual' | 'search' | 'suggested' | 'repeat' | 'recipe' | 'barcode';
 
 /** Extra nutrients beyond calories and macros. All optional: older entries and
  * hand-typed foods may not have them. */

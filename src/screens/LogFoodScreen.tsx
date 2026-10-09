@@ -34,6 +34,7 @@ import {
   TagIcon,
 } from '../components/NavIcons';
 import { LogoScanFrame } from '../components/FlameLogo';
+import { FoodSearch } from '../components/FoodSearch';
 import { IconBadge } from '../components/IconBadge';
 import { useApp } from '../context/AppContext';
 import { track } from '../lib/analytics';
@@ -89,7 +90,7 @@ function tabMeta(t: Translations): Record<Tab, { badge: React.ReactNode; label: 
     voice: { badge: <IconBadge Icon={MicIcon} size={TAB_BADGE_SIZE} />, label: t.logFood.tabs.voice },
     manual: {
       badge: <IconBadge Icon={SearchIcon} size={TAB_BADGE_SIZE} />,
-      label: t.logFood.tabs.manual,
+      label: t.quickLog.search,
     },
     ask: { badge: <IconBadge Icon={SparkleIcon} size={TAB_BADGE_SIZE} />, label: t.logFood.tabs.ask },
     recent: {
@@ -137,7 +138,7 @@ export function LogFoodScreen() {
       <View style={styles.content}>
         {tab === 'camera' && <CameraTab />}
         {tab === 'voice' && <VoiceTab />}
-        {tab === 'manual' && <ManualTab />}
+        {tab === 'manual' && <SearchOrManual />}
         {tab === 'ask' && <AskTab />}
         {tab === 'recent' && <RecentTab />}
       </View>
@@ -861,6 +862,31 @@ function VoiceTab() {
   );
 }
 
+// Search is the main way to add a food; the manual form is one tap away.
+function SearchOrManual() {
+  const { t } = useApp();
+  const [manual, setManual] = useState(false);
+  const { save } = useSaveEntry();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  if (manual) {
+    return (
+      <View style={styles.flex}>
+        <Pressable onPress={() => setManual(false)} hitSlop={8} style={styles.backToSearch}>
+          <Text style={styles.backToSearchText}>‹ {t.foodSearch.placeholder}</Text>
+        </Pressable>
+        <ManualTab />
+      </View>
+    );
+  }
+  return (
+    <FoodSearch
+      onSave={(estimate, source) => save(estimate, 'search', undefined, source)}
+      onManual={() => setManual(true)}
+      onUpgrade={() => navigation.navigate('Paywall')}
+    />
+  );
+}
+
 function ManualTab() {
   const { t } = useApp();
   const [foodName, setFoodName] = useState('');
@@ -1204,6 +1230,8 @@ function RecentTab() {
 }
 
 const styles = StyleSheet.create({
+  backToSearch: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  backToSearchText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
   flex: { flex: 1, backgroundColor: colors.background },
   content: { flex: 1 },
   tabBarWrap: {

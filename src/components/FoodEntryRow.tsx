@@ -17,7 +17,7 @@ function MethodBadge({ method }: { method: FoodEntry['method'] }) {
     return <LogoScanFrame size={THUMB_SIZE} glyphScale={0.38} />;
   }
   if (method === 'voice') return <IconBadge Icon={MicIcon} size={THUMB_SIZE} />;
-  if (method === 'manual') return <IconBadge Icon={SearchIcon} size={THUMB_SIZE} />;
+  if (method === 'manual' || method === 'search') return <IconBadge Icon={SearchIcon} size={THUMB_SIZE} />;
   return <IconBadge Icon={PlanDayIcon} size={THUMB_SIZE} />;
 }
 

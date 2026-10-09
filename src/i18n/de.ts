@@ -267,6 +267,19 @@ const de: Translations = {
     disclaimerUnavailable:
       'Abonnements sind noch nicht aktiv — es wird keine Zahlung verarbeitet. Dies wird echte Apple/Google-In-App-Käufe verwenden, sobald der Store-Eintrag eingerichtet ist.',
   },
+  foodSearch: {
+    placeholder: "Lebensmittel suchen",
+    recent: "Zuletzt",
+    foods: "Lebensmittel",
+    products: "Produkte",
+    noResults: "Keine Treffer",
+    askAi: "KI fragen zu",
+    enterManually: "Nicht gefunden? Manuell eingeben",
+    back: "Zurück",
+    amount: "Menge",
+    grams: "Gramm",
+    kcal: "kcal",
+  },
   nutrients: {
     title: "Nährstoffe",
     approx: "Ungefähre Werte",

@@ -267,6 +267,19 @@ const ro: Translations = {
     disclaimerUnavailable:
       'Abonamentele nu sunt încă active — nicio plată nu va fi procesată. Aceasta va folosi achiziții reale Apple/Google odată ce lista din magazin este configurată.',
   },
+  foodSearch: {
+    placeholder: "Caută orice aliment",
+    recent: "Recente",
+    foods: "Alimente",
+    products: "Produse",
+    noResults: "Niciun rezultat",
+    askAi: "Întreabă AI despre",
+    enterManually: "Nu-l găsești? Introdu-l manual",
+    back: "Înapoi",
+    amount: "Cantitate",
+    grams: "grame",
+    kcal: "kcal",
+  },
   nutrients: {
     title: "Nutrienți",
     approx: "Valori aproximative",

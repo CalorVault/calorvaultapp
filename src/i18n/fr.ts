@@ -267,6 +267,19 @@ const fr: Translations = {
     disclaimerUnavailable:
       "Les abonnements ne sont pas encore actifs — aucun paiement ne sera traité. Ceci utilisera de vrais achats intégrés Apple/Google une fois la fiche de la boutique configurée.",
   },
+  foodSearch: {
+    placeholder: "Recherche un aliment",
+    recent: "Récents",
+    foods: "Aliments",
+    products: "Produits",
+    noResults: "Aucun résultat",
+    askAi: "Demander à l'IA :",
+    enterManually: "Introuvable ? Ajoute-le à la main",
+    back: "Retour",
+    amount: "Quantité",
+    grams: "grammes",
+    kcal: "kcal",
+  },
   nutrients: {
     title: "Nutriments",
     approx: "Valeurs approximatives",
