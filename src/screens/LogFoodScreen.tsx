@@ -9,6 +9,7 @@ import {
   Animated,
   Image,
   LayoutChangeEvent,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -491,11 +492,21 @@ function CameraTab() {
   if (!permission) return <View style={styles.center} />;
 
   if (!permission.granted) {
+    // Apple: the button before the system prompt must be neutral ("Continue").
+    // Once the person has said no, iOS won't ask again, so offer Settings.
+    const blocked = !permission.canAskAgain;
     return (
       <View style={styles.center}>
-        <Text style={styles.permissionText}>{t.logFood.needCameraPermission}</Text>
-        <Pressable style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.permissionButtonText}>{t.logFood.grantCameraAccess}</Text>
+        <Text style={styles.permissionText}>
+          {blocked ? t.logFood.cameraTurnedOff : t.logFood.needCameraPermission}
+        </Text>
+        <Pressable
+          style={styles.permissionButton}
+          onPress={blocked ? () => Linking.openSettings() : requestPermission}
+        >
+          <Text style={styles.permissionButtonText}>
+            {blocked ? t.logFood.openSettings : t.logFood.grantCameraAccess}
+          </Text>
         </Pressable>
       </View>
     );
